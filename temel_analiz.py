@@ -1,15 +1,14 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from datetime import datetime
 
 
 # ─────────────────────────────────────────────
 #  YARDIMCI FONKSİYONLAR
 # ─────────────────────────────────────────────
 
-def get_val(df, row_names, col_index=0):
-    """DataFrame'den güvenli değer çekme."""
+def get_val(df: pd.DataFrame, row_names: list, col_index: int = 0) -> float:
+    """DataFrame'den güvenli değer çekme. Bulunamazsa 0.0 döner."""
     for name in row_names:
         try:
             if name in df.index:
@@ -21,28 +20,32 @@ def get_val(df, row_names, col_index=0):
     return 0.0
 
 
-def safe_div(numerator, denominator, multiply=1, fallback=0.0):
-    """Sıfıra bölme korumalı bölme işlemi."""
+def safe_div(pay, payda, multiply: float = 1, fallback: float = 0.0) -> float:
+    """Sıfıra bölme korumalı bölme. Sonucu 2 ondalıkla döner."""
     try:
-        if denominator and denominator != 0:
-            return round((numerator / denominator) * multiply, 2)
+        if payda and payda != 0:
+            return round((pay / payda) * multiply, 2)
     except Exception:
         pass
     return fallback
 
 
-def pct_change(new_val, old_val):
-    """Yüzde değişim — negatif tabanlarda da doğru çalışır."""
-    if old_val and old_val != 0:
-        return round((new_val - old_val) / abs(old_val) * 100, 2)
+def pct_change(yeni, eski) -> float:
+    """
+    Yüzde değişim hesabı.
+    Negatif tabanlarda da (zarar→kâr geçişi) doğru sonuç verir.
+    """
+    if eski and eski != 0:
+        return round((yeni - eski) / abs(eski) * 100, 2)
     return 0.0
 
 
-def calc_beta(ticker_symbol, hisse, period="1y"):
+def calc_beta(ticker_symbol: str, hisse: yf.Ticker, period: str = "1y") -> float:
     """
-    Manuel beta hesabı: Cov(hisse, endeks) / Var(endeks)
-    yFinance'ın kendi beta değeri TTM veya eski veriye dayanabilir;
-    bu hesaplama seçilen periyot için anlık sonuç verir.
+    Manuel beta: Cov(hisse, endeks) / Var(endeks)
+    BIST hisseleri için XU100.IS, diğerleri için ^GSPC kullanır.
+    yFinance'ın kendi beta değeri TTM veya eski periyoda dayanabileceğinden
+    bu hesaplama seçilen periyot için anlık sonuç üretir.
     """
     try:
         benchmark = "XU100.IS" if ticker_symbol.upper().endswith(".IS") else "^GSPC"
@@ -64,10 +67,9 @@ def calc_beta(ticker_symbol, hisse, period="1y"):
 def temel_analiz_yap(ticker_symbol: str) -> dict:
     hisse = yf.Ticker(ticker_symbol)
 
-    # --- Veri Çekimi ---
-    bs   = hisse.balance_sheet          # Yıllık bilanço
-    inc  = hisse.financials             # Yıllık gelir tablosu
-    cf   = hisse.cashflow               # Yıllık nakit akış tablosu
+    bs    = hisse.balance_sheet           # Yıllık bilanço
+    inc   = hisse.financials              # Yıllık gelir tablosu
+    cf    = hisse.cashflow                # Yıllık nakit akış tablosu
     q_bs  = hisse.quarterly_balance_sheet
     q_inc = hisse.quarterly_financials
     q_cf  = hisse.quarterly_cashflow
@@ -76,8 +78,7 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     if bs is None or bs.empty or inc is None or inc.empty:
         return {"Hata": "Finansal veri bulunamadı."}
 
-    # ── Yıllık Veriler ────────────────────────────────────────────────────────
-
+    # ── Yıllık Gelir Tablosu ──────────────────────────────────────────────────
     satis_y0       = get_val(inc, ["Total Revenue", "Operating Revenue"], 0)
     satis_y1       = get_val(inc, ["Total Revenue", "Operating Revenue"], 1)
 
@@ -87,15 +88,31 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     cogs_y0        = get_val(inc, ["Cost Of Revenue"], 0)
     brut_kar_y0    = get_val(inc, ["Gross Profit"], 0) or (satis_y0 - cogs_y0)
 
-    isletme_kari   = get_val(inc, ["Operating Income", "Total Operating Income As Reported"], 0)
+    isletme_kari   = get_val(inc, ["Operating Income",
+                                    "Total Operating Income As Reported"], 0)
     ebit           = get_val(inc, ["EBIT"], 0) or isletme_kari
-    faiz_gideri    = abs(get_val(inc, ["Interest Expense", "Interest Expense Non Operating"], 0))
+    faiz_gideri    = abs(get_val(inc, ["Interest Expense",
+                                        "Interest Expense Non Operating"], 0))
     vergi_gideri   = abs(get_val(inc, ["Tax Provision", "Income Tax Expense"], 0))
-    amortisman     = get_val(cf,  ["Depreciation And Amortization", "Depreciation Amortization Depletion"], 0)
-    ebitda         = (info.get("ebitda") or 0) or (ebit + amortisman)
 
-    oz_sermaye_y0  = get_val(bs, ["Stockholders Equity", "Total Equity Gross Minority Interest"], 0)
-    oz_sermaye_y1  = get_val(bs, ["Stockholders Equity", "Total Equity Gross Minority Interest"], 1)
+    # ── Yıllık Nakit Akışı ────────────────────────────────────────────────────
+    amortisman     = get_val(cf, ["Depreciation And Amortization",
+                                   "Depreciation Amortization Depletion"], 0)
+    op_nakit       = get_val(cf, ["Operating Cash Flow"], 0)
+    capex          = abs(get_val(cf, ["Capital Expenditure",
+                                       "Purchase Of Plant And Equipment",
+                                       "Purchases Of Property Plant And Equipment"], 0))
+    temettu        = abs(get_val(cf, ["Cash Dividends Paid",
+                                       "Common Stock Dividend Paid"], 0))
+
+    # EBITDA: info varsa kullan, yoksa EBIT + Amortisman
+    ebitda         = float(info.get("ebitda") or 0) or (ebit + amortisman)
+
+    # ── Yıllık Bilanço ────────────────────────────────────────────────────────
+    oz_sermaye_y0  = get_val(bs, ["Stockholders Equity",
+                                   "Total Equity Gross Minority Interest"], 0)
+    oz_sermaye_y1  = get_val(bs, ["Stockholders Equity",
+                                   "Total Equity Gross Minority Interest"], 1)
     ort_oz_sermaye = (oz_sermaye_y0 + oz_sermaye_y1) / 2 if oz_sermaye_y1 != 0 else oz_sermaye_y0
 
     varliklar_y0   = get_val(bs, ["Total Assets"], 0)
@@ -114,19 +131,11 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     nakit          = get_val(bs, ["Cash And Cash Equivalents",
                                    "Cash Cash Equivalents And Short Term Investments"], 0)
     toplam_borc    = get_val(bs, ["Total Debt"], 0)
-    uzun_v_borc    = get_val(bs, ["Long Term Debt"], 0)
-
-    capex          = abs(get_val(cf, ["Capital Expenditure",
-                                       "Purchase Of Plant And Equipment",
-                                       "Purchases Of Property Plant And Equipment"], 0))
-    op_nakit       = get_val(cf, ["Operating Cash Flow"], 0)
-    temettu        = abs(get_val(cf, ["Cash Dividends Paid", "Common Stock Dividend Paid"], 0))
 
     # ── Çeyreklik Veriler ─────────────────────────────────────────────────────
-
     q_satis_q0     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 0)
-    q_satis_q1     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 1)   # önceki çeyrek
-    q_satis_q4     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 4)   # geçen yıl aynı çeyrek (YoY)
+    q_satis_q1     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 1)  # Önceki çeyrek
+    q_satis_q4     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 4)  # Geçen yıl aynı çeyrek
 
     q_net_kar_q0   = get_val(q_inc, ["Net Income"], 0)
     q_cogs_q0      = get_val(q_inc, ["Cost Of Revenue"], 0)
@@ -134,33 +143,25 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     q_ebit_q0      = get_val(q_inc, ["EBIT", "Operating Income"], 0)
     q_amortisman   = get_val(q_cf,  ["Depreciation And Amortization"], 0)
     q_ebitda_q0    = q_ebit_q0 + q_amortisman
-
-    q_oz_sermaye   = get_val(q_bs, ["Stockholders Equity", "Total Equity Gross Minority Interest"], 0)
+    q_oz_sermaye   = get_val(q_bs,  ["Stockholders Equity",
+                                      "Total Equity Gross Minority Interest"], 0)
 
     # ── Piyasa Verileri ───────────────────────────────────────────────────────
+    fiyat          = float(info.get("currentPrice") or info.get("regularMarketPrice") or 0)
+    piyasa_degeri  = float(info.get("marketCap") or 0)
+    hisse_sayisi   = float(info.get("sharesOutstanding") or 1)
+    kur_deg_y      = float(info.get("enterpriseValue") or 0)
+    eps            = float(info.get("trailingEps") or 0) or safe_div(net_kar_y0, hisse_sayisi)
+    float_shares   = float(info.get("floatShares") or 0)
 
-    fiyat          = info.get("currentPrice") or info.get("regularMarketPrice", 0)
-    piyasa_degeri  = info.get("marketCap", 0)
-    hisse_sayisi   = info.get("sharesOutstanding", 1) or 1
-    kur_deg_y      = info.get("enterpriseValue", 0)
-    eps            = info.get("trailingEps") or safe_div(net_kar_y0, hisse_sayisi)
-    float_shares   = info.get("floatShares", 0)
-
-    # ── Hesaplamalar ──────────────────────────────────────────────────────────
-
-    # Vergi oranı tahmini (ROIC için)
+    # ── Türetilmiş Değerler ───────────────────────────────────────────────────
     vergi_orani    = safe_div(vergi_gideri, ebit) if ebit > 0 else 0.20
-    # Yatırılan Sermaye = Toplam Borç + Özsermaye − Nakit
-    yat_sermaye    = toplam_borc + oz_sermaye_y0 - nakit
-    nopat          = ebit * (1 - vergi_orani)
-
+    yat_sermaye    = toplam_borc + oz_sermaye_y0 - nakit   # Invested Capital
+    nopat          = ebit * (1 - vergi_orani)              # Net Operating Profit After Tax
     fcf            = op_nakit - capex
-
-    # Hisse başı değerler
     defter_hisse   = safe_div(oz_sermaye_y0, hisse_sayisi)
     satis_hisse    = safe_div(satis_y0, hisse_sayisi)
-    p_e            = safe_div(fiyat, eps) if eps and eps > 0 else 0
-
+    p_e            = safe_div(fiyat, eps) if eps and eps > 0 else 0.0
     eps_buyume     = pct_change(net_kar_y0, net_kar_y1)
 
     # ─────────────────────────────────────────────
@@ -168,98 +169,99 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     # ─────────────────────────────────────────────
     s = {}
 
-    # ── A. Genel Bilgiler ─────────────────────────────────────────────────────
-    s["Firma Sektörü"]        = info.get("sector", "-")
-    s["Çalışan Sayısı"]       = info.get("fullTimeEmployees", "-")
-    s["Bilanço Dönemi"]       = bs.columns[0].strftime("%Y-%m") if not bs.empty else "-"
-    s["Son Çeyrek Dönemi"]    = q_inc.columns[0].strftime("%Y-%m") if not q_inc.empty else "-"
-    s["Para Birimi"]          = info.get("currency", "-")
-    s["Borsa"]                = info.get("exchange", "-")
+    # A. Genel Bilgiler
+    s["Firma Sektörü"]          = info.get("sector", "-")
+    s["Çalışan Sayısı"]         = info.get("fullTimeEmployees", "-")
+    s["Para Birimi"]             = info.get("currency", "-")
+    s["Borsa"]                   = info.get("exchange", "-")
+    s["Bilanço Dönemi"]         = bs.columns[0].strftime("%Y-%m") if not bs.empty else "-"
+    s["Son Çeyrek Dönemi"]      = q_inc.columns[0].strftime("%Y-%m") if q_inc is not None and not q_inc.empty else "-"
 
-    # ── B. Günlük Piyasa Verileri ─────────────────────────────────────────────
-    s["Fiyat"]                = fiyat
-    s["Piyasa Değeri"]        = piyasa_degeri
-    s["F/K (Günlük)"]         = round(info.get("trailingPE", 0) or 0, 2)
-    s["PD/DD (Günlük)"]       = round(info.get("priceToBook", 0) or 0, 2)
-    s["FD/FAVÖK (Günlük)"]    = round(info.get("enterpriseToEbitda", 0) or 0, 2)
-    s["BETA (yFinance)"]      = round(info.get("beta", 0) or 0, 2)
-    s["BETA (Manuel 1Y)"]     = calc_beta(ticker_symbol, hisse, "1y")
-    s["BETA (Manuel 2Y)"]     = calc_beta(ticker_symbol, hisse, "2y")
-    s["PEG Oranı (Günlük)"]   = round(info.get("pegRatio", 0) or 0, 2)
-    s["Fiili Dolaşım (%)"]    = safe_div(float_shares, hisse_sayisi, multiply=100) if float_shares else "-"
+    # B. Günlük Piyasa Verileri (doğrudan info'dan)
+    s["Fiyat"]                   = fiyat
+    s["Piyasa Değeri"]           = piyasa_degeri
+    s["F/K (Günlük)"]            = round(float(info.get("trailingPE") or 0), 2)
+    s["PD/DD (Günlük)"]          = round(float(info.get("priceToBook") or 0), 2)
+    s["FD/FAVÖK (Günlük)"]       = round(float(info.get("enterpriseToEbitda") or 0), 2)
+    s["BETA (yFinance)"]         = round(float(info.get("beta") or 0), 2)
+    s["BETA (Manuel 1Y)"]        = calc_beta(ticker_symbol, hisse, "1y")
+    s["BETA (Manuel 2Y)"]        = calc_beta(ticker_symbol, hisse, "2y")
+    s["PEG Oranı (Günlük)"]      = round(float(info.get("pegRatio") or 0), 2)
+    s["Fiili Dolaşım (%)"]       = safe_div(float_shares, hisse_sayisi, multiply=100) if float_shares else "-"
 
-    # ── C. Değerleme (Hesaplanan) ─────────────────────────────────────────────
-    s["F/K (Hesaplanan)"]          = p_e
-    s["PD/DD (Hesaplanan)"]        = safe_div(fiyat, defter_hisse)
-    s["F/S (Fiyat/Satış)"]         = safe_div(fiyat, satis_hisse)
-    s["EV/EBITDA (Hesaplanan)"]    = safe_div(kur_deg_y, ebitda)
-    s["EV/EBIT"]                   = safe_div(kur_deg_y, ebit)
-    s["EV/Sales"]                  = safe_div(kur_deg_y, satis_y0)
-    s["PEG Oranı (Hesaplanan)"]    = safe_div(p_e, eps_buyume) if eps_buyume > 0 else 0
+    # C. Değerleme (hesaplanan)
+    s["F/K (Hesaplanan)"]        = p_e
+    s["PD/DD (Hesaplanan)"]      = safe_div(fiyat, defter_hisse)
+    s["F/S (Fiyat/Satış)"]       = safe_div(fiyat, satis_hisse)
+    s["EV/EBITDA (Hesaplanan)"]  = safe_div(kur_deg_y, ebitda)
+    s["EV/EBIT"]                 = safe_div(kur_deg_y, ebit)
+    s["EV/Sales"]                = safe_div(kur_deg_y, satis_y0)
+    s["PEG Oranı (Hesaplanan)"]  = safe_div(p_e, eps_buyume) if eps_buyume > 0 else 0.0
 
-    # ── D. Karlılık (Yıllık) ─────────────────────────────────────────────────
-    s["Net Kar Marjı — Yıllık (%)"]        = safe_div(net_kar_y0, satis_y0, multiply=100)
-    s["Brüt Kar Marjı — Yıllık (%)"]       = safe_div(brut_kar_y0, satis_y0, multiply=100)
-    s["İşletme Kar Marjı — Yıllık (%)"]    = safe_div(isletme_kari, satis_y0, multiply=100)
-    s["FAVÖK Marjı — Yıllık (%)"]          = safe_div(ebitda, satis_y0, multiply=100)
-    s["Özsermaye Karlılığı (ROE) — Yıllık"]= safe_div(net_kar_y0, ort_oz_sermaye, multiply=100)
-    s["Varlık Karlılığı (ROA) — Yıllık"]   = safe_div(net_kar_y0, ort_varliklar, multiply=100)
-    s["ROIC (%)"]                           = safe_div(nopat, yat_sermaye, multiply=100) if yat_sermaye > 0 else 0
+    # D. Karlılık — Yıllık
+    s["Net Kar Marjı — Yıllık (%)"]         = safe_div(net_kar_y0, satis_y0, multiply=100)
+    s["Brüt Kar Marjı — Yıllık (%)"]        = safe_div(brut_kar_y0, satis_y0, multiply=100)
+    s["İşletme Kar Marjı — Yıllık (%)"]     = safe_div(isletme_kari, satis_y0, multiply=100)
+    s["FAVÖK Marjı — Yıllık (%)"]           = safe_div(ebitda, satis_y0, multiply=100)
+    s["Özsermaye Karlılığı (ROE) — Yıllık"] = safe_div(net_kar_y0, ort_oz_sermaye, multiply=100)
+    s["Varlık Karlılığı (ROA) — Yıllık"]    = safe_div(net_kar_y0, ort_varliklar, multiply=100)
+    s["ROIC (%)"]                            = safe_div(nopat, yat_sermaye, multiply=100) if yat_sermaye > 0 else 0.0
 
-    # ── E. Karlılık (Çeyreklik) ───────────────────────────────────────────────
-    s["Net Kar Marjı — Çeyreklik (%)"]      = safe_div(q_net_kar_q0, q_satis_q0, multiply=100)
-    s["Brüt Kar Marjı — Çeyreklik (%)"]     = safe_div(q_brut_kar_q0, q_satis_q0, multiply=100)
-    s["FAVÖK Marjı — Çeyreklik (%)"]        = safe_div(q_ebitda_q0, q_satis_q0, multiply=100)
-    s["Özsermaye Karlılığı — Çeyreklik (%)"]= safe_div(q_net_kar_q0, q_oz_sermaye, multiply=100)
+    # E. Karlılık — Çeyreklik
+    s["Net Kar Marjı — Çeyreklik (%)"]       = safe_div(q_net_kar_q0, q_satis_q0, multiply=100)
+    s["Brüt Kar Marjı — Çeyreklik (%)"]      = safe_div(q_brut_kar_q0, q_satis_q0, multiply=100)
+    s["FAVÖK Marjı — Çeyreklik (%)"]         = safe_div(q_ebitda_q0, q_satis_q0, multiply=100)
+    s["Özsermaye Karlılığı — Çeyreklik (%)"] = safe_div(q_net_kar_q0, q_oz_sermaye, multiply=100)
 
-    # ── F. Büyüme ─────────────────────────────────────────────────────────────
-    s["Satış Büyümesi — Yıllık (%)"]       = pct_change(satis_y0, satis_y1)
-    s["Net Kar Büyümesi — Yıllık (%)"]     = pct_change(net_kar_y0, net_kar_y1)
-    s["EPS Büyümesi — Yıllık (%)"]         = eps_buyume
-    s["Satış Büyümesi — QoQ (%)"]          = pct_change(q_satis_q0, q_satis_q1)   # Çeyrekten çeyreğe
-    s["Satış Büyümesi — YoY (%)"]          = pct_change(q_satis_q0, q_satis_q4)   # Yıldan yıla (aynı çeyrek)
+    # F. Büyüme
+    s["Satış Büyümesi — Yıllık (%)"]         = pct_change(satis_y0, satis_y1)
+    s["Net Kar Büyümesi — Yıllık (%)"]       = pct_change(net_kar_y0, net_kar_y1)
+    s["EPS Büyümesi — Yıllık (%)"]           = eps_buyume
+    s["Satış Büyümesi — QoQ (%)"]            = pct_change(q_satis_q0, q_satis_q1)
+    s["Satış Büyümesi — YoY (%)"]            = pct_change(q_satis_q0, q_satis_q4)
 
-    # ── G. Likidite ───────────────────────────────────────────────────────────
-    s["Cari Oran"]                 = safe_div(donen, kisa_borc)
-    s["Likidite Oranı (Hızlı)"]    = safe_div(donen - stok_y0, kisa_borc)
-    s["Nakit Oranı"]               = safe_div(nakit, kisa_borc)
+    # G. Likidite
+    s["Cari Oran"]                  = safe_div(donen, kisa_borc)
+    s["Likidite Oranı (Hızlı)"]     = safe_div(donen - stok_y0, kisa_borc)
+    s["Nakit Oranı"]                = safe_div(nakit, kisa_borc)
 
-    # ── H. Borç / Kaldıraç ────────────────────────────────────────────────────
-    s["Borç / Özsermaye (D/E)"]    = safe_div(toplam_borc, oz_sermaye_y0)
-    s["Net Borç / FAVÖK"]          = safe_div(toplam_borc - nakit, ebitda)
-    s["Faiz Karşılama Oranı"]      = safe_div(ebit, faiz_gideri)
-    s["Finansal Borç / Varlık (%)"]= safe_div(toplam_borc, varliklar_y0, multiply=100)
+    # H. Borç / Kaldıraç
+    s["Borç / Özsermaye (D/E)"]     = safe_div(toplam_borc, oz_sermaye_y0)
+    s["Net Borç / FAVÖK"]           = safe_div(toplam_borc - nakit, ebitda)
+    s["Faiz Karşılama Oranı"]       = safe_div(ebit, faiz_gideri)
+    s["Finansal Borç / Varlık (%)"] = safe_div(toplam_borc, varliklar_y0, multiply=100)
 
-    # ── I. Faaliyet Etkinliği ─────────────────────────────────────────────────
-    s["Varlık Devir Hızı"]         = safe_div(satis_y0, ort_varliklar)
-    s["Stok Devir Hızı"]           = safe_div(cogs_y0, ort_stok)
-    s["Alacak Devir Hızı"]         = safe_div(satis_y0, ort_alacak)
-    s["Stok Günü (DSI)"]           = safe_div(ort_stok, cogs_y0, multiply=365)
-    s["Alacak Günü (DSO)"]         = safe_div(ort_alacak, satis_y0, multiply=365)
+    # I. Faaliyet Etkinliği
+    s["Varlık Devir Hızı"]          = safe_div(satis_y0, ort_varliklar)
+    s["Stok Devir Hızı"]            = safe_div(cogs_y0, ort_stok)
+    s["Alacak Devir Hızı"]          = safe_div(satis_y0, ort_alacak)
+    s["Stok Günü (DSI)"]            = safe_div(ort_stok, cogs_y0, multiply=365)
+    s["Alacak Günü (DSO)"]          = safe_div(ort_alacak, satis_y0, multiply=365)
 
-    # ── J. Nakit Akışı ────────────────────────────────────────────────────────
-    s["FCF (Serbest Nakit Akışı)"] = round(fcf, 0)
-    s["FCF Getirisi (%)"]          = safe_div(fcf, piyasa_degeri, multiply=100)
-    s["FCF / Net Kar"]             = safe_div(fcf, net_kar_y0)
-    s["Temettü Verimi (%)"]        = round((info.get("dividendYield") or 0) * 100, 2)
-    s["Temettü Ödeme Oranı (%)"]   = safe_div(temettu, net_kar_y0, multiply=100)
+    # J. Nakit Akışı
+    s["FCF (Serbest Nakit Akışı)"]  = round(fcf, 0)
+    s["FCF Getirisi (%)"]           = safe_div(fcf, piyasa_degeri, multiply=100)
+    s["FCF / Net Kar"]              = safe_div(fcf, net_kar_y0)
+    s["Temettü Verimi (%)"]         = round(float(info.get("dividendYield") or 0) * 100, 2)
+    s["Temettü Ödeme Oranı (%)"]    = safe_div(temettu, net_kar_y0, multiply=100)
 
-    # ── K. Referans Ham Değerler ──────────────────────────────────────────────
-    s["_Satış — Yıllık"]           = round(satis_y0, 0)
-    s["_Net Kar — Yıllık"]         = round(net_kar_y0, 0)
-    s["_FAVÖK — Yıllık"]           = round(ebitda, 0)
-    s["_İşletme Nakit Akışı"]      = round(op_nakit, 0)
-    s["_CapEx"]                    = round(capex, 0)
-    s["_FCF"]                      = round(fcf, 0)
+    # K. Ham Referans Değerler (başında _ — bot/rapor bunları filtreler)
+    s["_Satış — Yıllık"]            = round(satis_y0, 0)
+    s["_Net Kar — Yıllık"]          = round(net_kar_y0, 0)
+    s["_FAVÖK — Yıllık"]            = round(ebitda, 0)
+    s["_İşletme Nakit Akışı"]       = round(op_nakit, 0)
+    s["_CapEx"]                     = round(capex, 0)
+    s["_FCF"]                       = round(fcf, 0)
 
     return s
 
 
 # ─────────────────────────────────────────────
-#  YAZICI FONKSİYON
+#  YAZICI FONKSİYON (Terminal / Debug)
 # ─────────────────────────────────────────────
 
 def yazdir(ticker_symbol: str):
+    from datetime import datetime
     print(f"\n{'═'*55}")
     print(f"  {ticker_symbol.upper()} — TEMEL ANALİZ RAPORU")
     print(f"  {datetime.now().strftime('%d.%m.%Y %H:%M')}")
@@ -319,4 +321,4 @@ def yazdir(ticker_symbol: str):
 
 if __name__ == "__main__":
     yazdir("ASELS.IS")
-    # yazdir("AAPL")  # Amerikan hissesi için
+    # yazdir("AAPL")
