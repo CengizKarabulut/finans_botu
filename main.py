@@ -2,6 +2,7 @@ import os
 import re
 import threading
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import telebot
 
@@ -27,13 +28,37 @@ TELEGRAM_LIMIT = 4096
 
 # Temel analiz çıktısındaki bölüm grupları ve filtre fonksiyonları
 TEMEL_GRUPLAR = {
-    ("Piyasa Verileri",    "💹"): lambda k: any(x in k for x in ["F/K", "PD/DD", "FD/", "BETA", "PEG", "Fiyat", "Piyasa", "Dolaşım"]),
-    ("Değerleme",          "🏷"): lambda k: any(x in k for x in ["Hesaplanan", "EV/", "F/S"]),
-    ("Karlılık",           "📈"): lambda k: any(x in k for x in ["Marjı", "Karlılık", "ROE", "ROA", "ROIC"]),
-    ("Büyüme",             "🚀"): lambda k: "Büyüme" in k or "EPS Büyüm" in k,
-    ("Likidite & Borç",    "🏦"): lambda k: any(x in k for x in ["Oran", "Borç", "Faiz", "Karşılama"]),
-    ("Faaliyet Etkinliği", "⚙️"): lambda k: any(x in k for x in ["Devir", "Günü", "DSI", "DSO"]),
-    ("Nakit Akışı",        "💵"): lambda k: any(x in k for x in ["FCF", "Temettü", "Nakit Akışı"]),
+    ("Piyasa Verileri",    "💹"): lambda k: k in (
+        "Fiyat", "Piyasa Değeri", "F/K (Günlük)", "PD/DD (Günlük)", "FD/FAVÖK (Günlük)",
+        "BETA (yFinance)", "BETA (Manuel 1Y)", "BETA (Manuel 2Y)",
+        "PEG Oranı (Günlük)", "Fiili Dolaşım (%)"
+    ),
+    ("Değerleme",          "🏷"): lambda k: k in (
+        "F/K (Hesaplanan)", "PD/DD (Hesaplanan)", "F/S (Fiyat/Satış)",
+        "EV/EBITDA (Hesaplanan)", "EV/EBIT", "EV/Sales", "PEG Oranı (Hesaplanan)"
+    ),
+    ("Karlılık — Yıllık",  "📈"): lambda k: "Yıllık" in k and any(
+        x in k for x in ["Marjı", "Karlılık", "ROE", "ROA", "ROIC"]
+    ) or k == "ROIC (%)",
+    ("Karlılık — Çeyreklik", "📊"): lambda k: "Çeyreklik" in k and any(
+        x in k for x in ["Marjı", "Karlılık"]
+    ),
+    ("Büyüme",             "🚀"): lambda k: "Büyüme" in k or k == "EPS Büyümesi — Yıllık (%)",
+    ("Likidite",           "💧"): lambda k: k in (
+        "Cari Oran", "Likidite Oranı (Hızlı)", "Nakit Oranı"
+    ),
+    ("Borç / Kaldıraç",    "🏦"): lambda k: k in (
+        "Borç / Özsermaye (D/E)", "Net Borç / FAVÖK",
+        "Faiz Karşılama Oranı", "Finansal Borç / Varlık (%)"
+    ),
+    ("Faaliyet Etkinliği", "⚙️"): lambda k: k in (
+        "Varlık Devir Hızı", "Stok Devir Hızı", "Alacak Devir Hızı",
+        "Stok Günü (DSI)", "Alacak Günü (DSO)"
+    ),
+    ("Nakit Akışı",        "💵"): lambda k: k in (
+        "FCF (Serbest Nakit Akışı)", "FCF Getirisi (%)", "FCF / Net Kar",
+        "Temettü Verimi (%)", "Temettü Ödeme Oranı (%)"
+    ),
 }
 
 
@@ -47,12 +72,12 @@ def escape_md(text: str) -> str:
 
 
 def bolum_olustur(baslik: str, emoji: str, veriler: dict,
-                  filtre_fn=None, kolon_genislik: int = 32) -> str:
+                  filtre_fn=None, kolon_genislik: int = 36) -> str:
     """
     Tek bir rapor bölümü oluşturur (monospace code block içinde).
     - '_' ile başlayan ham/debug anahtarları daima atlanır.
     - filtre_fn verilmişse yalnızca True döndüren anahtarlar dahil edilir.
-    - Boş bölüm döndürmez (sadece başlık + boş blok olmaz).
+    - Boş bölüm döndürmez.
     """
     satirlar = []
     for k, v in veriler.items():
@@ -60,10 +85,23 @@ def bolum_olustur(baslik: str, emoji: str, veriler: dict,
             continue
         if filtre_fn and not filtre_fn(k):
             continue
+        # Değer formatlama
         if isinstance(v, float):
-            v_str = f"{v:,.2f}"
+            # Piyasa değeri gibi çok büyük sayıları milyar/trilyon olarak göster
+            if abs(v) >= 1_000_000_000_000:
+                v_str = f"{v/1_000_000_000_000:.2f}T"
+            elif abs(v) >= 1_000_000_000:
+                v_str = f"{v/1_000_000_000:.2f}B"
+            elif abs(v) >= 1_000_000:
+                v_str = f"{v/1_000_000:.2f}M"
+            else:
+                v_str = f"{v:,.2f}"
+        elif isinstance(v, int) and abs(v) > 1_000_000_000_000:
+            v_str = f"{v/1_000_000_000_000:.2f}T"
+        elif isinstance(v, int) and abs(v) > 1_000_000_000:
+            v_str = f"{v/1_000_000_000:.2f}B"
         elif isinstance(v, int) and abs(v) > 1_000_000:
-            v_str = f"{v:,.0f}"
+            v_str = f"{v/1_000_000:.2f}M"
         else:
             v_str = str(v)
         satirlar.append(f"{k:<{kolon_genislik}} : {v_str}")
@@ -199,19 +237,26 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
         teknik_veriler = {}
 
         # ── Veri Çekimi ───────────────────────────────────────────────────────
-        if komut in ("analiz", "temel"):
+        # /analiz komutunda temel + teknik paralel çalışır (toplam süreyi ~yarıya indirir)
+        if komut == "analiz":
+            with ThreadPoolExecutor(max_workers=2) as ex:
+                f_temel  = ex.submit(temel_analiz_yap, hisse_kodu)
+                f_teknik = ex.submit(teknik_analiz_yap, hisse_kodu)
+                temel_veriler  = f_temel.result()
+                teknik_veriler = f_teknik.result()
+        elif komut == "temel":
             temel_veriler = temel_analiz_yap(hisse_kodu)
-            if "Hata" in temel_veriler:
-                mesaj_gonder(chat_id, mesaj_id,
-                             f"❌ {escape_md(temel_veriler['Hata'])}")
-                return
-
-        if komut in ("analiz", "teknik"):
+        elif komut == "teknik":
             teknik_veriler = teknik_analiz_yap(hisse_kodu)
-            if "Hata" in teknik_veriler:
-                mesaj_gonder(chat_id, mesaj_id,
-                             f"❌ {escape_md(teknik_veriler['Hata'])}")
-                return
+
+        if temel_veriler and "Hata" in temel_veriler:
+            mesaj_gonder(chat_id, mesaj_id,
+                         f"❌ {escape_md(temel_veriler['Hata'])}")
+            return
+        if teknik_veriler and "Hata" in teknik_veriler:
+            mesaj_gonder(chat_id, mesaj_id,
+                         f"❌ {escape_md(teknik_veriler['Hata'])}")
+            return
 
         # ── Temel Analiz Raporu ───────────────────────────────────────────────
         if temel_veriler:
