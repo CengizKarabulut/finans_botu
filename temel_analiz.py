@@ -48,13 +48,19 @@ def calc_beta(ticker_symbol: str, stock_returns: pd.Series, period: str = "1y") 
     Endeks verisini bu fonksiyon çeker — paralel çağrılmaya uygundur.
     """
     try:
+        if stock_returns is None or len(stock_returns) < 30:
+            return 0.0
         benchmark = "XU100.IS" if ticker_symbol.upper().endswith(".IS") else "^GSPC"
         m = yf.Ticker(benchmark).history(period=period)["Close"].pct_change().dropna()
-        df = pd.concat([stock_returns, m], axis=1, join="inner")
+        if len(m) < 30:
+            return 0.0
+        df = pd.concat([stock_returns, m], axis=1, join="inner").dropna()
+        if len(df) < 30:
+            return 0.0
         df.columns = ["Stock", "Market"]
         cov = df.cov().iloc[0, 1]
         var = df["Market"].var()
-        return round(cov / var, 3) if var > 0 else 0.0
+        return round(cov / var, 3) if var and var > 0 else 0.0
     except Exception:
         return 0.0
 
@@ -200,8 +206,13 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
 
     # ── Beta: hisse geçmişini tek seferinde çek, 1Y ve 2Y endeks paralel ─────
     try:
-        hist_2y        = hisse.history(period="2y")["Close"].pct_change().dropna()
-        hist_1y        = hist_2y.last("365D")
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # numpy/pandas kovaryans uyarılarını sustur
+            hist_raw = hisse.history(period="2y")["Close"].pct_change().dropna()
+            # 1Y dilimi: son 252 işlem günü (yaklaşık 1 takvim yılı)
+            hist_2y  = hist_raw
+            hist_1y  = hist_raw.iloc[-252:] if len(hist_raw) >= 252 else hist_raw
     except Exception:
         hist_2y = hist_1y = pd.Series(dtype=float)
 
@@ -234,7 +245,20 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     s["BETA (Manuel 1Y)"]        = beta_1y
     s["BETA (Manuel 2Y)"]        = beta_2y
     s["PEG Oranı (Günlük)"]      = round(float(info.get("pegRatio") or 0), 2)
-    s["Fiili Dolaşım (%)"]       = safe_div(float_shares, hisse_sayisi, multiply=100) if float_shares else "-"
+    # Fiili Dolaşım:
+    # BIST tanımı: Fiili Dolaşım Lot / Toplam Hisse Sayısı
+    # yFinance floatShares BIST tanımıyla örtüşmüyor (çok yüksek çıkıyor).
+    # Doğru toplam hisse = piyasa_degeri / fiyat (en güvenilir kaynak)
+    if fiyat and fiyat > 0 and piyasa_degeri and piyasa_degeri > 0:
+        gercek_hisse_sayisi = piyasa_degeri / fiyat
+    else:
+        gercek_hisse_sayisi = hisse_sayisi
+    # floatShares'i gerçek hisse sayısına böl
+    if float_shares and gercek_hisse_sayisi > 0:
+        fiili_dolasim = round(float_shares / gercek_hisse_sayisi * 100, 2)
+    else:
+        fiili_dolasim = "-"
+    s["Fiili Dolaşım (%)"] = fiili_dolasim
 
     # C. Değerleme (hesaplanan)
     s["F/K (Hesaplanan)"]        = p_e
@@ -246,18 +270,22 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     s["PEG Oranı (Hesaplanan)"]  = safe_div(p_e, eps_buyume) if eps_buyume > 0 else 0.0
 
     # D. Karlılık — Yıllık
+    # BIST standardı: dönem SONU özsermaye/varlık kullanır (ortalama değil)
     s["Net Kar Marjı — Yıllık (%)"]         = safe_div(net_kar_y0, satis_y0, multiply=100)
     s["Brüt Kar Marjı — Yıllık (%)"]        = safe_div(brut_kar_y0, satis_y0, multiply=100)
     s["İşletme Kar Marjı — Yıllık (%)"]     = safe_div(isletme_kari, satis_y0, multiply=100)
     s["FAVÖK Marjı — Yıllık (%)"]           = safe_div(ebitda, satis_y0, multiply=100)
-    s["Özsermaye Karlılığı (ROE) — Yıllık"] = safe_div(net_kar_y0, ort_oz_sermaye, multiply=100)
-    s["Varlık Karlılığı (ROA) — Yıllık"]    = safe_div(net_kar_y0, ort_varliklar, multiply=100)
+    s["Özsermaye Karlılığı (ROE) — Yıllık"] = safe_div(net_kar_y0, oz_sermaye_y0, multiply=100)   # dönem sonu
+    s["Varlık Karlılığı (ROA) — Yıllık"]    = safe_div(net_kar_y0, varliklar_y0,  multiply=100)   # dönem sonu
     s["ROIC (%)"]                            = safe_div(nopat, yat_sermaye, multiply=100) if yat_sermaye > 0 else 0.0
 
     # E. Karlılık — Çeyreklik
+    # Çeyreklik FAVÖK: info.ebitda yıllık — q_cf'den amortisman çek, yoksa yıllık oranla
+    q_amortisman_duzeltme = q_amortisman if q_amortisman > 0 else (amortisman / 4)
+    q_ebitda_q0_duz = q_ebit_q0 + q_amortisman_duzeltme
     s["Net Kar Marjı — Çeyreklik (%)"]       = safe_div(q_net_kar_q0, q_satis_q0, multiply=100)
     s["Brüt Kar Marjı — Çeyreklik (%)"]      = safe_div(q_brut_kar_q0, q_satis_q0, multiply=100)
-    s["FAVÖK Marjı — Çeyreklik (%)"]         = safe_div(q_ebitda_q0, q_satis_q0, multiply=100)
+    s["FAVÖK Marjı — Çeyreklik (%)"]         = safe_div(q_ebitda_q0_duz, q_satis_q0, multiply=100)
     s["Özsermaye Karlılığı — Çeyreklik (%)"] = safe_div(q_net_kar_q0, q_oz_sermaye, multiply=100)
 
     # F. Büyüme
@@ -273,17 +301,29 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     s["Nakit Oranı"]                = safe_div(nakit, kisa_borc)
 
     # H. Borç / Kaldıraç
-    s["Borç / Özsermaye (D/E)"]     = safe_div(toplam_borc, oz_sermaye_y0)
-    s["Net Borç / FAVÖK"]           = safe_div(toplam_borc - nakit, ebitda)
-    s["Faiz Karşılama Oranı"]       = safe_div(ebit, faiz_gideri)
+    # "Finansal Borç Oranı" BIST'te = Finansal Borçlar / Özkaynaklar * 100
+    s["Borç / Özsermaye (D/E)"]         = safe_div(toplam_borc, oz_sermaye_y0)
+    s["Finansal Borç / Özsermaye (%)"]  = safe_div(toplam_borc, oz_sermaye_y0, multiply=100)
+    s["Net Borç / FAVÖK"]               = safe_div(toplam_borc - nakit, ebitda)
+    # Faiz Karşılama: BIST net faiz kullanır (faiz geliri - faiz gideri)
+    faiz_geliri       = abs(get_val(inc, ["Interest Income", "Interest Income Non Operating",
+                                          "Net Interest Income"], 0))
+    net_faiz_gideri   = faiz_gideri - faiz_geliri   # gider > gelir ise pozitif
+    if net_faiz_gideri > 0:
+        s["Faiz Karşılama Oranı"]   = safe_div(ebit, net_faiz_gideri)
+    elif faiz_gideri > 0:
+        s["Faiz Karşılama Oranı"]   = safe_div(ebit, faiz_gideri)
+    else:
+        s["Faiz Karşılama Oranı"]   = 0.0
     s["Finansal Borç / Varlık (%)"] = safe_div(toplam_borc, varliklar_y0, multiply=100)
 
     # I. Faaliyet Etkinliği
-    s["Varlık Devir Hızı"]          = safe_div(satis_y0, ort_varliklar)
-    s["Stok Devir Hızı"]            = safe_div(cogs_y0, ort_stok)
-    s["Alacak Devir Hızı"]          = safe_div(satis_y0, ort_alacak)
-    s["Stok Günü (DSI)"]            = safe_div(ort_stok, cogs_y0, multiply=365)
-    s["Alacak Günü (DSO)"]          = safe_div(ort_alacak, satis_y0, multiply=365)
+    # BIST standardı: dönem SONU stok/varlık kullanır (ortalama değil)
+    s["Varlık Devir Hızı"]  = safe_div(satis_y0, varliklar_y0)          # dönem sonu
+    s["Stok Devir Hızı"]    = safe_div(cogs_y0,  stok_y0)               # dönem sonu
+    s["Alacak Devir Hızı"]  = safe_div(satis_y0, alacak_y0)             # dönem sonu
+    s["Stok Günü (DSI)"]    = safe_div(stok_y0,  cogs_y0,  multiply=365) # dönem sonu
+    s["Alacak Günü (DSO)"]  = safe_div(alacak_y0, satis_y0, multiply=365) # dönem sonu
 
     # J. Nakit Akışı
     s["FCF (Serbest Nakit Akışı)"]  = round(fcf, 0)
