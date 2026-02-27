@@ -48,8 +48,8 @@ TEMEL_GRUPLAR = {
         "Cari Oran", "Likidite Oranı (Hızlı)", "Nakit Oranı"
     ),
     ("Borç / Kaldıraç",    "🏦"): lambda k: k in (
-        "Borç / Özsermaye (D/E)", "Net Borç / FAVÖK",
-        "Faiz Karşılama Oranı", "Finansal Borç / Varlık (%)"
+        "Borç / Özsermaye (D/E)", "Finansal Borç / Özsermaye (%)",
+        "Net Borç / FAVÖK", "Faiz Karşılama Oranı", "Finansal Borç / Varlık (%)"
     ),
     ("Faaliyet Etkinliği", "⚙️"): lambda k: k in (
         "Varlık Devir Hızı", "Stok Devir Hızı", "Alacak Devir Hızı",
