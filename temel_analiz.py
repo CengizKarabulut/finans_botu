@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 # ─────────────────────────────────────────────
@@ -40,18 +41,16 @@ def pct_change(yeni, eski) -> float:
     return 0.0
 
 
-def calc_beta(ticker_symbol: str, hisse: yf.Ticker, period: str = "1y") -> float:
+def calc_beta(ticker_symbol: str, stock_returns: pd.Series, period: str = "1y") -> float:
     """
     Manuel beta: Cov(hisse, endeks) / Var(endeks)
-    BIST hisseleri için XU100.IS, diğerleri için ^GSPC kullanır.
-    yFinance'ın kendi beta değeri TTM veya eski periyoda dayanabileceğinden
-    bu hesaplama seçilen periyot için anlık sonuç üretir.
+    stock_returns: önceden hesaplanmış hisse günlük getirileri (history zaten çekildi)
+    Endeks verisini bu fonksiyon çeker — paralel çağrılmaya uygundur.
     """
     try:
         benchmark = "XU100.IS" if ticker_symbol.upper().endswith(".IS") else "^GSPC"
-        s = hisse.history(period=period)["Close"].pct_change().dropna()
         m = yf.Ticker(benchmark).history(period=period)["Close"].pct_change().dropna()
-        df = pd.concat([s, m], axis=1, join="inner")
+        df = pd.concat([stock_returns, m], axis=1, join="inner")
         df.columns = ["Stock", "Market"]
         cov = df.cov().iloc[0, 1]
         var = df["Market"].var()
@@ -67,13 +66,32 @@ def calc_beta(ticker_symbol: str, hisse: yf.Ticker, period: str = "1y") -> float
 def temel_analiz_yap(ticker_symbol: str) -> dict:
     hisse = yf.Ticker(ticker_symbol)
 
-    bs    = hisse.balance_sheet           # Yıllık bilanço
-    inc   = hisse.financials              # Yıllık gelir tablosu
-    cf    = hisse.cashflow                # Yıllık nakit akış tablosu
-    q_bs  = hisse.quarterly_balance_sheet
-    q_inc = hisse.quarterly_financials
-    q_cf  = hisse.quarterly_cashflow
-    info  = hisse.info
+    # ── Paralel Veri Çekimi ───────────────────────────────────────────────────
+    # yFinance her property çağrısında ayrı HTTP isteği atar.
+    # ThreadPoolExecutor ile hepsini aynı anda başlatıyoruz.
+    def _fetch(attr):
+        return attr, getattr(hisse, attr)
+
+    finansal_attrs = [
+        "balance_sheet", "financials", "cashflow",
+        "quarterly_balance_sheet", "quarterly_financials", "quarterly_cashflow",
+        "info"
+    ]
+
+    sonuclar_fetch = {}
+    with ThreadPoolExecutor(max_workers=7) as ex:
+        gelecekler = {ex.submit(_fetch, a): a for a in finansal_attrs}
+        for f in as_completed(gelecekler):
+            attr, deger = f.result()
+            sonuclar_fetch[attr] = deger
+
+    bs    = sonuclar_fetch["balance_sheet"]
+    inc   = sonuclar_fetch["financials"]
+    cf    = sonuclar_fetch["cashflow"]
+    q_bs  = sonuclar_fetch["quarterly_balance_sheet"]
+    q_inc = sonuclar_fetch["quarterly_financials"]
+    q_cf  = sonuclar_fetch["quarterly_cashflow"]
+    info  = sonuclar_fetch["info"]
 
     if bs is None or bs.empty or inc is None or inc.empty:
         return {"Hata": "Finansal veri bulunamadı."}
@@ -102,8 +120,7 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     capex          = abs(get_val(cf, ["Capital Expenditure",
                                        "Purchase Of Plant And Equipment",
                                        "Purchases Of Property Plant And Equipment"], 0))
-    temettu        = abs(get_val(cf, ["Cash Dividends Paid",
-                                       "Common Stock Dividend Paid"], 0))
+    temettu        = abs(get_val(cf, ["Cash Dividends Paid", "Common Stock Dividend Paid"], 0))
 
     # EBITDA: info varsa kullan, yoksa EBIT + Amortisman
     ebitda         = float(info.get("ebitda") or 0) or (ebit + amortisman)
@@ -119,29 +136,42 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     varliklar_y1   = get_val(bs, ["Total Assets"], 1)
     ort_varliklar  = (varliklar_y0 + varliklar_y1) / 2 if varliklar_y1 != 0 else varliklar_y0
 
-    donen          = get_val(bs, ["Current Assets"], 0)
-    kisa_borc      = get_val(bs, ["Current Liabilities"], 0)
-    stok_y0        = get_val(bs, ["Inventory"], 0)
-    stok_y1        = get_val(bs, ["Inventory"], 1)
+    donen          = get_val(bs, ["Current Assets", "Total Current Assets"], 0)
+    kisa_borc      = get_val(bs, ["Current Liabilities", "Total Current Liabilities Net Minority Interest"], 0)
+    stok_y0        = get_val(bs, ["Inventory", "Inventories", "Finished Goods"], 0)
+    stok_y1        = get_val(bs, ["Inventory", "Inventories", "Finished Goods"], 1)
     ort_stok       = (stok_y0 + stok_y1) / 2 if stok_y1 != 0 else stok_y0
-    alacak_y0      = get_val(bs, ["Accounts Receivable", "Net Receivables"], 0)
-    alacak_y1      = get_val(bs, ["Accounts Receivable", "Net Receivables"], 1)
+    alacak_y0      = get_val(bs, ["Accounts Receivable", "Net Receivables",
+                                   "Receivables", "Trade And Other Receivables Non Current"], 0)
+    alacak_y1      = get_val(bs, ["Accounts Receivable", "Net Receivables",
+                                   "Receivables", "Trade And Other Receivables Non Current"], 1)
     ort_alacak     = (alacak_y0 + alacak_y1) / 2 if alacak_y1 != 0 else alacak_y0
 
     nakit          = get_val(bs, ["Cash And Cash Equivalents",
-                                   "Cash Cash Equivalents And Short Term Investments"], 0)
-    toplam_borc    = get_val(bs, ["Total Debt"], 0)
+                                   "Cash Cash Equivalents And Short Term Investments",
+                                   "Cash And Short Term Investments"], 0)
+    toplam_borc    = get_val(bs, ["Total Debt", "Long Term Debt And Capital Lease Obligation"], 0)
+    uzun_v_borc    = get_val(bs, ["Long Term Debt", "Long Term Debt And Capital Lease Obligation"], 0)
 
     # ── Çeyreklik Veriler ─────────────────────────────────────────────────────
-    q_satis_q0     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 0)
-    q_satis_q1     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 1)  # Önceki çeyrek
-    q_satis_q4     = get_val(q_inc, ["Total Revenue", "Operating Revenue"], 4)  # Geçen yıl aynı çeyrek
+    # BIST'te son çeyrek boş gelebilir; dolu olan ilk çeyreği bul
+    def _q_ilk_dolu(df_q, row_names):
+        """Son 4 çeyrek içinde ilk dolu değeri döner (col_index 0-3 dener)."""
+        for i in range(4):
+            v = get_val(df_q, row_names, i)
+            if v != 0:
+                return v, i
+        return 0.0, 0
 
-    q_net_kar_q0   = get_val(q_inc, ["Net Income"], 0)
-    q_cogs_q0      = get_val(q_inc, ["Cost Of Revenue"], 0)
-    q_brut_kar_q0  = get_val(q_inc, ["Gross Profit"], 0) or (q_satis_q0 - q_cogs_q0)
-    q_ebit_q0      = get_val(q_inc, ["EBIT", "Operating Income"], 0)
-    q_amortisman   = get_val(q_cf,  ["Depreciation And Amortization"], 0)
+    q_satis_q0, q0_idx = _q_ilk_dolu(q_inc, ["Total Revenue", "Operating Revenue"])
+    q_satis_q1         = get_val(q_inc, ["Total Revenue", "Operating Revenue"], q0_idx + 1)
+    q_satis_q4         = get_val(q_inc, ["Total Revenue", "Operating Revenue"], q0_idx + 4)
+
+    q_net_kar_q0   = get_val(q_inc, ["Net Income"], q0_idx)
+    q_cogs_q0      = get_val(q_inc, ["Cost Of Revenue"], q0_idx)
+    q_brut_kar_q0  = get_val(q_inc, ["Gross Profit"], q0_idx) or (q_satis_q0 - q_cogs_q0)
+    q_ebit_q0      = get_val(q_inc, ["EBIT", "Operating Income"], q0_idx)
+    q_amortisman   = get_val(q_cf,  ["Depreciation And Amortization"], q0_idx)
     q_ebitda_q0    = q_ebit_q0 + q_amortisman
     q_oz_sermaye   = get_val(q_bs,  ["Stockholders Equity",
                                       "Total Equity Gross Minority Interest"], 0)
@@ -163,6 +193,23 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     satis_hisse    = safe_div(satis_y0, hisse_sayisi)
     p_e            = safe_div(fiyat, eps) if eps and eps > 0 else 0.0
     eps_buyume     = pct_change(net_kar_y0, net_kar_y1)
+    # Temettü: BIST'te Cash Dividends Paid çekilemeyebilir → hisse başı * adet
+    if temettu == 0:
+        son_temettu_hisse = float(info.get("lastDividendValue") or 0)
+        temettu = son_temettu_hisse * hisse_sayisi if son_temettu_hisse else 0
+
+    # ── Beta: hisse geçmişini tek seferinde çek, 1Y ve 2Y endeks paralel ─────
+    try:
+        hist_2y        = hisse.history(period="2y")["Close"].pct_change().dropna()
+        hist_1y        = hist_2y.last("365D")
+    except Exception:
+        hist_2y = hist_1y = pd.Series(dtype=float)
+
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        f1 = ex.submit(calc_beta, ticker_symbol, hist_1y, "1y")
+        f2 = ex.submit(calc_beta, ticker_symbol, hist_2y, "2y")
+        beta_1y = f1.result()
+        beta_2y = f2.result()
 
     # ─────────────────────────────────────────────
     #  SONUÇ DİKSİYONERİ
@@ -184,8 +231,8 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     s["PD/DD (Günlük)"]          = round(float(info.get("priceToBook") or 0), 2)
     s["FD/FAVÖK (Günlük)"]       = round(float(info.get("enterpriseToEbitda") or 0), 2)
     s["BETA (yFinance)"]         = round(float(info.get("beta") or 0), 2)
-    s["BETA (Manuel 1Y)"]        = calc_beta(ticker_symbol, hisse, "1y")
-    s["BETA (Manuel 2Y)"]        = calc_beta(ticker_symbol, hisse, "2y")
+    s["BETA (Manuel 1Y)"]        = beta_1y
+    s["BETA (Manuel 2Y)"]        = beta_2y
     s["PEG Oranı (Günlük)"]      = round(float(info.get("pegRatio") or 0), 2)
     s["Fiili Dolaşım (%)"]       = safe_div(float_shares, hisse_sayisi, multiply=100) if float_shares else "-"
 
