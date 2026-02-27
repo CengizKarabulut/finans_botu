@@ -54,7 +54,7 @@ def _rsi_divergence(rsi, price, lookback_left=5, lookback_right=5, range_lower=5
 
 def teknik_analiz_yap(ticker_symbol: str) -> dict:
     hisse = yf.Ticker(ticker_symbol)
-    df    = hisse.history(period="3y")
+    df    = hisse.history(period="max")  # OBV için tüm tarih gerekli
     if df.empty or len(df) < 20:
         return {"Hata": "Yeterli fiyat geçmişi yok."}
 
@@ -103,12 +103,11 @@ def teknik_analiz_yap(ticker_symbol: str) -> dict:
     signal = macd.ewm(span=9,adjust=False).mean()
     s["MACD (12,26,9)"] = f"Hat: {macd.iloc[-1]:.2f} | Sinyal: {signal.iloc[-1]:.2f} | Histogram: {(macd-signal).iloc[-1]:.2f}"
 
-    # 5. OBV — Pine Script birebir: ta.cum(math.sign(ta.change(close)) * volume)
-    # DÜZELTME: fillna(0) yerine ilk bar sign=0 olarak ayarlandı.
-    # Mutlak değer önemli değil, trend yönü önemli.
-    obv_sign = np.sign(delta)
-    obv_sign.iloc[0] = 0  # ilk bar NaN → 0 (Pine ile aynı davranış)
-    obv = (obv_sign * v).cumsum()
+    # 5. OBV — Pine Script: obv = ta.cum(math.sign(ta.change(close)) * volume)
+    # math.sign(NaN) = NaN, ta.cum NaN'ı 0 sayar → fillna(0) doğru karşılık
+    # NOT: TradingView tüm tarihten hesaplar, biz 3Y'den başlıyoruz.
+    # Mutlak değer farklı olabilir; eğim ve yön her zaman aynıdır.
+    obv     = (np.sign(delta).fillna(0) * v).cumsum()
     obv_sma = obv.rolling(14).mean()
     s["OBV"] = f"{obv.iloc[-1]:,.0f} (Ort: {obv_sma.iloc[-1]:,.0f})"
 
