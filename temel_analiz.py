@@ -245,20 +245,15 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     s["BETA (Manuel 1Y)"]        = beta_1y
     s["BETA (Manuel 2Y)"]        = beta_2y
     s["PEG Oranı (Günlük)"]      = round(float(info.get("pegRatio") or 0), 2)
-    # Fiili Dolaşım:
-    # BIST tanımı: Fiili Dolaşım Lot / Toplam Hisse Sayısı
-    # yFinance floatShares BIST tanımıyla örtüşmüyor (çok yüksek çıkıyor).
-    # Doğru toplam hisse = piyasa_degeri / fiyat (en güvenilir kaynak)
-    if fiyat and fiyat > 0 and piyasa_degeri and piyasa_degeri > 0:
-        gercek_hisse_sayisi = piyasa_degeri / fiyat
+    # Serbest Dolaşım (Float):
+    # yFinance floatShares = serbest dolaşımdaki hisse (geniş tanım, BIST fiili dolaşım değil)
+    # BIST fiili dolaşım = %5+ pay sahipleri hariç — bu veri yFinance'ta mevcut değil
+    if fiyat and fiyat > 0 and piyasa_degeri and piyasa_degeri > 0 and float_shares and float_shares > 0:
+        toplam_hisse_gercek = piyasa_degeri / fiyat
+        serbest_dolasim = round(float_shares / toplam_hisse_gercek * 100, 2)
     else:
-        gercek_hisse_sayisi = hisse_sayisi
-    # floatShares'i gerçek hisse sayısına böl
-    if float_shares and gercek_hisse_sayisi > 0:
-        fiili_dolasim = round(float_shares / gercek_hisse_sayisi * 100, 2)
-    else:
-        fiili_dolasim = "-"
-    s["Fiili Dolaşım (%)"] = fiili_dolasim
+        serbest_dolasim = "-"
+    s["Serbest Dolaşım/Float (%)"] = serbest_dolasim  # BIST fiili dolaşımdan farklı olabilir
 
     # C. Değerleme (hesaplanan)
     s["F/K (Hesaplanan)"]        = p_e
