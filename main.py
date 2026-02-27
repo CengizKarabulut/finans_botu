@@ -6,8 +6,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import telebot
 
-from temel_analiz import temel_analiz_yap
-from teknik_analiz import teknik_analiz_yap
+from temel_analiz    import temel_analiz_yap
+from teknik_analiz   import teknik_analiz_yap
+from analist_motoru  import ai_analist_yorumu
 
 # ─────────────────────────────────────────────
 #  YAPILANDIRMA
@@ -179,13 +180,14 @@ def komut_yardim(message):
         "Kullanım:\n"
         "`/analiz AAPL` — Temel \\+ Teknik analiz\n"
         "`/temel THYAO\\.IS` — Yalnızca temel analiz\n"
-        "`/teknik ASELS\\.IS` — Yalnızca teknik analiz\n\n"
+        "`/teknik ASELS\\.IS` — Yalnızca teknik analiz\n"
+        "`/ai ASELS\\.IS` — 🤖 AI Analist Yorumu\n\n"
         f"⏱ Sorgular arası en az {RATE_LIMIT_SANIYE} saniye bekleme uygulanır\\."
     )
     bot.reply_to(message, metin, parse_mode="MarkdownV2")
 
 
-@bot.message_handler(commands=["analiz", "temel", "teknik"])
+@bot.message_handler(commands=["analiz", "temel", "teknik", "ai"])
 def komut_analiz(message):
     parcalar = message.text.split()
     if len(parcalar) < 2:
@@ -237,8 +239,8 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
         teknik_veriler = {}
 
         # ── Veri Çekimi ───────────────────────────────────────────────────────
-        # /analiz komutunda temel + teknik paralel çalışır (toplam süreyi ~yarıya indirir)
-        if komut == "analiz":
+        # /analiz ve /ai komutlarında temel + teknik paralel çalışır
+        if komut in ("analiz", "ai"):
             with ThreadPoolExecutor(max_workers=2) as ex:
                 f_temel  = ex.submit(temel_analiz_yap, hisse_kodu)
                 f_teknik = ex.submit(teknik_analiz_yap, hisse_kodu)
@@ -305,6 +307,22 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
             duzenle_teknik = not bool(temel_veriler)
             mesaj_gonder(chat_id, mesaj_id, indikatörler, duzenle=duzenle_teknik)
             bot.send_message(chat_id, ma_blok, parse_mode="MarkdownV2")
+
+        # ── AI Analist Yorumu (/ai veya /analiz) ─────────────────────────────
+        if komut == "ai" and temel_veriler and teknik_veriler:
+            bot.send_message(
+                chat_id,
+                "🤖 *AI Analist* yorumu hazırlanıyor\\.\\.\\.",
+                parse_mode="MarkdownV2"
+            )
+            yorum = ai_analist_yorumu(hisse_kodu, temel_veriler, teknik_veriler)
+            # Claude düz metin döndürür — escape edip gönder
+            yorum_baslik = f"🤖 *AI ANALİST — {escape_md(hisse_kodu)}*\n\n"
+            bot.send_message(
+                chat_id,
+                yorum_baslik + escape_md(yorum),
+                parse_mode="MarkdownV2"
+            )
 
     except Exception as e:
         hata = f"❌ *Sistem Hatası*\n`{escape_md(str(e))}`"
