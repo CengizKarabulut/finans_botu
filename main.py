@@ -31,7 +31,7 @@ TEMEL_GRUPLAR = {
     ("Piyasa Verileri",    "💹"): lambda k: k in (
         "Fiyat", "Piyasa Değeri", "F/K (Günlük)", "PD/DD (Günlük)", "FD/FAVÖK (Günlük)",
         "BETA (yFinance)", "BETA (Manuel 1Y)", "BETA (Manuel 2Y)",
-        "PEG Oranı (Günlük)", "Fiili Dolaşım (%)"
+        "PEG Oranı (Günlük)", "Serbest Dolaşım/Float (%)"
     ),
     ("Değerleme",          "🏷"): lambda k: k in (
         "F/K (Hesaplanan)", "PD/DD (Hesaplanan)", "F/S (Fiyat/Satış)",
