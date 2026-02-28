@@ -143,9 +143,30 @@ def taze_ticker(sembol: str) -> yf.Ticker:
 def baslangic_temizligi():
     """
     main.py'de bot başlarken bir kez çağrılır.
-    Bir önceki çalışmadan kalan tüm disk cache'i siler.
+    Timezone SQLite DB sorununu da çözer (no such table: _tz_kv).
     """
+    # 1. Ana cache klasörünü temizle
     cache_temizle(sadece_sembol=None)
+
+    # 2. yFinance timezone cache DB'sini sıfırla
+    try:
+        tz_db_yollari = [
+            os.path.join(_YFINANCE_CACHE_KLASORU, "tz-cache.db"),
+            os.path.join(_YFINANCE_CACHE_KLASORU, "py-yfinance.db"),
+        ]
+        for tz_db in tz_db_yollari:
+            if os.path.exists(tz_db):
+                os.remove(tz_db)
+        os.makedirs(_YFINANCE_CACHE_KLASORU, exist_ok=True)
+    except Exception:
+        pass
+
+    # 3. yFinance tz cache konumunu /tmp'ye yönlendir (yazma izni garantili)
+    try:
+        yf.set_tz_cache_location("/tmp/yf_tz_cache")
+    except Exception:
+        pass
+
     with _kilit:
         _cache.clear()
 
