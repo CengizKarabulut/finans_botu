@@ -80,29 +80,63 @@ def escape_md(text: str) -> str:
     return re.sub(r"([_\*\[\]()~`>#+\-=|{}.!\\])", r"\\\1", str(text))
 
 
-_BILINEN_UZANTILAR = {".IS", ".L", ".PA", ".DE", ".HK", ".T", ".AX", ".TO", ".SW"}
-_ABD_HISSELERI = {
-    "AAPL","MSFT","GOOGL","GOOG","AMZN","NVDA","META","TSLA","BRK.A","BRK.B",
-    "JPM","V","UNH","XOM","JNJ","WMT","MA","PG","HD","CVX","MRK","ABBV","PEP",
-    "KO","BAC","AVGO","COST","TMO","CSCO","ACN","MCD","ABT","CRM","NFLX","LIN",
-    "DHR","TXN","NEE","PM","AMD","QCOM","INTC","ORCL","IBM","GE","BA","CAT",
-    "SPY","QQQ","VTI","IVV","GLD","SLV","USO","TLT","HYG",
+# Bilinen borsa uzantıları — bunlar gelirse dokunma
+_BILINEN_UZANTILAR = {
+    ".IS", ".L", ".PA", ".DE", ".MI", ".AS", ".BR", ".MC", ".SW",
+    ".HK", ".T", ".SS", ".SZ", ".KS", ".KQ", ".AX", ".TO", ".V",
+    ".SA", ".MX", ".NS", ".BO",
 }
+
+# Sembol normalize cache (process boyunca geçerli, 2. sorguda anında döner)
+_TICKER_CACHE: dict = {}
+
 
 def _normalize_ticker(ticker: str) -> str:
     """
-    .IS olmadan gelen BIST hisselerine otomatik .IS ekler.
-    AAPL, MSFT gibi bilinen ABD hisselerine dokunmaz.
+    Akıllı sembol çözümleme:
+    1. Zaten uzantısı varsa (.L, .DE vb.) → olduğu gibi kullan
+    2. Cache'te varsa → cache'teki sonucu kullan
+    3. yFinance'ta direkt çalışıyorsa (ABD hissesi vb.) → direkt kullan
+    4. .IS eklenince çalışıyorsa → .IS ekle
+    5. Hiçbiri değilse → .IS ekle (BIST varsayımı)
     """
+    import yfinance as yf
+
     ticker = ticker.upper().strip()
+
+    # 1. Bilinen uzantı varsa dokunma
     for uzanti in _BILINEN_UZANTILAR:
         if ticker.endswith(uzanti):
             return ticker
-    if ticker in _ABD_HISSELERI:
-        return ticker
-    if ticker.replace(".", "").isalnum():
-        return ticker + ".IS"
-    return ticker
+
+    # 2. Cache'te varsa
+    if ticker in _TICKER_CACHE:
+        return _TICKER_CACHE[ticker]
+
+    # 3. Direkt dene (ABD / ETF vb.)
+    try:
+        info = yf.Ticker(ticker).fast_info
+        fiyat = getattr(info, "last_price", None) or getattr(info, "regularMarketPrice", None)
+        if fiyat and float(fiyat) > 0:
+            _TICKER_CACHE[ticker] = ticker
+            return ticker
+    except Exception:
+        pass
+
+    # 4. .IS ekleyerek dene
+    ticker_is = ticker + ".IS"
+    try:
+        info = yf.Ticker(ticker_is).fast_info
+        fiyat = getattr(info, "last_price", None) or getattr(info, "regularMarketPrice", None)
+        if fiyat and float(fiyat) > 0:
+            _TICKER_CACHE[ticker] = ticker_is
+            return ticker_is
+    except Exception:
+        pass
+
+    # 5. Varsayılan: .IS ekle
+    _TICKER_CACHE[ticker] = ticker_is
+    return ticker_is
 
 
 def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
