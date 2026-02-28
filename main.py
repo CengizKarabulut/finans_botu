@@ -101,9 +101,42 @@ def _normalize_ticker(ticker: str) -> str:
 
 
 def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
+    """
+    Metni Telegram limitini aşmayacak parçalara böler.
+    Önce satır sınırına, satır limitten uzunsa kelime sınırına göre keser.
+    Markdown kod bloklarında ``` açık/kapalı dengesini korur.
+    """
+    def _kes(uzun_satir: str) -> list[str]:
+        """Tek bir uzun satırı kelime sınırında böler."""
+        parcalar, i = [], 0
+        while i < len(uzun_satir):
+            uc = i + limit
+            if uc >= len(uzun_satir):
+                parcalar.append(uzun_satir[i:])
+                break
+            # Geriye doğru en yakın boşluk veya noktalama bul
+            kesim = uzun_satir.rfind(" ", i, uc)
+            if kesim == -1:
+                kesim = uc   # boşluk yoksa zorla kes
+            parcalar.append(uzun_satir[i:kesim])
+            i = kesim + 1
+        return parcalar
+
+    satirlar = metin.splitlines(keepends=True)
     parcalar, mevcut = [], ""
-    for satir in metin.splitlines(keepends=True):
+
+    for satir in satirlar:
+        # Satır tek başına zaten limitten uzunsa parçala
+        if len(satir) > limit:
+            if mevcut.strip():
+                parcalar.append(mevcut)
+                mevcut = ""
+            for alt in _kes(satir):
+                parcalar.append(alt)
+            continue
+
         if len(mevcut) + len(satir) > limit:
+            # Kod bloğu açıkta kaldıysa kapat
             if mevcut.count("```") % 2 == 1:
                 mevcut += "```"
                 parcalar.append(mevcut)
@@ -113,8 +146,10 @@ def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
                 mevcut = satir
         else:
             mevcut += satir
+
     if mevcut.strip():
         parcalar.append(mevcut)
+
     return parcalar
 
 
@@ -296,12 +331,9 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
         # AI Analist Yorumu (/ai)
         if komut == "ai" and temel_veriler and teknik_veriler:
             bot.send_message(chat_id, "AI Analist yorumu hazirlaniyor...", parse_mode=None)
-            yorum = ai_analist_yorumu(hisse_kodu, temel_veriler, teknik_veriler)
+            yorum     = ai_analist_yorumu(hisse_kodu, temel_veriler, teknik_veriler)
             tam_metin = "AI ANALIST: " + hisse_kodu + "\n\n" + yorum
-            # 4096 karakter limitini asmamak icin parcala
-            limit = 4000
-            parcalar = [tam_metin[i:i+limit] for i in range(0, len(tam_metin), limit)]
-            for parca in parcalar:
+            for parca in _parcala(tam_metin, limit=4000):
                 bot.send_message(chat_id, parca, parse_mode=None)
     except Exception as e:
         hata = f"❌ *Sistem Hatası*\n`{escape_md(str(e))}`"
