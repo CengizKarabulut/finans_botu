@@ -285,20 +285,11 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
             mesaj_gonder(chat_id, mesaj_id, indikatörler, duzenle=duzenle_teknik)
             bot.send_message(chat_id, ma_blok, parse_mode="MarkdownV2")
 
-        # ── AI Analist Yorumu (/ai) ───────────────────────────────────────────
+        # AI Analist Yorumu (/ai)
         if komut == "ai" and temel_veriler and teknik_veriler:
-            bot.send_message(
-                chat_id,
-                "🤖 *AI Analist* yorumu hazırlanıyor\\.\\.\\.",
-                parse_mode="MarkdownV2"
-            )
+            bot.send_message(chat_id, "AI Analist yorumu hazirlaniyor...", parse_mode=None)
             yorum = ai_analist_yorumu(hisse_kodu, temel_veriler, teknik_veriler)
-            bot.send_message(
-                chat_id,
-                f"🤖 *AI ANALİST — {escape_md(hisse_kodu)}*\n\n{escape_md(yorum)}",
-                parse_mode="MarkdownV2"
-            )
-
+            bot.send_message(chat_id, "AI ANALIST: " + hisse_kodu + "\n\n" + yorum, parse_mode=None)
     except Exception as e:
         hata = f"❌ *Sistem Hatası*\n`{escape_md(str(e))}`"
         try:
