@@ -67,7 +67,41 @@ TEMEL_GRUPLAR = {
 #  YARDIMCI FONKSİYONLAR
 # ─────────────────────────────────────────────
 
-def escape_md(text: str) -> str:
+# Bilinen ABD/küresel borsa uzantıları — bunlara .IS eklenmez
+_BILINEN_UZANTILAR = {".IS", ".L", ".PA", ".DE", ".HK", ".T", ".AX", ".TO", ".SW"}
+
+# Bilinen büyük ABD hisseleri — .IS eklenmez
+_ABD_HISSELERI = {
+    "AAPL","MSFT","GOOGL","GOOG","AMZN","NVDA","META","TSLA","BRK.A","BRK.B",
+    "JPM","V","UNH","XOM","JNJ","WMT","MA","PG","HD","CVX","MRK","ABBV","PEP",
+    "KO","BAC","AVGO","COST","TMO","CSCO","ACN","MCD","ABT","CRM","NFLX","LIN",
+    "DHR","TXN","NEE","PM","AMD","QCOM","INTC","ORCL","IBM","GE","BA","CAT",
+    "SPY","QQQ","VTI","IVV","GLD","SLV","USO","TLT","HYG",
+}
+
+def _normalize_ticker(ticker: str) -> str:
+    """
+    Kullanıcının girdiği ticker'ı normalize eder.
+    - Zaten uzantısı varsa (.IS, .L vb.) dokunma
+    - Bilinen ABD hissesiyse dokunma
+    - Geri kalan her şeye BIST için .IS ekle
+    """
+    ticker = ticker.upper().strip()
+
+    # Zaten bir borsa uzantısı var mı?
+    for uzanti in _BILINEN_UZANTILAR:
+        if ticker.endswith(uzanti):
+            return ticker
+
+    # Bilinen ABD hissesi mi?
+    if ticker in _ABD_HISSELERI:
+        return ticker
+
+    # Sadece harf+rakam içeriyorsa BIST varsay → .IS ekle
+    if ticker.replace(".", "").isalnum():
+        return ticker + ".IS"
+
+    return ticker
     """MarkdownV2 için gerekli özel karakterleri escape eder."""
     return re.sub(r"([_\*\[\]()~`>#+\-=|{}.!\\])", r"\\\1", str(text))
 
@@ -187,7 +221,7 @@ def komut_yardim(message):
     bot.reply_to(message, metin, parse_mode="MarkdownV2")
 
 
-@bot.message_handler(commands=["analiz", "temel", "teknik", "ai", "aiyorum"])
+@bot.message_handler(commands=["analiz", "temel", "teknik", "ai"])
 def komut_analiz(message):
     parcalar = message.text.split()
     if len(parcalar) < 2:
@@ -198,8 +232,8 @@ def komut_analiz(message):
         )
         return
 
-    hisse_kodu = parcalar[1].upper()
-    komut      = parcalar[0].lstrip("/").lower()   # "analiz" | "temel" | "teknik"
+    hisse_kodu = _normalize_ticker(parcalar[1].upper())
+    komut      = parcalar[0].lstrip("/").lower()
     user_id    = message.from_user.id
 
     # Rate limit kontrolü
@@ -240,7 +274,7 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
 
         # ── Veri Çekimi ───────────────────────────────────────────────────────
         # /analiz ve /ai komutlarında temel + teknik paralel çalışır
-        if komut in ("analiz", "ai", "aiyorum"):
+        if komut in ("analiz", "ai"):
             with ThreadPoolExecutor(max_workers=2) as ex:
                 f_temel  = ex.submit(temel_analiz_yap, hisse_kodu)
                 f_teknik = ex.submit(teknik_analiz_yap, hisse_kodu)
@@ -309,7 +343,7 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
             bot.send_message(chat_id, ma_blok, parse_mode="MarkdownV2")
 
         # ── AI Analist Yorumu (/ai veya /analiz) ─────────────────────────────
-        if komut in ("ai", "aiyorum") and temel_veriler and teknik_veriler:
+        if komut == "ai" and temel_veriler and teknik_veriler:
             bot.send_message(
                 chat_id,
                 "🤖 *AI Analist* yorumu hazırlanıyor\\.\\.\\.",
