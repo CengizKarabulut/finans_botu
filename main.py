@@ -10,6 +10,11 @@ from temel_analiz   import temel_analiz_yap
 from teknik_analiz  import teknik_analiz_yap
 from analist_motoru import ai_analist_yorumu
 from cache_yonetici import baslangic_temizligi
+from piyasa_analiz  import (
+    kripto_analiz, doviz_analiz, emtia_analiz,
+    KRIPTO_LISTE, DOVIZ_LISTE, EMTIA_LISTE,
+    KRIPTO_MAP, DOVIZ_MAP, EMTIA_MAP
+)
 
 # ─────────────────────────────────────────────
 #  YAPILANDIRMA
@@ -216,12 +221,28 @@ def rate_limit_kontrol(user_id: int) -> int:
 def komut_yardim(message):
     metin = (
         "📈 *Finans Asistanı*\n\n"
-        "Kullanım:\n"
+        "🇹🇷 *BIST Hisseleri:*\n"
         "`/analiz TUPRS` — Temel \\+ Teknik analiz\n"
         "`/temel THYAO` — Yalnızca temel analiz\n"
         "`/teknik ASELS` — Yalnızca teknik analiz\n"
         "`/ai ASELS` — 🤖 AI Analist Yorumu\n\n"
-        "💡 \\.IS uzantısı opsiyonel \\— otomatik eklenir\\.\n"
+        "🌍 *Yabancı Hisseler:*\n"
+        "`/temel AAPL` — Apple \\(ABD\\)\n"
+        "`/temel SHEL\\.L` — Shell \\(Londra\\)\n"
+        "`/temel SAP\\.DE` — SAP \\(Frankfurt\\)\n\n"
+        "₿ *Kripto:*\n"
+        "`/kripto BTC` — Bitcoin\n"
+        "`/kripto ETHTRY` — Ethereum TRY\n"
+        "`/kripto liste` — Tüm desteklenen kriptolar\n\n"
+        "💱 *Döviz:*\n"
+        "`/doviz USDTRY` — Dolar/TL\n"
+        "`/doviz EURUSD` — Euro/Dolar\n"
+        "`/doviz liste` — Tüm pariteler\n\n"
+        "🏭 *Emtia:*\n"
+        "`/emtia ALTIN` — Altın vadeli\n"
+        "`/emtia PETROL` — Ham petrol\n"
+        "`/emtia liste` — Tüm emtialar\n\n"
+        "💡 BIST için \\.IS uzantısı opsiyonel \\— otomatik eklenir\\.\n"
         f"⏱ Sorgular arası en az {RATE_LIMIT_SANIYE} saniye bekleme uygulanır\\."
     )
     bot.reply_to(message, metin, parse_mode="MarkdownV2")
@@ -264,6 +285,174 @@ def komut_analiz(message):
         args=(message.chat.id, bekle_msg.message_id, hisse_kodu, komut),
         daemon=True
     ).start()
+
+
+@bot.message_handler(commands=["kripto"])
+def komut_kripto(message):
+    parcalar = message.text.split()
+    if len(parcalar) < 2:
+        bot.reply_to(message, "⚠️ Örnek: /kripto BTC veya /kripto liste", parse_mode=None)
+        return
+    girdi = parcalar[1].upper()
+    if girdi == "LISTE":
+        bot.reply_to(message, f"₿ Desteklenen kriptolar:\n{KRIPTO_LISTE}", parse_mode=None)
+        return
+    user_id = message.from_user.id
+    bekleme = rate_limit_kontrol(user_id)
+    if bekleme > 0:
+        bot.reply_to(message, f"⏳ Lütfen {bekleme} saniye bekleyin.", parse_mode=None)
+        return
+    _son_istek[user_id] = datetime.now()
+    bekle_msg = bot.reply_to(message, f"⏳ {girdi} verileri çekiliyor...", parse_mode=None)
+    threading.Thread(
+        target=_piyasa_isle,
+        args=(message.chat.id, bekle_msg.message_id, girdi, "kripto"),
+        daemon=True
+    ).start()
+
+
+@bot.message_handler(commands=["doviz"])
+def komut_doviz(message):
+    parcalar = message.text.split()
+    if len(parcalar) < 2:
+        bot.reply_to(message, "⚠️ Örnek: /doviz USDTRY veya /doviz liste", parse_mode=None)
+        return
+    girdi = parcalar[1].upper()
+    if girdi == "LISTE":
+        bot.reply_to(message, f"💱 Desteklenen pariteler:\n{DOVIZ_LISTE}", parse_mode=None)
+        return
+    user_id = message.from_user.id
+    bekleme = rate_limit_kontrol(user_id)
+    if bekleme > 0:
+        bot.reply_to(message, f"⏳ Lütfen {bekleme} saniye bekleyin.", parse_mode=None)
+        return
+    _son_istek[user_id] = datetime.now()
+    bekle_msg = bot.reply_to(message, f"⏳ {girdi} verileri çekiliyor...", parse_mode=None)
+    threading.Thread(
+        target=_piyasa_isle,
+        args=(message.chat.id, bekle_msg.message_id, girdi, "doviz"),
+        daemon=True
+    ).start()
+
+
+@bot.message_handler(commands=["emtia"])
+def komut_emtia(message):
+    parcalar = message.text.split()
+    if len(parcalar) < 2:
+        bot.reply_to(message, "⚠️ Örnek: /emtia ALTIN veya /emtia liste", parse_mode=None)
+        return
+    girdi = parcalar[1].upper()
+    if girdi == "LISTE":
+        bot.reply_to(message, f"🏭 Desteklenen emtialar:\n{EMTIA_LISTE}", parse_mode=None)
+        return
+    user_id = message.from_user.id
+    bekleme = rate_limit_kontrol(user_id)
+    if bekleme > 0:
+        bot.reply_to(message, f"⏳ Lütfen {bekleme} saniye bekleyin.", parse_mode=None)
+        return
+    _son_istek[user_id] = datetime.now()
+    bekle_msg = bot.reply_to(message, f"⏳ {girdi} verileri çekiliyor...", parse_mode=None)
+    threading.Thread(
+        target=_piyasa_isle,
+        args=(message.chat.id, bekle_msg.message_id, girdi, "emtia"),
+        daemon=True
+    ).start()
+
+
+# ─────────────────────────────────────────────
+#  PİYASA ANALİZ THREAD (kripto/döviz/emtia)
+# ─────────────────────────────────────────────
+
+# Emoji ve başlık haritası
+_TIP_EMOJI  = {"kripto": "₿", "doviz": "💱", "emtia": "🏭"}
+_TIP_BASLIK = {"kripto": "KRİPTO", "doviz": "DÖVİZ", "emtia": "EMTİA"}
+
+# Gösterilmeyecek iç anahtarlar
+_GİZLİ = {"_tip", "_sembol", "_goruntu"}
+
+
+def _piyasa_bolum(baslik: str, emoji: str, veriler: dict, anahtarlar: list) -> str:
+    satirlar = []
+    for k in anahtarlar:
+        v = veriler.get(k)
+        if v is not None and v != "" and v != "N/A" and v != "0" and v != 0:
+            satirlar.append(f"{k:<28} : {v}")
+    if not satirlar:
+        return ""
+    icerik = "\n".join(satirlar)
+    return f"{emoji} *{escape_md(baslik)}*\n```\n{icerik}\n```"
+
+
+def _piyasa_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
+    try:
+        if tip == "kripto":
+            piyasa, teknik = kripto_analiz(girdi)
+        elif tip == "doviz":
+            piyasa, teknik = doviz_analiz(girdi)
+        else:
+            piyasa, teknik = emtia_analiz(girdi)
+
+        # Hata kontrolü
+        if "Hata" in piyasa:
+            bot.edit_message_text(
+                f"❌ {piyasa['Hata']}",
+                chat_id=chat_id, message_id=mesaj_id, parse_mode=None
+            )
+            return
+
+        emoji_tip  = _TIP_EMOJI.get(tip, "📊")
+        baslik_tip = _TIP_BASLIK.get(tip, tip.upper())
+        goruntu    = piyasa.get("_goruntu", girdi)
+
+        # ── Piyasa Bilgisi Raporu ──────────────────────────────────────────
+        GENEL_ANAHTARLAR = {
+            "kripto": ["Isim", "Para Birimi", "Fiyat", "Degisim (%)",
+                       "Piyasa Degeri", "Hacim (24s)", "Dolasim Arzi", "Maks Arz"],
+            "doviz":  ["Parite", "Aciklama", "Fiyat", "Degisim (%)",
+                       "Getiri (1 Hafta)", "Getiri (1 Ay)", "Getiri (3 Ay)", "Getiri (1 Yil)"],
+            "emtia":  ["Aciklama", "Para Birimi", "Borsa", "Fiyat", "Degisim (%)",
+                       "Getiri (1 Hafta)", "Getiri (1 Ay)", "Getiri (3 Ay)", "Getiri (1 Yil)"],
+        }
+        rapor = f"{emoji_tip} *{escape_md(goruntu)} — {baslik_tip} ANALİZİ*\n\n"
+        genel_blok = _piyasa_bolum("Genel Bilgiler", "ℹ️", piyasa,
+                                    GENEL_ANAHTARLAR.get(tip, []))
+        if genel_blok:
+            rapor += genel_blok + "\n\n"
+
+        # İlk mesajı gönder
+        for i, parca in enumerate(_parcala(rapor.strip())):
+            try:
+                if i == 0:
+                    bot.edit_message_text(parca, chat_id=chat_id,
+                                          message_id=mesaj_id, parse_mode="MarkdownV2")
+                else:
+                    bot.send_message(chat_id, parca, parse_mode="MarkdownV2")
+            except Exception:
+                bot.send_message(chat_id, parca, parse_mode="MarkdownV2")
+
+        # ── Teknik Analiz (teknik_analiz.py'nin tam çıktısı) ──────────────
+        if teknik and "Hata" not in teknik:
+            MA_ANAHTARLARI = {"SMA (Basit)", "EMA (Üstel)", "WMA (Ağırlıklı)"}
+            indikatörler = bolum_olustur(
+                "TEKNİK ANALİZ İNDİKATÖRLERİ", "📉",
+                teknik,
+                filtre_fn=lambda k: k not in MA_ANAHTARLARI
+            )
+            ma_satirlar = []
+            for ma_tip in ("SMA (Basit)", "EMA (Üstel)", "WMA (Ağırlıklı)"):
+                if ma_tip in teknik:
+                    ma_satirlar.append(f"{ma_tip.split()[0]}: {teknik[ma_tip]}")
+            ma_blok = "🌊 *HAREKETLİ ORTALAMALAR*\n```\n" + "\n\n".join(ma_satirlar) + "\n```"
+
+            mesaj_gonder(chat_id, mesaj_id, indikatörler, duzenle=False)
+            bot.send_message(chat_id, ma_blok, parse_mode="MarkdownV2")
+
+    except Exception as e:
+        try:
+            bot.edit_message_text(f"❌ Hata: {str(e)}",
+                                  chat_id=chat_id, message_id=mesaj_id, parse_mode=None)
+        except Exception:
+            bot.send_message(chat_id, f"❌ Hata: {str(e)}", parse_mode=None)
 
 
 # ─────────────────────────────────────────────
