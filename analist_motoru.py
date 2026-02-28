@@ -1,43 +1,69 @@
 import os
 from groq import Groq
 
-SISTEM_PROMPTU = """Sen kıdemli bir Türk borsası (BIST) ve uluslararası piyasa analistisin. 15+ yıl deneyimle hem temel hem teknik analizi derinlemesine yorumlayabiliyorsun.
+SISTEM_PROMPTU = """Sen deneyimli bir Türk sermaye piyasaları analistissin. BIST hisseleri ve uluslararası piyasalar konusunda derin bilgin var. Görevin: sana verilen ham finansal ve teknik verileri yorumlayarak kurumsal kalitede, derinlikli bir Türkçe analist raporu hazırlamak.
 
-Sana bir hissenin ham verileri verilecek. Bu verileri sentezleyerek kurumsal kalitede, Türkçe, rakamlara dayalı bir analist raporu yaz.
-
-RAPOR YAPISI:
+RAPOR YAPISI (bu sırayı koru, her bölümü detaylı yaz):
 
 1. ÖZET GÖRÜŞ
-Hissenin genel durumunu şu etiketlerden biriyle değerlendir:
-"Güçlü Alım Bölgesi / Alım Bölgesi / Nötr / Satım Bölgesi / Güçlü Satım Bölgesi"
-Neden bu etiketi seçtiğini 2-3 cümleyle açıkla.
+Şu etiketlerden birini seç ve KALIN yaz: GÜÇLÜ ALIM / ALIM / NÖTR / SATIM / GÜÇLÜ SATIM
+Ardından 3-4 cümleyle: neden bu etiketi seçtiğini, hissenin genel durumunu ve yatırımcının dikkat etmesi gereken en kritik noktayı açıkla.
 
 2. TEMEL ANALİZ
-Değerleme: F/K, PD/DD, FD/FAVÖK rakamlarını sektör normlarıyla kıyasla. Pahalı mı ucuz mu?
-Büyüme: Yıllık ve çeyreklik büyüme hızını yorumla. Sürdürülebilir mi?
-Karlılık: Marjların trendi ne söylüyor? ROE/ROA sektör için iyi mi?
-Bilanço: Borç yapısı, cari oran, FCF kalitesi.
+
+Değerleme:
+- F/K, PD/DD, FD/FAVÖK rakamlarını sektör ortalamasıyla MUTLAKA karşılaştır. Örn: "F/K 42 ile sektör ortalaması olan 18'in 2.3 katı — prim ne kadar haklı?"
+- Analist hedef fiyatı varsa mevcut fiyatla karşılaştır: "Konsensüs 362 TL hedefte, mevcut 280 TL'den %29 potansiyel sunuyor"
+- Değerleme pahalı görünüyorsa bunu destekleyen veya çürüten büyüme/karlılık argümanı yaz
+
+Büyüme ve Karlılık:
+- Yıllık ve çeyreklik büyüme hızlarını değerlendir, trend ivmeleniyor mu yavaşlıyor mu?
+- FAVÖK marjı, net kar marjı, ROE ve ROIC birlikte değerlendir
+- "Bu marj seviyesi sektörde iyi/kötü/ortalama çünkü..." şeklinde bağlam ver
+
+Bilanço Kalitesi:
+- Borç yapısını yorumla: Net Borç/FAVÖK, faiz karşılama oranı
+- FCF kalitesi: Net kara oranla FCF ne söylüyor? (FCF/Net Kar > 1 güçlü nakit)
+- Cari oran ve likidite yeterliliği
 
 3. TEKNİK ANALİZ
-Trend: Supertrend, AlphaTrend ve EMA durumuna göre ana trend yönü.
-Momentum: RSI seviyesi, MACD sinyali, Stoch RSI.
-Hacim & Para Akışı: RVOL, CMF yorumu.
-Kritik Seviyeler: Bollinger, Pivot destek/dirençler.
-Uyarılar: RSI divergence veya trend değişim sinyali varsa vurgula.
 
-4. GÜÇLÜ YÖNLER (en fazla 4 madde, rakam kullan)
-5. ZAYIF YÖNLER (en fazla 4 madde, rakam kullan)
+Trend Durumu:
+- Supertrend, AlphaTrend ve EMA pozisyonunu sentezle — hepsi aynı yönü gösteriyor mu yoksa çelişiyor mu? Çelişiyorsa hangisi daha ağırlıklı?
+- Ichimoku bulut durumunu yorumla
 
-6. RİSK DEĞERLENDİRMESİ (2-3 cümle)
+Momentum ve Sinyal:
+- RSI seviyesi: aşırı alım/satım değil mi, divergence var mı?
+- MACD histogram yönü (artıyor/azalıyor) momentum hakkında ne söylüyor?
+- Stoch RSI K/D kesişimi yakın mı?
 
-7. YATIRIMCI NOTU: Bu rapor yatırım tavsiyesi değildir.
+Hacim ve Para Akışı:
+- RVOL normalin üstündeyse bunu yorumla (kurumsal ilgi mi, panik mi?)
+- CMF pozitif/negatif: akıllı para giriyor mu çıkıyor mu?
 
-KURALLAR:
-- Rakamları mutlaka kullan: "RSI 63.2 ile henüz aşırı alım bölgesi olan 70'in altında"
-- Karşılaştır: "F/K 49 ile savunma sektörü ortalaması olan 20'nin 2.5 katı"
-- N/A olan verileri yoksay
-- Maksimum 500 kelime
-- MARKDOWN KULLANMA: **, *, #, _ gibi karakterler kesinlikle yasak. Sadece düz metin yaz."""
+Kritik Fiyat Seviyeleri:
+- Pivot destek/direnç seviyelerini somut yaz: "310 kritik destek, kırılırsa 298 görülebilir"
+- Bollinger bantlarına göre fiyat nerede?
+
+4. GÜÇLÜ YÖNLER (3-5 madde, her biri somut rakamla desteklenmiş)
+
+5. ZAYIF YÖNLER ve RİSKLER (3-5 madde, her biri somut rakamla desteklenmiş)
+
+6. SENARYO ANALİZİ
+- Olumlu senaryo: Hangi koşullar gerçekleşirse hisse yukarı kırabilir?
+- Olumsuz senaryo: Hangi riskler fiyatı baskı altına alabilir?
+- İzlenmesi gereken kritik tetikleyiciler (bilanço tarihi, sektörel gelişme vb.)
+
+7. YATIRIMCI NOTU
+Kısa bir kapanış: bu hisse hangi profildeki yatırımcıya uygun? (uzun vade/kısa vade, risk toleransı)
+Son satır daima: "Bu rapor yatırım tavsiyesi değildir."
+
+YAZIM KURALLARI:
+- Her iddiayı somut rakamla destekle: "güçlü büyüme" değil "satışlar %47 arttı"
+- Sektör karşılaştırması varsa MUTLAKA kullan
+- N/A olan verileri yoksay ama eksikliği gerekirse belirt
+- Çelişkili sinyalleri görmezden gelme, "teknik görünüm karışık: X yükselen trende işaret ederken Y düşen trende işaret ediyor" şeklinde yaz
+- Markdown KULLANMA: **, *, #, _ karakterleri yasak. Sadece düz metin."""
 
 
 def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
@@ -54,6 +80,22 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
         except Exception:
             return 50.0
 
+    def _fmt(v, suffix=""):
+        if v == "N/A":
+            return "N/A"
+        try:
+            f = float(v)
+            if abs(f) >= 1_000_000_000_000:
+                return f"{f/1e12:.2f}T{suffix}"
+            if abs(f) >= 1_000_000_000:
+                return f"{f/1e9:.2f}B{suffix}"
+            if abs(f) >= 1_000_000:
+                return f"{f/1e6:.2f}M{suffix}"
+            return f"{f:,.2f}{suffix}"
+        except Exception:
+            return str(v)
+
+    # Temel veriler
     fk         = _al(temel, "F/K (Günlük)", "F/K (Hesaplanan)")
     pddd       = _al(temel, "PD/DD (Günlük)", "PD/DD (Hesaplanan)")
     fd_favk    = _al(temel, "FD/FAVÖK (Günlük)", "EV/EBITDA (Hesaplanan)")
@@ -63,6 +105,7 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     brut_mar_y = _al(temel, "Brüt Kar Marjı — Yıllık (%)")
     favk_mar_y = _al(temel, "FAVÖK Marjı — Yıllık (%)")
     net_mar_q  = _al(temel, "Net Kar Marjı — Çeyreklik (%)")
+    isle_mar_y = _al(temel, "İşletme Kar Marjı — Yıllık (%)")
     roe        = _al(temel, "Özsermaye Karlılığı (ROE) — Yıllık")
     roa        = _al(temel, "Varlık Karlılığı (ROA) — Yıllık")
     roic       = _al(temel, "ROIC (%)")
@@ -79,6 +122,14 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     temettu    = _al(temel, "Temettü Verimi (%)")
     sektor     = _al(temel, "Firma Sektörü")
     fiyat      = _al(temel, "Fiyat")
+    piyasa_d   = _al(temel, "Piyasa Değeri")
+    beta       = _al(temel, "BETA (Manuel 1Y)", "BETA (yFinance)")
+
+    # Ham değerler (büyüklük göstergesi için)
+    satis_ham  = _al(temel, "_Satış — Yıllık")
+    kar_ham    = _al(temel, "_Net Kar — Yıllık")
+    favok_ham  = _al(temel, "_FAVÖK — Yıllık")
+    fcf_ham    = _al(temel, "_FCF")
 
     # borsapy verileri
     fiili_dolasim = _al(temel, "Fiili Dolaşım (%)")
@@ -91,7 +142,33 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     sektor_fk     = _al(temel, "Sektör Ort. F/K")
     sektor_pddd   = _al(temel, "Sektör Ort. PD/DD")
     sektor_n      = _al(temel, f"Sektör ({sektor}) — Hisse Sayısı")
+    veri_dogrulama = _al(temel, "⚠️ Veri Tutarsızlığı", "✅ Veri Doğrulaması")
 
+    # Analist potansiyel hesapla
+    analist_potansiyel = "N/A"
+    try:
+        if analist_ort != "N/A" and fiyat != "N/A":
+            pot = (float(analist_ort) - float(fiyat)) / float(fiyat) * 100
+            analist_potansiyel = f"%{pot:+.1f}"
+    except Exception:
+        pass
+
+    # Sektör karşılaştırma yorumu
+    sektor_yorum = ""
+    if sektor_fk != "N/A" and fk != "N/A":
+        try:
+            kat = float(fk) / float(sektor_fk)
+            sektor_yorum += f"\nF/K sektör karşılaştırması: {fk} (hisse) vs {sektor_fk} (sektör ort., n={sektor_n}) — {kat:.1f}x"
+        except Exception:
+            pass
+    if sektor_pddd != "N/A" and pddd != "N/A":
+        try:
+            kat = float(pddd) / float(sektor_pddd)
+            sektor_yorum += f"\nPD/DD sektör karşılaştırması: {pddd} (hisse) vs {sektor_pddd} (sektör ort.) — {kat:.1f}x"
+        except Exception:
+            pass
+
+    # EMA pozisyon özeti
     ema_ozet = "N/A"
     try:
         ema_str = teknik.get("EMA (Üstel)", "")
@@ -99,60 +176,60 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
         for p in ema_str.split("|"):
             p = p.strip()
             if ":" in p and "g" in p:
-                k, v = p.split(":", 1)
+                k, val = p.split(":", 1)
                 gun = int(k.strip().replace("g", ""))
-                ema_dict[gun] = float(v.strip())
+                ema_dict[gun] = float(val.strip())
         if ema_dict and fiyat != "N/A":
-            uzerin = sum(1 for v in ema_dict.values() if float(fiyat) > v)
-            ema_ozet = f"Fiyat {uzerin}/{len(ema_dict)} EMA'nın üzerinde"
+            uzerin = [(g, v) for g, v in sorted(ema_dict.items()) if float(fiyat) > v]
+            altinda = [(g, v) for g, v in sorted(ema_dict.items()) if float(fiyat) <= v]
+            ema_ozet = f"Fiyat {len(uzerin)}/{len(ema_dict)} EMA'nın üzerinde"
+            if uzerin:
+                ema_ozet += f" (en yakın üst: {uzerin[-1][0]}g={uzerin[-1][1]:.1f})"
+            if altinda:
+                ema_ozet += f" | ilk direnç EMA: {altinda[0][0]}g={altinda[0][1]:.1f}"
     except Exception:
         pass
 
-    # Sektör karşılaştırma özeti
-    sektor_karsilastirma = ""
-    if sektor_fk != "N/A" or sektor_pddd != "N/A":
-        sektor_karsilastirma = f"\nSektör ({sektor}, n={sektor_n}): F/K Ort={sektor_fk} | PD/DD Ort={sektor_pddd}"
-
-    # Analist konsensüs özeti
-    analist_ozet = ""
-    if analist_ort != "N/A":
-        analist_ozet = f"\nAnalist Konsensüs ({analist_n} analist): Hedef={analist_ort} TL | Min={analist_min} | Maks={analist_maks} TL"
-
-    return f"""HİSSE: {hisse_kodu} | Sektör: {sektor} | Fiyat: {fiyat}
-Fiili Dolaşım: {fiili_dolasim}% | Yabancı Oranı: {yabanci_oran}%{analist_ozet}
+    return f"""=== HİSSE BİLGİSİ ===
+Hisse: {hisse_kodu} | Sektör: {sektor} | Fiyat: {fiyat} TL | Piyasa Değeri: {_fmt(piyasa_d)}
+Fiili Dolaşım: {fiili_dolasim}% | Yabancı Oranı: {yabanci_oran}% | Beta(1Y): {beta}
 Ana Ortaklar: {ana_ortaklar}
+Veri Doğrulama: {veri_dogrulama}
 
 === DEĞERLEME ===
-F/K: {fk} | PD/DD: {pddd} | FD/FAVÖK: {fd_favk} | PEG: {peg} | F/S: {fs}{sektor_karsilastirma}
-
-=== KARLILIK ===
-Net Kar Marjı Y/Q: {net_mar_y}% / {net_mar_q}% | Brüt Marj: {brut_mar_y}% | FAVÖK Marjı: {favk_mar_y}%
-ROE: {roe}% | ROA: {roa}% | ROIC: {roic}%
+F/K: {fk} | PD/DD: {pddd} | FD/FAVÖK: {fd_favk} | PEG: {peg} | F/S: {fs}{sektor_yorum}
+Analist Konsensüs: {analist_ort} TL hedef ({analist_n} analist) | Min: {analist_min} | Maks: {analist_maks} | Potansiyel: {analist_potansiyel}
 
 === BÜYÜME ===
-Satış Yıllık: {satis_y}% | Net Kar Yıllık: {kar_y}% | YoY: {satis_yoy}% | QoQ: {satis_qoq}%
+Satış Büyümesi — Yıllık: {satis_y}% | Net Kar Büyümesi: {kar_y}%
+Satış YoY (son çeyrek): {satis_yoy}% | QoQ: {satis_qoq}%
+Finansal Büyüklükler: Satış={_fmt(satis_ham)} | Net Kar={_fmt(kar_ham)} | FAVÖK={_fmt(favok_ham)} | FCF={_fmt(fcf_ham)}
+
+=== KARLILIK ===
+Net Kar Marjı (Y/Q): {net_mar_y}% / {net_mar_q}% | Brüt: {brut_mar_y}% | İşletme: {isle_mar_y}% | FAVÖK: {favk_mar_y}%
+ROE: {roe}% | ROA: {roa}% | ROIC: {roic}%
 
 === BORÇ & LİKİDİTE ===
-Cari Oran: {cari} | D/E: {de} | Net Borç/FAVÖK: {net_borc_f} | Faiz Karşılama: {faiz_kar}
+D/E: {de} | Net Borç/FAVÖK: {net_borc_f} | Faiz Karşılama: {faiz_kar} | Cari Oran: {cari}
 
 === NAKİT AKIŞI ===
 FCF Getirisi: {fcf_get}% | FCF/Net Kar: {fcf_kar} | Temettü: {temettu}%
 
-=== TEKNİK ===
-RSI: {_rsi(_al(teknik, "RSI (14)", varsayilan="50"))} | Divergence: {_al(teknik, "RSI Divergence", varsayilan="Yok")}
-Stoch RSI: {_al(teknik, "Stoch RSI (K / D)")} | MACD: {_al(teknik, "MACD (12,26,9)")}
-ADX: {_al(teknik, "ADX (14) Trend Gücü")} | CMF: {_al(teknik, "CMF (20) Para Akışı")}
-Bollinger: {_al(teknik, "Bollinger Bantları")} | BB %B: {_al(teknik, "BB %B")}
+=== TEKNİK ANALİZ ===
+RSI(14): {_rsi(_al(teknik, "RSI (14)", varsayilan="50"))} | RSI Divergence: {_al(teknik, "RSI Divergence", varsayilan="Yok")}
+Stoch RSI (K/D): {_al(teknik, "Stoch RSI (K / D)")} | MACD: {_al(teknik, "MACD (12,26,9)")}
+ADX: {_al(teknik, "ADX (14) Trend Gücü")} | CMF: {_al(teknik, "CMF (20) Para Akışı")} | RVOL: {_al(teknik, "Göreceli Hacim (RVOL)")}
+Bollinger: {_al(teknik, "Bollinger Bantları")} | BB%B: {_al(teknik, "BB %B")}
 Ichimoku: {_al(teknik, "Ichimoku Bulut")} | T/K: {_al(teknik, "Ichimoku (Tenkan/Kijun)")}
-Supertrend: {_al(teknik, "Supertrend (3,10)")} | AlphaTrend: {_al(teknik, "AlphaTrend (1,14)")}
-Momentum: {_al(teknik, "Momentum (10)")} | RVOL: {_al(teknik, "Göreceli Hacim (RVOL)")}
+Supertrend(3,10): {_al(teknik, "Supertrend (3,10)")} | AlphaTrend(1,14): {_al(teknik, "AlphaTrend (1,14)")}
+Momentum(10): {_al(teknik, "Momentum (10)")} | ATR(14): {_al(teknik, "ATR (14) Volatilite")}
 Pivot: {_al(teknik, "Pivot (Geleneksel)")}
-EMA: {ema_ozet}""".strip()
+EMA Pozisyon: {ema_ozet}""".strip()
 
 
 def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict) -> str:
     baglam = _veri_ozeti_olustur(hisse_kodu, temel_veriler, teknik_veriler)
-    prompt = f"{hisse_kodu} icin verileri analiz et ve raporu hazirla:\n\n{baglam}"
+    prompt = f"{hisse_kodu} hissesi için aşağıdaki verileri analiz et ve detaylı rapor hazırla. Her bölümü eksiksiz doldur, somut rakamlar ve sektör karşılaştırmaları kullan:\n\n{baglam}"
 
     # 1. Gemini
     gemini_key = os.environ.get("GEMINI_API_KEY")
@@ -165,8 +242,8 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                 model="models/gemini-2.5-flash",
                 config=types.GenerateContentConfig(
                     system_instruction=SISTEM_PROMPTU,
-                    temperature=0.3,
-                    max_output_tokens=2000,
+                    temperature=0.4,
+                    max_output_tokens=2500,
                     response_mime_type="text/plain",
                     thinking_config=types.ThinkingConfig(thinking_budget=0),
                 ),
@@ -183,8 +260,8 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
             client = Groq(api_key=groq_key)
             yanit = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                max_tokens=1500,
-                temperature=0.3,
+                max_tokens=2500,
+                temperature=0.4,
                 messages=[
                     {"role": "system", "content": SISTEM_PROMPTU},
                     {"role": "user",   "content": prompt}
