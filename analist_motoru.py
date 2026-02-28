@@ -166,8 +166,9 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                 config=types.GenerateContentConfig(
                     system_instruction=SISTEM_PROMPTU,
                     temperature=0.3,
-                    max_output_tokens=1500,
+                    max_output_tokens=2000,
                     response_mime_type="text/plain",
+                    thinking_config=types.ThinkingConfig(thinking_budget=0),
                 ),
                 contents=prompt,
             )
