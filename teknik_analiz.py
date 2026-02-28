@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from cache_yonetici import taze_ticker
 
 
 # ─────────────────────────────────────────────
@@ -193,7 +194,7 @@ def _alphatrend(h, l, c, v, coeff=1.0, ap=14):
 # ─────────────────────────────────────────────
 
 def teknik_analiz_yap(ticker_symbol: str) -> dict:
-    hisse = yf.Ticker(ticker_symbol)
+    hisse = taze_ticker(ticker_symbol)
     df    = hisse.history(period="3y")   # 610 bar için 3 yıl yeterli
     if df.empty or len(df) < 60:
         return {"Hata": "Yeterli fiyat geçmişi yok."}
