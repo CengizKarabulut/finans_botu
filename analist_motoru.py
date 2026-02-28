@@ -227,9 +227,9 @@ Pivot: {_al(teknik, "Pivot (Geleneksel)")}
 EMA Pozisyon: {ema_ozet}""".strip()
 
 
-def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict) -> str:
-    baglam = _veri_ozeti_olustur(hisse_kodu, temel_veriler, teknik_veriler)
-    prompt = f"{hisse_kodu} hissesi için aşağıdaki verileri analiz et ve detaylı rapor hazırla. Her bölümü eksiksiz doldur, somut rakamlar ve sektör karşılaştırmaları kullan:\n\n{baglam}"
+def _ai_gonder(prompt: str, sistem_promptu: str = None) -> str:
+    """Gemini → Groq fallback ile AI yanıtı üretir."""
+    sp = sistem_promptu or SISTEM_PROMPTU
 
     # 1. Gemini
     gemini_key = os.environ.get("GEMINI_API_KEY")
@@ -241,7 +241,7 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
             response = client_g.models.generate_content(
                 model="models/gemini-2.5-flash",
                 config=types.GenerateContentConfig(
-                    system_instruction=SISTEM_PROMPTU,
+                    system_instruction=sp,
                     temperature=0.4,
                     max_output_tokens=2500,
                     response_mime_type="text/plain",
@@ -263,7 +263,7 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                 max_tokens=2500,
                 temperature=0.4,
                 messages=[
-                    {"role": "system", "content": SISTEM_PROMPTU},
+                    {"role": "system", "content": sp},
                     {"role": "user",   "content": prompt}
                 ]
             )
@@ -275,6 +275,148 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
             return f"Groq hatasi: {err}"
 
     return "API key tanimli degil. GEMINI_API_KEY veya GROQ_API_KEY gerekli."
+
+
+def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict) -> str:
+    baglam = _veri_ozeti_olustur(hisse_kodu, temel_veriler, teknik_veriler)
+    prompt = f"{hisse_kodu} hissesi için aşağıdaki verileri analiz et ve detaylı rapor hazırla. Her bölümü eksiksiz doldur, somut rakamlar ve sektör karşılaştırmaları kullan:\n\n{baglam}"
+    return _ai_gonder(prompt)
+
+
+# ─────────────────────────────────────────────
+#  PİYASA AI YORUMU (kripto / döviz / emtia)
+# ─────────────────────────────────────────────
+
+PIYASA_SISTEM_PROMPTU = """Sen deneyimli bir finansal analistsin. Kripto para, döviz ve emtia piyasalarında derinlemesine bilgiye sahipsin.
+
+Sana bir varlığın piyasa bilgisi ve teknik analiz verileri verilecek. Bu verileri sentezleyerek kurumsal kalitede, Türkçe, rakamlara dayalı bir analiz raporu yaz.
+
+RAPOR YAPISI:
+
+1. ÖZET GÖRÜŞ
+Şu etiketlerden birini seç: GÜÇLÜ ALIM / ALIM / NÖTR / SATIM / GÜÇLÜ SATIM
+3-4 cümleyle varlığın genel durumunu, ana trendin yönünü ve en kritik riski açıkla.
+
+2. FİYAT ANALİZİ
+- Mevcut fiyatı 52 haftalık yüksek/düşük ile karşılaştır. Yıllık, aylık, haftalık getiriyi yorumla.
+- Döviz/emtia için: makroekonomik bağlamı ekle (enflasyon, merkez bankası politikası, arz/talep)
+- Kripto için: piyasa döngüsü, BTC dominansı, on-chain bağlamı ekle
+
+3. TEKNİK ANALİZ
+Trend: Supertrend, AlphaTrend ve EMA pozisyonuna göre ana trend — hepsi aynı yönde mi çelişiyor mu?
+Momentum: RSI seviyesi ve divergence, MACD histogram yönü, Stoch RSI durumu
+Hacim & Para Akışı: RVOL ve CMF ne söylüyor?
+Kritik Seviyeler: Pivot destek/direnç seviyelerini somut yaz. Bollinger bandı durumu.
+Uyarılar: Trend değişim sinyali veya divergence varsa vurgula.
+
+4. GÜÇLÜ YÖNLER (3-4 madde, rakamla destekle)
+5. ZAYIF YÖNLER & RİSKLER (3-4 madde, rakamla destekle)
+
+6. SENARYO ANALİZİ
+Yükseliş senaryosu: Hangi koşullar gerçekleşirse yukarı kırabilir? Hedef seviyeler?
+Düşüş senaryosu: Hangi riskler fiyatı aşağı çekebilir? Destek seviyeleri?
+
+7. YATIRIMCI NOTU
+Bu varlık hangi profildeki yatırımcıya uygun? Risk toleransı?
+Son satır daima: "Bu rapor yatırım tavsiyesi değildir."
+
+KURALLAR:
+- Rakamları mutlaka kullan
+- Varlık tipine göre bağlam ver (kripto volatile, döviz makro bağımlı, emtia arz/talep)
+- Markdown KULLANMA: **, *, #, _ yasak. Sadece düz metin."""
+
+
+def _piyasa_veri_ozeti(sembol: str, tip: str, piyasa: dict, teknik: dict) -> str:
+    """Kripto/döviz/emtia için AI prompt özeti oluşturur."""
+
+    def _al(d, *keys):
+        for k in keys:
+            v = d.get(k)
+            if v is not None and v not in ("", "N/A", 0):
+                return v
+        return "N/A"
+
+    # Piyasa bilgileri
+    fiyat    = _al(piyasa, "Fiyat")
+    degisim  = _al(piyasa, "Degisim (%)")
+    aciklama = _al(piyasa, "Isim", "Aciklama", "Parite", sembol)
+
+    # Getiriler
+    getiri_satirlari = []
+    for label in ["1 Hafta", "1 Ay", "3 Ay", "1 Yil"]:
+        v = piyasa.get(f"Getiri ({label})")
+        if v:
+            getiri_satirlari.append(f"{label}: {v}")
+    getiriler = " | ".join(getiri_satirlari) if getiri_satirlari else "N/A"
+
+    # Kripto'ya özel
+    ekstra = ""
+    if tip == "kripto":
+        piyasa_d  = _al(piyasa, "Piyasa Degeri")
+        hacim     = _al(piyasa, "Hacim (24s)")
+        dolasim   = _al(piyasa, "Dolasim Arzi")
+        maks_arz  = _al(piyasa, "Maks Arz")
+        ekstra = f"\nPiyasa Değeri: {piyasa_d} | 24s Hacim: {hacim}"
+        ekstra += f"\nDolaşım Arzı: {dolasim} | Maks Arz: {maks_arz}"
+    elif tip == "emtia":
+        borsa = _al(piyasa, "Borsa")
+        ekstra = f"\nBorsa: {borsa}"
+
+    # Teknik indikatörler
+    def _t(k):
+        return teknik.get(k, "N/A")
+
+    # EMA özeti
+    ema_ozet = "N/A"
+    try:
+        ema_str = teknik.get("EMA (Üstel)", "")
+        ema_dict = {}
+        for p in ema_str.split("|"):
+            p = p.strip()
+            if ":" in p and "g" in p:
+                k, val = p.split(":", 1)
+                ema_dict[int(k.strip().replace("g",""))] = float(val.strip())
+        if ema_dict:
+            try:
+                fiyat_f = float(str(fiyat).split()[0].replace(",",""))
+                uzerin = sum(1 for v in ema_dict.values() if fiyat_f > v)
+                ema_ozet = f"Fiyat {uzerin}/{len(ema_dict)} EMA'nın üzerinde"
+            except Exception:
+                ema_ozet = f"{len(ema_dict)} EMA hesaplandı"
+    except Exception:
+        pass
+
+    tip_tr = {"kripto": "KRİPTO", "doviz": "DÖVİZ", "emtia": "EMTİA"}.get(tip, tip.upper())
+
+    return f"""=== {tip_tr} BİLGİSİ ===
+Sembol: {sembol} | Açıklama: {aciklama}
+Fiyat: {fiyat} | Günlük Değişim: {degisim}{ekstra}
+Dönemsel Getiri: {getiriler}
+
+=== TEKNİK ANALİZ ===
+RSI(14): {_t("RSI (14)")} | Divergence: {_t("RSI Divergence")}
+Stoch RSI (K/D): {_t("Stoch RSI (K / D)")} | MACD: {_t("MACD (12,26,9)")}
+ADX: {_t("ADX (14) Trend Gücü")} | CMF: {_t("CMF (20) Para Akışı")} | RVOL: {_t("Göreceli Hacim (RVOL)")}
+Bollinger: {_t("Bollinger Bantları")} | BB%B: {_t("BB %B")}
+Ichimoku: {_t("Ichimoku Bulut")} | T/K: {_t("Ichimoku (Tenkan/Kijun)")}
+Supertrend(3,10): {_t("Supertrend (3,10)")} | AlphaTrend(1,14): {_t("AlphaTrend (1,14)")}
+Momentum(10): {_t("Momentum (10)")} | ATR(14): {_t("ATR (14) Volatilite")}
+Pivot: {_t("Pivot (Geleneksel)")}
+EMA Pozisyon: {ema_ozet}""".strip()
+
+
+def ai_piyasa_yorumu(sembol: str, tip: str, piyasa: dict, teknik: dict) -> str:
+    """
+    Kripto, döviz veya emtia için AI analiz yorumu üretir.
+    tip: 'kripto' | 'doviz' | 'emtia'
+    """
+    tip_tr = {"kripto": "kripto para", "doviz": "döviz paritesi", "emtia": "emtia"}.get(tip, tip)
+    baglam = _piyasa_veri_ozeti(sembol, tip, piyasa, teknik)
+    prompt = (
+        f"{sembol} {tip_tr} için aşağıdaki verileri analiz et ve detaylı rapor hazırla. "
+        f"Teknik sinyalleri, fiyat seviyelerini ve makroekonomik bağlamı birlikte değerlendir:\n\n{baglam}"
+    )
+    return _ai_gonder(prompt, sistem_promptu=PIYASA_SISTEM_PROMPTU)
 
 
 if __name__ == "__main__":
