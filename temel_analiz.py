@@ -248,12 +248,9 @@ def temel_analiz_yap(ticker_symbol: str) -> dict:
     # Serbest Dolaşım (Float):
     # yFinance floatShares = serbest dolaşımdaki hisse (geniş tanım, BIST fiili dolaşım değil)
     # BIST fiili dolaşım = %5+ pay sahipleri hariç — bu veri yFinance'ta mevcut değil
-    if fiyat and fiyat > 0 and piyasa_degeri and piyasa_degeri > 0 and float_shares and float_shares > 0:
-        toplam_hisse_gercek = piyasa_degeri / fiyat
-        serbest_dolasim = round(float_shares / toplam_hisse_gercek * 100, 2)
-    else:
-        serbest_dolasim = "-"
-    s["Serbest Dolaşım/Float (%)"] = serbest_dolasim  # BIST fiili dolaşımdan farklı olabilir
+    # yFinance floatShares = sharesOutstanding bazlı hesap (BIST fiili dolaşım değil)
+    # BIST fiili dolaşım KAP'tan gelir, yFinance güvenilir değil — bu yüzden gösterilmiyor
+    s["Serbest Dolaşım/Float (%)"] = "KAP'tan kontrol edin"
 
     # C. Değerleme (hesaplanan)
     s["F/K (Hesaplanan)"]        = p_e
