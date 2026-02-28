@@ -9,6 +9,7 @@ import telebot
 from temel_analiz   import temel_analiz_yap
 from teknik_analiz  import teknik_analiz_yap
 from analist_motoru import ai_analist_yorumu
+from cache_yonetici import baslangic_temizligi
 
 # ─────────────────────────────────────────────
 #  YAPILANDIRMA
@@ -28,8 +29,15 @@ TEMEL_GRUPLAR = {
     ("Piyasa Verileri",    "💹"): lambda k: k in (
         "Fiyat", "Piyasa Değeri", "F/K (Günlük)", "PD/DD (Günlük)", "FD/FAVÖK (Günlük)",
         "BETA (yFinance)", "BETA (Manuel 1Y)", "BETA (Manuel 2Y)",
-        "PEG Oranı (Günlük)", "Serbest Dolaşım/Float (%)"
+        "PEG Oranı (Günlük)", "Fiili Dolaşım (%)", "Yabancı Oranı (%)",
+        "⚠️ Veri Tutarsızlığı", "✅ Veri Doğrulaması"
     ),
+    ("Analist & Ortaklık", "🎯"): lambda k: k in (
+        "Analist Hedef — Ort (TL)", "Analist Hedef — Med (TL)",
+        "Analist Hedef — Min (TL)", "Analist Hedef — Maks (TL)",
+        "Analist Sayısı", "Ana Ortaklar"
+    ),
+    ("Sektörel Karşılaştırma", "📊"): lambda k: "Sektör" in k and "Karşılaştırma" not in k,
     ("Değerleme",          "🏷"): lambda k: k in (
         "F/K (Hesaplanan)", "PD/DD (Hesaplanan)", "F/S (Fiyat/Satış)",
         "EV/EBITDA (Hesaplanan)", "EV/EBIT", "EV/Sales", "PEG Oranı (Hesaplanan)"
@@ -308,5 +316,7 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
+    baslangic_temizligi()
+    print(f"[{datetime.now():%H:%M:%S}] 🧹 yFinance cache temizlendi")
     print(f"[{datetime.now():%H:%M:%S}] Bot başlatılıyor...")
     bot.infinity_polling(timeout=30, long_polling_timeout=20)
