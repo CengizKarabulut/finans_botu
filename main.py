@@ -187,7 +187,7 @@ def komut_yardim(message):
     bot.reply_to(message, metin, parse_mode="MarkdownV2")
 
 
-@bot.message_handler(commands=["analiz", "temel", "teknik", "ai"])
+@bot.message_handler(commands=["analiz", "temel", "teknik", "ai", "aiyorum"])
 def komut_analiz(message):
     parcalar = message.text.split()
     if len(parcalar) < 2:
@@ -240,7 +240,7 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
 
         # ── Veri Çekimi ───────────────────────────────────────────────────────
         # /analiz ve /ai komutlarında temel + teknik paralel çalışır
-        if komut in ("analiz", "ai"):
+        if komut in ("analiz", "ai", "aiyorum"):
             with ThreadPoolExecutor(max_workers=2) as ex:
                 f_temel  = ex.submit(temel_analiz_yap, hisse_kodu)
                 f_teknik = ex.submit(teknik_analiz_yap, hisse_kodu)
@@ -309,7 +309,7 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
             bot.send_message(chat_id, ma_blok, parse_mode="MarkdownV2")
 
         # ── AI Analist Yorumu (/ai veya /analiz) ─────────────────────────────
-        if komut == "ai" and temel_veriler and teknik_veriler:
+        if komut in ("ai", "aiyorum") and temel_veriler and teknik_veriler:
             bot.send_message(
                 chat_id,
                 "🤖 *AI Analist* yorumu hazırlanıyor\\.\\.\\.",
