@@ -289,7 +289,12 @@ def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
         if komut == "ai" and temel_veriler and teknik_veriler:
             bot.send_message(chat_id, "AI Analist yorumu hazirlaniyor...", parse_mode=None)
             yorum = ai_analist_yorumu(hisse_kodu, temel_veriler, teknik_veriler)
-            bot.send_message(chat_id, "AI ANALIST: " + hisse_kodu + "\n\n" + yorum, parse_mode=None)
+            tam_metin = "AI ANALIST: " + hisse_kodu + "\n\n" + yorum
+            # 4096 karakter limitini asmamak icin parcala
+            limit = 4000
+            parcalar = [tam_metin[i:i+limit] for i in range(0, len(tam_metin), limit)]
+            for parca in parcalar:
+                bot.send_message(chat_id, parca, parse_mode=None)
     except Exception as e:
         hata = f"❌ *Sistem Hatası*\n`{escape_md(str(e))}`"
         try:
