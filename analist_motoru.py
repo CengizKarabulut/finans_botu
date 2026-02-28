@@ -50,7 +50,7 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     def _rsi(rsi_str):
         try:
             return float(str(rsi_str).split()[0])
-        except:
+        except Exception:
             return 50.0
 
     fk         = _al(temel, "F/K (Günlük)", "F/K (Hesaplanan)")
@@ -92,7 +92,7 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
         if ema_dict and fiyat != "N/A":
             uzerin = sum(1 for v in ema_dict.values() if float(fiyat) > v)
             ema_ozet = f"Fiyat {uzerin}/{len(ema_dict)} EMA'nın üzerinde"
-    except:
+    except Exception:
         pass
 
     return f"""HİSSE: {hisse_kodu} | Sektör: {sektor} | Fiyat: {fiyat}
@@ -127,9 +127,9 @@ EMA: {ema_ozet}""".strip()
 
 def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict) -> str:
     baglam = _veri_ozeti_olustur(hisse_kodu, temel_veriler, teknik_veriler)
-    prompt = f"{hisse_kodu} için verileri analiz et ve raporu hazırla:\n\n{baglam}"
+    prompt = f"{hisse_kodu} icin verileri analiz et ve raporu hazirla:\n\n{baglam}"
 
-    # ── 1. Gemini (google-genai SDK) ─────────────────────────────────────────
+    # 1. Gemini
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
         try:
@@ -137,7 +137,7 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
             from google.genai import types
             client_g = genai.Client(api_key=gemini_key)
             response = client_g.models.generate_content(
-                model="gemini-2.5-flash-preview-04-17",
+                model="models/gemini-2.5-flash",
                 config=types.GenerateContentConfig(
                     system_instruction=SISTEM_PROMPTU,
                     temperature=0.3,
@@ -145,11 +145,11 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                 ),
                 contents=prompt,
             )
-            return "✨ Gemini Analiz:\n\n" + response.text
+            return "Gemini Analiz:\n\n" + response.text
         except Exception as e:
             print(f"[Gemini hata] {e} — Groq'a geçiliyor")
 
-    # ── 2. Groq / Llama 3.3 70B ─────────────────────────────────────────────
+    # 2. Groq
     groq_key = os.environ.get("GROQ_API_KEY")
     if groq_key:
         try:
@@ -163,21 +163,21 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                     {"role": "user",   "content": prompt}
                 ]
             )
-            return "🦙 Llama 3.3 Analiz:\n\n" + yanit.choices[0].message.content
+            return "Llama 3.3 Analiz:\n\n" + yanit.choices[0].message.content
         except Exception as e:
             err = str(e)
             if "429" in err or "rate_limit" in err.lower():
-                return "❌ Groq rate limit aşıldı, 1 dakika sonra tekrar deneyin."
-            return f"❌ Groq hatası: {err}"
+                return "Groq rate limit asildi, 1 dakika sonra tekrar deneyin."
+            return f"Groq hatasi: {err}"
 
-    return "❌ API key tanımlı değil. GEMINI_API_KEY veya GROQ_API_KEY gerekli."
+    return "API key tanimli degil. GEMINI_API_KEY veya GROQ_API_KEY gerekli."
 
 
 if __name__ == "__main__":
     from temel_analiz  import temel_analiz_yap
     from teknik_analiz import teknik_analiz_yap
     hisse = "ASELS.IS"
-    print("Veriler çekiliyor...")
+    print("Veriler cekiliyor...")
     t  = temel_analiz_yap(hisse)
     tk = teknik_analiz_yap(hisse)
     print(ai_analist_yorumu(hisse, t, tk))
