@@ -25,15 +25,48 @@ def _sektor_listesi_yukle():
         _SEKTOR_LISTESI = {}
 
 def _sektor_bul(ticker_symbol: str) -> str:
-    """Hissenin sektörünü JSON'dan döner."""
+    """
+    Hissenin sektörünü önce JSON'dan, bulamazsa borsapy'den anlık çeker.
+    sektor_listesi.json henüz oluşturulmamışsa bile çalışır.
+    """
     _sektor_listesi_yukle()
     t = ticker_symbol.upper().replace(".IS", "")
-    return _SEKTOR_LISTESI.get(t, {}).get("sector", "")
+    sektor = _SEKTOR_LISTESI.get(t, {}).get("sector", "")
+    if sektor:
+        return sektor
+    # JSON'da yoksa borsapy'den anlık çek (fallback)
+    if ticker_symbol.upper().endswith(".IS"):
+        try:
+            import borsapy as bp
+            info = bp.Ticker(t).info
+            sektor = (info.get("sector", "") or "").strip()
+            # Bulunan sektörü JSON cache'e de ekle (process boyunca geçerli)
+            if sektor:
+                _SEKTOR_LISTESI[t] = {"sector": sektor, "industry": info.get("industry", "")}
+        except Exception:
+            pass
+    return sektor
 
 def _sektordeki_hisseler(sektor: str, hisse_kodu: str) -> list:
-    """Aynı sektördeki diğer hisseleri döner."""
+    """
+    Aynı sektördeki diğer hisseleri döner.
+    JSON boşsa borsapy companies() ile anlık doldurur (ilk sorguda yavaş olabilir).
+    """
     _sektor_listesi_yukle()
     t = hisse_kodu.upper().replace(".IS", "")
+
+    # JSON yeterince dolu değilse borsapy'den sektör listesini doldur
+    if len(_SEKTOR_LISTESI) < 10:
+        try:
+            import borsapy as bp
+            sirketler = bp.companies()
+            for _, row in sirketler.iterrows():
+                tk = row.get("ticker", "")
+                if tk and tk not in _SEKTOR_LISTESI:
+                    _SEKTOR_LISTESI[tk] = {"sector": "", "industry": ""}
+        except Exception:
+            pass
+
     return [
         k for k, v in _SEKTOR_LISTESI.items()
         if v.get("sector", "") == sektor and k != t
