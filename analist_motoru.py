@@ -200,13 +200,18 @@ def ai_analist_yorumu(hisse_kodu: str,
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                generation_config={"temperature": 0.3, "max_output_tokens": 1500}
+            from google import genai
+            from google.genai import types
+            client_g = genai.Client(api_key=gemini_key)
+            response = client_g.models.generate_content(
+                model="gemini-2.5-flash-preview-04-17",
+                config=types.GenerateContentConfig(
+                    system_instruction=SISTEM_PROMPTU,
+                    temperature=0.3,
+                    max_output_tokens=1500,
+                ),
+                contents=prompt,
             )
-            response = model.generate_content([SISTEM_PROMPTU + "\n\n" + prompt])
             return "✨ Gemini Analiz:\n\n" + response.text
         except Exception as e:
             print(f"[Gemini hata] {e} → Groq'a geçiliyor")
