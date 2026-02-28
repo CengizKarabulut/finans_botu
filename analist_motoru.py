@@ -36,7 +36,8 @@ KURALLAR:
 - Rakamları mutlaka kullan: "RSI 63.2 ile henüz aşırı alım bölgesi olan 70'in altında"
 - Karşılaştır: "F/K 49 ile savunma sektörü ortalaması olan 20'nin 2.5 katı"
 - N/A olan verileri yoksay
-- Maksimum 500 kelime"""
+- Maksimum 500 kelime
+- MARKDOWN KULLANMA: **, *, #, _ gibi karakterler kesinlikle yasak. Sadece düz metin yaz."""
 
 
 def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
@@ -142,6 +143,7 @@ def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict
                     system_instruction=SISTEM_PROMPTU,
                     temperature=0.3,
                     max_output_tokens=1500,
+                    response_mime_type="text/plain",
                 ),
                 contents=prompt,
             )
