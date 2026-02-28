@@ -1,26 +1,45 @@
-"""
-analist_motoru.py — AI Analist Motoru (Groq / Llama 3.3 70B)
-
-Groq ucretsiz tier: 14.400 istek/gun, 70K token/dakika.
-
-Kurulum:
-  pip install groq
-
-API Key:
-  console.groq.com -> ucretsiz kayit -> API Keys -> yeni key olustur
-  export GROQ_API_KEY="gsk_..."
-"""
-
 import os
 from groq import Groq
 
+SISTEM_PROMPTU = """Sen kıdemli bir Türk borsası (BIST) ve uluslararası piyasa analistisin. 15+ yıl deneyimle hem temel hem teknik analizi derinlemesine yorumlayabiliyorsun.
 
-# ─────────────────────────────────────────────
-#  BAGAM OLUSTURUCU
-# ─────────────────────────────────────────────
+Sana bir hissenin ham verileri verilecek. Bu verileri sentezleyerek kurumsal kalitede, Türkçe, rakamlara dayalı bir analist raporu yaz.
+
+RAPOR YAPISI:
+
+1. ÖZET GÖRÜŞ
+Hissenin genel durumunu şu etiketlerden biriyle değerlendir:
+"Güçlü Alım Bölgesi / Alım Bölgesi / Nötr / Satım Bölgesi / Güçlü Satım Bölgesi"
+Neden bu etiketi seçtiğini 2-3 cümleyle açıkla.
+
+2. TEMEL ANALİZ
+Değerleme: F/K, PD/DD, FD/FAVÖK rakamlarını sektör normlarıyla kıyasla. Pahalı mı ucuz mu?
+Büyüme: Yıllık ve çeyreklik büyüme hızını yorumla. Sürdürülebilir mi?
+Karlılık: Marjların trendi ne söylüyor? ROE/ROA sektör için iyi mi?
+Bilanço: Borç yapısı, cari oran, FCF kalitesi.
+
+3. TEKNİK ANALİZ
+Trend: Supertrend, AlphaTrend ve EMA durumuna göre ana trend yönü.
+Momentum: RSI seviyesi, MACD sinyali, Stoch RSI.
+Hacim & Para Akışı: RVOL, CMF yorumu.
+Kritik Seviyeler: Bollinger, Pivot destek/dirençler.
+Uyarılar: RSI divergence veya trend değişim sinyali varsa vurgula.
+
+4. GÜÇLÜ YÖNLER (en fazla 4 madde, rakam kullan)
+5. ZAYIF YÖNLER (en fazla 4 madde, rakam kullan)
+
+6. RİSK DEĞERLENDİRMESİ (2-3 cümle)
+
+7. YATIRIMCI NOTU: Bu rapor yatırım tavsiyesi değildir.
+
+KURALLAR:
+- Rakamları mutlaka kullan: "RSI 63.2 ile henüz aşırı alım bölgesi olan 70'in altında"
+- Karşılaştır: "F/K 49 ile savunma sektörü ortalaması olan 20'nin 2.5 katı"
+- N/A olan verileri yoksay
+- Maksimum 500 kelime"""
+
 
 def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
-
     def _al(d, *anahtarlar, varsayilan="N/A"):
         for k in anahtarlar:
             v = d.get(k)
@@ -28,63 +47,41 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
                 return v
         return varsayilan
 
-    def _rsi_deger(rsi_str):
+    def _rsi(rsi_str):
         try:
             return float(str(rsi_str).split()[0])
-        except Exception:
+        except:
             return 50.0
 
-    # Temel
-    sektor     = _al(temel, "Firma Sektoru")
-    para_br    = _al(temel, "Para Birimi")
-    fiyat      = _al(temel, "Fiyat")
-    fk         = _al(temel, "F/K (Gunluk)", "F/K (Hesaplanan)")
-    pddd       = _al(temel, "PD/DD (Gunluk)", "PD/DD (Hesaplanan)")
-    fd_favk    = _al(temel, "FD/FAVOK (Gunluk)", "EV/EBITDA (Hesaplanan)")
-    peg        = _al(temel, "PEG Orani (Hesaplanan)", "PEG Orani (Gunluk)")
-    fs         = _al(temel, "F/S (Fiyat/Satis)")
-    net_mar_y  = _al(temel, "Net Kar Marji \u2014 Yillik (%)")
-    brut_mar_y = _al(temel, "Brut Kar Marji \u2014 Yillik (%)")
-    favk_mar_y = _al(temel, "FAVOK Marji \u2014 Yillik (%)")
-    net_mar_q  = _al(temel, "Net Kar Marji \u2014 Ceyreklik (%)")
-    favk_mar_q = _al(temel, "FAVOK Marji \u2014 Ceyreklik (%)")
-    roe        = _al(temel, "Ozsermaye Karliligi (ROE) \u2014 Yillik")
-    roa        = _al(temel, "Varlik Karliligi (ROA) \u2014 Yillik")
+    fk         = _al(temel, "F/K (Günlük)", "F/K (Hesaplanan)")
+    pddd       = _al(temel, "PD/DD (Günlük)", "PD/DD (Hesaplanan)")
+    fd_favk    = _al(temel, "FD/FAVÖK (Günlük)", "EV/EBITDA (Hesaplanan)")
+    peg        = _al(temel, "PEG Oranı (Hesaplanan)", "PEG Oranı (Günlük)")
+    fs         = _al(temel, "F/S (Fiyat/Satış)")
+    net_mar_y  = _al(temel, "Net Kar Marjı — Yıllık (%)")
+    brut_mar_y = _al(temel, "Brüt Kar Marjı — Yıllık (%)")
+    favk_mar_y = _al(temel, "FAVÖK Marjı — Yıllık (%)")
+    net_mar_q  = _al(temel, "Net Kar Marjı — Çeyreklik (%)")
+    roe        = _al(temel, "Özsermaye Karlılığı (ROE) — Yıllık")
+    roa        = _al(temel, "Varlık Karlılığı (ROA) — Yıllık")
     roic       = _al(temel, "ROIC (%)")
-    satis_y    = _al(temel, "Satis Buyumesi \u2014 Yillik (%)")
-    kar_y      = _al(temel, "Net Kar Buyumesi \u2014 Yillik (%)")
-    satis_yoy  = _al(temel, "Satis Buyumesi \u2014 YoY (%)")
-    satis_qoq  = _al(temel, "Satis Buyumesi \u2014 QoQ (%)")
+    satis_y    = _al(temel, "Satış Büyümesi — Yıllık (%)")
+    kar_y      = _al(temel, "Net Kar Büyümesi — Yıllık (%)")
+    satis_yoy  = _al(temel, "Satış Büyümesi — YoY (%)")
+    satis_qoq  = _al(temel, "Satış Büyümesi — QoQ (%)")
     cari       = _al(temel, "Cari Oran")
-    de         = _al(temel, "Borc / Ozsermaye (D/E)")
-    net_borc_f = _al(temel, "Net Borc / FAVOK")
-    faiz_kar   = _al(temel, "Faiz Karsilama Orani")
+    de         = _al(temel, "Borç / Özsermaye (D/E)")
+    net_borc_f = _al(temel, "Net Borç / FAVÖK")
+    faiz_kar   = _al(temel, "Faiz Karşılama Oranı")
     fcf_get    = _al(temel, "FCF Getirisi (%)")
     fcf_kar    = _al(temel, "FCF / Net Kar")
-    temettu    = _al(temel, "Temettu Verimi (%)")
+    temettu    = _al(temel, "Temettü Verimi (%)")
+    sektor     = _al(temel, "Firma Sektörü")
+    fiyat      = _al(temel, "Fiyat")
 
-    # Teknik
-    rsi_raw    = _al(teknik, "RSI (14)", varsayilan="50")
-    rsi        = _rsi_deger(rsi_raw)
-    rsi_div    = _al(teknik, "RSI Divergence", varsayilan="Yok")
-    stoch      = _al(teknik, "Stoch RSI (K / D)")
-    macd       = _al(teknik, "MACD (12,26,9)")
-    adx        = _al(teknik, "ADX (14) Trend Gucu")
-    cmf        = _al(teknik, "CMF (20) Para Akisi")
-    bb         = _al(teknik, "Bollinger Bantlari")
-    bb_pb      = _al(teknik, "BB %B")
-    ichi_bulut = _al(teknik, "Ichimoku Bulut")
-    ichi_tk    = _al(teknik, "Ichimoku (Tenkan/Kijun)")
-    supertrend = _al(teknik, "Supertrend (3,10)")
-    alphatrend = _al(teknik, "AlphaTrend (1,14)")
-    momentum   = _al(teknik, "Momentum (10)")
-    rvol       = _al(teknik, "Goreceli Hacim (RVOL)")
-    pivot      = _al(teknik, "Pivot (Geleneksel)")
-
-    # EMA pozisyon ozeti
     ema_ozet = "N/A"
     try:
-        ema_str  = teknik.get("EMA (\u00dcstsel)", "")
+        ema_str = teknik.get("EMA (Üstel)", "")
         ema_dict = {}
         for p in ema_str.split("|"):
             p = p.strip()
@@ -93,110 +90,46 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
                 gun = int(k.strip().replace("g", ""))
                 ema_dict[gun] = float(v.strip())
         if ema_dict and fiyat != "N/A":
-            fiyat_f = float(fiyat)
-            uzerin  = sum(1 for v in ema_dict.values() if fiyat_f > v)
-            ema_ozet = (
-                f"Fiyat {uzerin}/{len(ema_dict)} EMA'nin uzerinde. "
-                f"EMA20={ema_dict.get(20,'?')}, "
-                f"EMA50={ema_dict.get(50,'?')}, "
-                f"EMA200={ema_dict.get(200,'?')}"
-            )
-    except Exception:
+            uzerin = sum(1 for v in ema_dict.values() if float(fiyat) > v)
+            ema_ozet = f"Fiyat {uzerin}/{len(ema_dict)} EMA'nın üzerinde"
+    except:
         pass
 
-    return (
-        f"HISSE: {hisse_kodu} | Sektor: {sektor} | Para Birimi: {para_br} | Fiyat: {fiyat}\n\n"
-        f"=== DEGERLEME ===\n"
-        f"F/K: {fk} | PD/DD: {pddd} | FD/FAVOK: {fd_favk} | PEG: {peg} | F/S: {fs}\n\n"
-        f"=== KARLILIK ===\n"
-        f"Net Kar Marji Y/Q: {net_mar_y}% / {net_mar_q}% | Brut Marj: {brut_mar_y}%\n"
-        f"FAVOK Marji Y/Q: {favk_mar_y}% / {favk_mar_q}%\n"
-        f"ROE: {roe}% | ROA: {roa}% | ROIC: {roic}%\n\n"
-        f"=== BUYUME ===\n"
-        f"Satis (Yillik): {satis_y}% | Net Kar (Yillik): {kar_y}%\n"
-        f"Satis YoY: {satis_yoy}% | QoQ: {satis_qoq}%\n\n"
-        f"=== BORC & LIKIDITE ===\n"
-        f"Cari Oran: {cari} | D/E: {de} | Net Borc/FAVOK: {net_borc_f} | Faiz Karsilama: {faiz_kar}\n\n"
-        f"=== NAKIT AKISI ===\n"
-        f"FCF Getirisi: {fcf_get}% | FCF/Net Kar: {fcf_kar} | Temettu: {temettu}%\n\n"
-        f"=== TEKNIK ===\n"
-        f"RSI: {rsi} | Divergence: {rsi_div}\n"
-        f"Stoch RSI: {stoch} | MACD: {macd}\n"
-        f"ADX: {adx} | CMF: {cmf}\n"
-        f"Bollinger: {bb} | BB %B: {bb_pb}\n"
-        f"Ichimoku: {ichi_bulut} | Tenkan/Kijun: {ichi_tk}\n"
-        f"Supertrend: {supertrend} | AlphaTrend: {alphatrend}\n"
-        f"Momentum: {momentum} | RVOL: {rvol}\n"
-        f"Pivot: {pivot}\n"
-        f"EMA Durumu: {ema_ozet}"
-    )
+    return f"""HİSSE: {hisse_kodu} | Sektör: {sektor} | Fiyat: {fiyat}
+
+=== DEĞERLEME ===
+F/K: {fk} | PD/DD: {pddd} | FD/FAVÖK: {fd_favk} | PEG: {peg} | F/S: {fs}
+
+=== KARLILIK ===
+Net Kar Marjı Y/Q: {net_mar_y}% / {net_mar_q}% | Brüt Marj: {brut_mar_y}% | FAVÖK Marjı: {favk_mar_y}%
+ROE: {roe}% | ROA: {roa}% | ROIC: {roic}%
+
+=== BÜYÜME ===
+Satış Yıllık: {satis_y}% | Net Kar Yıllık: {kar_y}% | YoY: {satis_yoy}% | QoQ: {satis_qoq}%
+
+=== BORÇ & LİKİDİTE ===
+Cari Oran: {cari} | D/E: {de} | Net Borç/FAVÖK: {net_borc_f} | Faiz Karşılama: {faiz_kar}
+
+=== NAKİT AKIŞI ===
+FCF Getirisi: {fcf_get}% | FCF/Net Kar: {fcf_kar} | Temettü: {temettu}%
+
+=== TEKNİK ===
+RSI: {_rsi(_al(teknik, "RSI (14)", varsayilan="50"))} | Divergence: {_al(teknik, "RSI Divergence", varsayilan="Yok")}
+Stoch RSI: {_al(teknik, "Stoch RSI (K / D)")} | MACD: {_al(teknik, "MACD (12,26,9)")}
+ADX: {_al(teknik, "ADX (14) Trend Gücü")} | CMF: {_al(teknik, "CMF (20) Para Akışı")}
+Bollinger: {_al(teknik, "Bollinger Bantları")} | BB %B: {_al(teknik, "BB %B")}
+Ichimoku: {_al(teknik, "Ichimoku Bulut")} | T/K: {_al(teknik, "Ichimoku (Tenkan/Kijun)")}
+Supertrend: {_al(teknik, "Supertrend (3,10)")} | AlphaTrend: {_al(teknik, "AlphaTrend (1,14)")}
+Momentum: {_al(teknik, "Momentum (10)")} | RVOL: {_al(teknik, "Göreceli Hacim (RVOL)")}
+Pivot: {_al(teknik, "Pivot (Geleneksel)")}
+EMA: {ema_ozet}""".strip()
 
 
-# ─────────────────────────────────────────────
-#  SISTEM PROMPTU
-# ─────────────────────────────────────────────
-
-SISTEM_PROMPTU = """Sen kıdemli bir Türk borsası (BIST) ve uluslararası piyasa analistisin. 15+ yıl deneyimle hem temel hem teknik analizi derinlemesine yorumlayabiliyorsun.
-
-Sana bir hissenin ham verileri verilecek. Bu verileri sentezleyerek kurumsal kalitede, Türkçe, rakamlara dayalı bir analist raporu yaz.
-
-═══ RAPOR YAPISI ═══
-
-1. ÖZET GÖRÜŞ
-Tek paragraf. Hissenin genel durumunu net bir etiketle değerlendir:
-"Güçlü Alım Bölgesi / Alım Bölgesi / Nötr / Satım Bölgesi / Güçlü Satım Bölgesi"
-Neden bu etiketi seçtiğini 2-3 cümleyle açıkla.
-
-2. TEMEL ANALİZ
-Değerleme: F/K, PD/DD, FD/FAVÖK rakamlarını sektör normlarıyla kıyasla. Pahalı mı ucuz mu?
-Büyüme: Yıllık ve çeyreklik büyüme hızını yorumla. Sürdürülebilir mi? İvme kazanıyor mu kaybediyor mu?
-Karlılık: Marjların trendi ne söylüyor? ROE/ROA sektör için iyi mi?
-Bilanço: Borç yapısı, cari oran, FCF kalitesi. Risk mi fırsat mı?
-
-3. TEKNİK ANALİZ
-Trend: Supertrend, AlphaTrend ve EMA durumuna göre ana trend yönü ne?
-Momentum: RSI seviyesi (aşırı alım/satım?), MACD sinyali, Stoch RSI konumu.
-Hacim & Para Akışı: RVOL yüksekse hacim teyidi var mı? CMF para girişi mi çıkışı mı gösteriyor?
-Kritik Seviyeler: Bollinger bantları, Pivot destek/dirençleri. Fiyat nerede?
-Uyarılar: RSI divergence, trend değişim sinyali varsa özellikle vurgula.
-
-4. GÜÇLÜ YÖNLER (en fazla 4 madde, her biri 1 cümle, rakam kullan)
-5. ZAYIF YÖNLER (en fazla 4 madde, her biri 1 cümle, rakam kullan)
-
-6. RİSK DEĞERLENDİRMESİ
-Temel riskler (borç, karlılık, sektör) ve teknik riskler (kırılacak seviyeler) — 2-3 cümle.
-
-7. YATIRIMCI NOTU
-"Bu rapor yatırım tavsiyesi değildir. Yatırım kararlarınızı kendi araştırmanıza ve risk toleransınıza göre verin."
-
-═══ YAZIM KURALLARI ═══
-- Rakamları mutlaka kullan: "RSI 63.2 ile henüz aşırı alım bölgesi olan 70'in altında"
-- Karşılaştır: "F/K 49 ile savunma sektörü ortalaması olan 20'nin 2.5 katı"
-- Belirsiz ifadelerden kaçın: "iyi görünüyor" yerine "net kar marjı %20.4 ile güçlü"
-- Çelişkili sinyalleri kabul et: temel güçlüyse ama teknik zayıfsa bunu söyle
-- N/A olan verileri yoksay, olmayan veri için yorum yapma
-- Maksimum 500 kelime"""
-
-
-# ─────────────────────────────────────────────
-#  ANA FONKSİYON
-# ─────────────────────────────────────────────
-
-def ai_analist_yorumu(hisse_kodu: str,
-                       temel_veriler: dict,
-                       teknik_veriler: dict) -> str:
-    """
-    1. Önce Gemini Flash (GEMINI_API_KEY varsa)
-    2. Yoksa veya hata olursa Groq / Llama 3.3 70B (GROQ_API_KEY)
-
-    Key kurulumu:
-      export GEMINI_API_KEY="AIza..."   # aistudio.google.com'dan ücretsiz
-      export GROQ_API_KEY="gsk_..."     # console.groq.com'dan ücretsiz
-    """
+def ai_analist_yorumu(hisse_kodu: str, temel_veriler: dict, teknik_veriler: dict) -> str:
     baglam = _veri_ozeti_olustur(hisse_kodu, temel_veriler, teknik_veriler)
     prompt = f"{hisse_kodu} için verileri analiz et ve raporu hazırla:\n\n{baglam}"
 
-    # ── 1. Gemini Flash ───────────────────────────────────────────────────────
+    # ── 1. Gemini (google-genai SDK) ─────────────────────────────────────────
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
         try:
@@ -214,18 +147,18 @@ def ai_analist_yorumu(hisse_kodu: str,
             )
             return "✨ Gemini Analiz:\n\n" + response.text
         except Exception as e:
-            print(f"[Gemini hata] {e} → Groq'a geçiliyor")
+            print(f"[Gemini hata] {e} — Groq'a geçiliyor")
 
-    # ── 2. Groq / Llama 3.3 70B ──────────────────────────────────────────────
+    # ── 2. Groq / Llama 3.3 70B ─────────────────────────────────────────────
     groq_key = os.environ.get("GROQ_API_KEY")
     if groq_key:
         try:
             client = Groq(api_key=groq_key)
             yanit = client.chat.completions.create(
-                model       = "llama-3.3-70b-versatile",
-                max_tokens  = 1500,
-                temperature = 0.3,
-                messages    = [
+                model="llama-3.3-70b-versatile",
+                max_tokens=1500,
+                temperature=0.3,
+                messages=[
                     {"role": "system", "content": SISTEM_PROMPTU},
                     {"role": "user",   "content": prompt}
                 ]
@@ -237,27 +170,14 @@ def ai_analist_yorumu(hisse_kodu: str,
                 return "❌ Groq rate limit aşıldı, 1 dakika sonra tekrar deneyin."
             return f"❌ Groq hatası: {err}"
 
-    return (
-        "❌ API key tanımlı değil.\n"
-        "Gemini: aistudio.google.com → ücretsiz\n"
-        "Groq: console.groq.com → ücretsiz\n"
-        "Sunucuda: export GEMINI_API_KEY=... veya export GROQ_API_KEY=..."
-    )
+    return "❌ API key tanımlı değil. GEMINI_API_KEY veya GROQ_API_KEY gerekli."
 
-
-# ─────────────────────────────────────────────
-#  TERMINAL TEST
-# ─────────────────────────────────────────────
 
 if __name__ == "__main__":
     from temel_analiz  import temel_analiz_yap
     from teknik_analiz import teknik_analiz_yap
-
     hisse = "ASELS.IS"
-    print(f"\n{'=' * 60}\n  AI ANALIST  {hisse}\n{'=' * 60}")
-    print("Veriler cekiliyor...")
+    print("Veriler çekiliyor...")
     t  = temel_analiz_yap(hisse)
     tk = teknik_analiz_yap(hisse)
-    print("Llama 3.3 70B yorumluyor...\n")
     print(ai_analist_yorumu(hisse, t, tk))
-    print(f"\n{'=' * 60}\n")
