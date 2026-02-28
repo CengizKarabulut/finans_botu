@@ -80,6 +80,18 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     sektor     = _al(temel, "Firma Sektörü")
     fiyat      = _al(temel, "Fiyat")
 
+    # borsapy verileri
+    fiili_dolasim = _al(temel, "Fiili Dolaşım (%)")
+    yabanci_oran  = _al(temel, "Yabancı Oranı (%)")
+    analist_ort   = _al(temel, "Analist Hedef — Ort (TL)")
+    analist_min   = _al(temel, "Analist Hedef — Min (TL)")
+    analist_maks  = _al(temel, "Analist Hedef — Maks (TL)")
+    analist_n     = _al(temel, "Analist Sayısı")
+    ana_ortaklar  = _al(temel, "Ana Ortaklar")
+    sektor_fk     = _al(temel, "Sektör Ort. F/K")
+    sektor_pddd   = _al(temel, "Sektör Ort. PD/DD")
+    sektor_n      = _al(temel, f"Sektör ({sektor}) — Hisse Sayısı")
+
     ema_ozet = "N/A"
     try:
         ema_str = teknik.get("EMA (Üstel)", "")
@@ -96,10 +108,22 @@ def _veri_ozeti_olustur(hisse_kodu: str, temel: dict, teknik: dict) -> str:
     except Exception:
         pass
 
+    # Sektör karşılaştırma özeti
+    sektor_karsilastirma = ""
+    if sektor_fk != "N/A" or sektor_pddd != "N/A":
+        sektor_karsilastirma = f"\nSektör ({sektor}, n={sektor_n}): F/K Ort={sektor_fk} | PD/DD Ort={sektor_pddd}"
+
+    # Analist konsensüs özeti
+    analist_ozet = ""
+    if analist_ort != "N/A":
+        analist_ozet = f"\nAnalist Konsensüs ({analist_n} analist): Hedef={analist_ort} TL | Min={analist_min} | Maks={analist_maks} TL"
+
     return f"""HİSSE: {hisse_kodu} | Sektör: {sektor} | Fiyat: {fiyat}
+Fiili Dolaşım: {fiili_dolasim}% | Yabancı Oranı: {yabanci_oran}%{analist_ozet}
+Ana Ortaklar: {ana_ortaklar}
 
 === DEĞERLEME ===
-F/K: {fk} | PD/DD: {pddd} | FD/FAVÖK: {fd_favk} | PEG: {peg} | F/S: {fs}
+F/K: {fk} | PD/DD: {pddd} | FD/FAVÖK: {fd_favk} | PEG: {peg} | F/S: {fs}{sektor_karsilastirma}
 
 === KARLILIK ===
 Net Kar Marjı Y/Q: {net_mar_y}% / {net_mar_q}% | Brüt Marj: {brut_mar_y}% | FAVÖK Marjı: {favk_mar_y}%
