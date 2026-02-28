@@ -255,27 +255,37 @@ def rate_limit_kontrol(user_id: int) -> int:
 def komut_yardim(message):
     metin = (
         "📈 *Finans Asistanı*\n\n"
+
         "🇹🇷 *BIST Hisseleri:*\n"
-        "`/analiz TUPRS` — Temel \\+ Teknik analiz\n"
-        "`/temel THYAO` — Yalnızca temel analiz\n"
-        "`/teknik ASELS` — Yalnızca teknik analiz\n"
-        "`/ai ASELS` — 🤖 AI Analist Yorumu\n\n"
+        "`/analiz TUPRS` — Temel \\+ Teknik analiz\\n"
+        "`/temel THYAO` — Yalnızca temel analiz\\n"
+        "`/teknik ASELS` — Yalnızca teknik analiz\\n"
+        "`/ai ASELS` — 🤖 AI Analist Yorumu\\n\\n"
+
         "🌍 *Yabancı Hisseler:*\n"
-        "`/temel AAPL` — Apple \\(ABD\\)\n"
-        "`/temel SHEL\\.L` — Shell \\(Londra\\)\n"
-        "`/temel SAP\\.DE` — SAP \\(Frankfurt\\)\n\n"
+        "`/analiz AAPL` — Temel \\+ Teknik \\(ABD\\)\\n"
+        "`/teknik SHEL\\.L` — Yalnızca teknik \\(Londra\\)\\n"
+        "`/ai SAP\\.DE` — AI Yorum \\(Frankfurt\\)\\n"
+        "Borsa uzantıları: \\.L \\.DE \\.PA \\.HK \\.T \\.AX vb\\.\\n\\n"
+
         "₿ *Kripto:*\n"
-        "`/kripto BTC` — Bitcoin\n"
-        "`/kripto ETHTRY` — Ethereum TRY\n"
-        "`/kripto liste` — Tüm desteklenen kriptolar\n\n"
+        "`/kripto BTC` — Bitcoin \\(USD\\)\\n"
+        "`/kripto ETHTRY` — Ethereum \\(TRY\\)\\n"
+        "`/ai BTC` — AI Kripto Yorumu\\n"
+        "`/kripto liste` — Tüm desteklenen kriptolar\\n\\n"
+
         "💱 *Döviz:*\n"
-        "`/doviz USDTRY` — Dolar/TL\n"
-        "`/doviz EURUSD` — Euro/Dolar\n"
-        "`/doviz liste` — Tüm pariteler\n\n"
+        "`/doviz USDTRY` — Dolar/TL\\n"
+        "`/doviz EURUSD` — Euro/Dolar\\n"
+        "`/ai USDTRY` — AI Döviz Yorumu\\n"
+        "`/doviz liste` — Tüm pariteler\\n\\n"
+
         "🏭 *Emtia:*\n"
-        "`/emtia ALTIN` — Altın vadeli\n"
-        "`/emtia PETROL` — Ham petrol\n"
-        "`/emtia liste` — Tüm emtialar\n\n"
+        "`/emtia ALTIN` — Altın vadeli\\n"
+        "`/emtia PETROL` — Ham petrol\\n"
+        "`/ai ALTIN` — AI Emtia Yorumu\\n"
+        "`/emtia liste` — Tüm emtialar\\n\\n"
+
         "💡 BIST için \\.IS uzantısı opsiyonel \\— otomatik eklenir\\.\n"
         f"⏱ Sorgular arası en az {RATE_LIMIT_SANIYE} saniye bekleme uygulanır\\."
     )
