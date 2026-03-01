@@ -13,11 +13,11 @@ from piyasa_analiz  import (
     KRIPTO_LISTE, DOVIZ_LISTE, EMTIA_LISTE,
     KRIPTO_MAP, DOVIZ_MAP, EMTIA_MAP
 )
-from finnhub_veri import (
-    finnhub_haberler, finnhub_insider, finnhub_kazanc_takvimi,
-    finnhub_sentiment, finnhub_genel_sentiment,
-    openfigi_sembol_bilgisi, alphavantage_fiyat,
-    ai_icin_haber_ozeti
+from veri_motoru import (
+    finnhub_haberler, finnhub_insider, finnhub_kazanc,
+    reddit_trend, reddit_kripto_trend,
+    coingecko_trending, alphavantage_fiyat,
+    ai_icin_haber_ozeti, durum_raporu
 )
 
 # ─────────────────────────────────────────────
@@ -285,9 +285,13 @@ def komut_yardim(message):
         f"{code('/emtia liste  ')}  Tüm emtialar\n\n"
 
         f"📰 {bold('Haberler & Insider')}\n"
-        f"{code('/haber  AAPL  ')}  Son haberler\n"
-        f"{code('/insider AAPL ')}  İçeriden işlemler\n"
-        f"{code('/trend        ')}  WSB/Reddit trend\n\n"
+        f"{code('/haber  AAPL  ')}  Son haberler (Finnhub/yFinance/KAP)\n"
+        f"{code('/insider AAPL ')}  İçeriden alım/satım\n"
+        f"{code('/trend        ')}  Reddit WSB hisse trend\n"
+        f"{code('/trend kripto ')}  CoinGecko + Reddit kripto trend\n\n"
+
+        f"🔧 {bold('Sistem')}\n"
+        f"{code('/durum        ')}  API bağlantı durumu\n\n"
 
         f"┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n"
         f"💡 BIST'te {code('.IS')} otomatik eklenir\n"
@@ -446,17 +450,27 @@ def komut_insider(message):
 
 @bot.message_handler(commands=["trend"])
 def komut_trend(message):
+    parcalar = message.text.split()
+    tip = "kripto" if len(parcalar) > 1 and parcalar[1].lower() in ("kripto","crypto","btc") else "hisse"
     user_id = message.from_user.id
     bekleme = rate_limit_kontrol(user_id)
     if bekleme > 0:
         bot.reply_to(message, f"⏳ {bold(str(bekleme))} saniye bekleyin.",
             parse_mode="HTML"); return
     _son_istek[user_id] = datetime.now()
+    emoji = "₿" if tip == "kripto" else "📊"
     bekle_msg = bot.reply_to(message,
-        "⏳ 📊 Reddit/WSB trend verileri çekiliyor...", parse_mode="HTML")
+        f"⏳ {emoji} Trend verileri çekiliyor...", parse_mode="HTML")
     threading.Thread(target=_trend_isle,
-        args=(message.chat.id, bekle_msg.message_id),
+        args=(message.chat.id, bekle_msg.message_id, tip),
         daemon=True).start()
+
+
+@bot.message_handler(commands=["durum"])
+def komut_durum(message):
+    from veri_motoru import durum_raporu
+    rapor = durum_raporu()
+    bot.reply_to(message, f"<pre>{h(rapor)}</pre>", parse_mode="HTML")
 
 
 # ─────────────────────────────────────────────
@@ -636,24 +650,35 @@ def _haber_isle(chat_id, mesaj_id, sembol):
     try:
         haberler = finnhub_haberler(sembol, gun=14)
         if not haberler:
-            fh_notu = " (Finnhub key eklenirse daha fazla kaynak)" if not os.environ.get("FINNHUB_API_KEY") else ""
+            fh_notu = ""
+            if not os.environ.get("FINNHUB_API_KEY"):
+                fh_notu = "\n<i>💡 FINNHUB_API_KEY eklenirse daha fazla kaynak</i>"
             bot.edit_message_text(
-                f"📰 {bold(sembol)} için haber bulunamadı.{fh_notu}",
-                chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML"); return
+                f"📰 {bold(sembol + ' için haber bulunamadı.')}{fh_notu}",
+                chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML")
+            return
 
-        satirlar = []
-        for hbr in haberler[:8]:
-            if hbr["baslik"]:
-                satirlar.append(f"[{hbr['tarih']}] {hbr['baslik']}")
-                if hbr.get("kaynak"):
-                    satirlar.append(f"  ↳ {hbr['kaynak']}")
-                satirlar.append("")
-
+        kaynak_tipi = haberler[0].get("kaynak_tipi", "")
         rapor = (f"📰 {bold(sembol + ' — SON HABERLER')}\n"
-                 f"<i>{AYRAC}</i>\n")
-        rapor += blok("Haberler (14 gün)", "📰", [s for s in satirlar if s])
-        bot.edit_message_text(rapor, chat_id=chat_id,
-            message_id=mesaj_id, parse_mode="HTML")
+                 f"<i>{AYRAC}</i>\n"
+                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n\n")
+
+        for i, hbr in enumerate(haberler[:8], 1):
+            if not hbr.get("baslik"):
+                continue
+            tarih  = hbr.get("tarih", "")
+            baslik = hbr.get("baslik", "")
+            kaynak = hbr.get("kaynak", "")
+            # Her haber kendi bloğu
+            rapor += f"<b>{i}.</b> {h(baslik)}\n"
+            alt = []
+            if tarih and tarih != "-": alt.append(f"📅 {tarih}")
+            if kaynak: alt.append(f"📌 {h(kaynak)}")
+            if alt:
+                rapor += f"<i>   {'  |  '.join(alt)}</i>\n"
+            rapor += "\n"
+
+        _gonder(chat_id, mesaj_id, rapor.strip())
 
     except Exception as e:
         try: bot.edit_message_text(f"❌ Hata: {h(str(e))}",
@@ -666,25 +691,28 @@ def _insider_isle(chat_id, mesaj_id, sembol):
         islemler = finnhub_insider(sembol)
         if not islemler:
             bot.edit_message_text(
-                f"🔍 {bold(sembol)} için insider verisi bulunamadı.",
-                chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML"); return
+                f"🔍 {bold(sembol + ' için insider verisi bulunamadı.')}\n"
+                f"<i>Not: Bu özellik yalnızca ABD hisseleri için çalışır.</i>",
+                chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML")
+            return
 
-        satirlar = []
-        for t in islemler:
-            etiket = "🟢 ALIM" if t["islem"] == "ALIM" else "🔴 SATIM"
-            fiyat_str = f"${t['fiyat']:.2f}" if t['fiyat'] else "-"
-            satirlar.append(
-                f"{etiket}  {t['tarih']}  {t['isim'][:20]}"
-            )
-            satirlar.append(
-                f"  Adet: {t['adet']:,}  Fiyat: {fiyat_str}"
-            )
-
+        kaynak_tipi = islemler[0].get("kaynak_tipi", "")
         rapor = (f"🔍 {bold(sembol + ' — İNSIDER İŞLEMLER')}\n"
-                 f"<i>{AYRAC}</i>\n")
-        rapor += blok("İçeriden Alım/Satım", "🔍", satirlar)
-        bot.edit_message_text(rapor, chat_id=chat_id,
-            message_id=mesaj_id, parse_mode="HTML")
+                 f"<i>{AYRAC}</i>\n"
+                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n\n")
+
+        for t in islemler:
+            etiket = "🟢 <b>ALIM</b>" if t["islem"] == "ALIM" else "🔴 <b>SATIM</b>"
+            isim   = h(t.get("isim","")[:28])
+            tarih  = h(t.get("tarih",""))
+            adet   = f"{int(t.get('adet',0)):,}"
+            fiyat_ham = t.get("fiyat", 0) or 0
+            fiyat  = f"${fiyat_ham:.2f}" if fiyat_ham and fiyat_ham > 0.01 else "—"
+            rapor += f"{etiket}  {tarih}\n"
+            rapor += f"  👤 {isim}\n"
+            rapor += f"  📦 {adet} adet  💵 {fiyat}\n\n"
+
+        _gonder(chat_id, mesaj_id, rapor.strip())
 
     except Exception as e:
         try: bot.edit_message_text(f"❌ Hata: {h(str(e))}",
@@ -692,24 +720,58 @@ def _insider_isle(chat_id, mesaj_id, sembol):
         except: pass
 
 
-def _trend_isle(chat_id, mesaj_id):
+def _trend_isle(chat_id, mesaj_id, tip: str = "hisse"):
     try:
-        trending = finnhub_genel_sentiment()
-        if not trending:
-            bot.edit_message_text(
-                "📊 Trend verisi alınamadı.",
-                chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML"); return
+        if tip == "kripto":
+            from veri_motoru import coingecko_trending, reddit_kripto_trend
+            # CoinGecko önce, fallback reddit
+            cg_trend = coingecko_trending()
+            rd_trend = reddit_kripto_trend()
 
-        satirlar = []
-        for i, t in enumerate(trending[:10], 1):
-            satirlar.append(
-                f"#{i:2}  {t['sembol']:<8}  {t['mention']:>5} mention"
-            )
+            rapor = (f"₿ {bold('KRİPTO TREND')}\n"
+                     f"<i>{AYRAC}</i>\n")
 
-        rapor = (f"📊 {bold('REDDIT / WSB TREND HİSSELER')}\n"
-                 f"<i>{AYRAC}</i>\n")
-        rapor += blok("En Çok Konuşulanlar", "🔥", satirlar)
-        rapor += f"\n<i>Kaynak: ApeWisdom (Reddit WSB + Stocks)</i>"
+            if cg_trend:
+                satirlar = []
+                for i, t in enumerate(cg_trend[:8], 1):
+                    deg = t.get("degisim", 0) or 0
+                    isaret = "🟢" if deg >= 0 else "🔴"
+                    satirlar.append(
+                        f"#{i:2}  {t['sembol']:<8}  {isaret} {deg:+.1f}%  {t['isim'][:18]}"
+                    )
+                rapor += blok("CoinGecko Trend (24s)", "🔥", satirlar)
+
+            if rd_trend:
+                satirlar2 = []
+                for i, t in enumerate(rd_trend[:8], 1):
+                    satirlar2.append(
+                        f"#{i:2}  {t['sembol']:<8}  {t['mention']:>5} mention"
+                    )
+                rapor += "\n" + blok("Reddit Kripto Trend", "💬", satirlar2)
+
+            rapor += f"\n<i>Kaynak: CoinGecko + ApeWisdom</i>"
+
+        else:
+            trending = reddit_trend()
+            if not trending:
+                bot.edit_message_text(
+                    "📊 Trend verisi alınamadı.",
+                    chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML")
+                return
+
+            satirlar = []
+            for i, t in enumerate(trending[:12], 1):
+                degisim = t.get("degisim", 0) or 0
+                trend_ok = "📈" if t["mention"] > degisim else "📉"
+                satirlar.append(
+                    f"#{i:2}  {t['sembol']:<8}  {t['mention']:>5} mention  {trend_ok}"
+                )
+
+            rapor = (f"📊 {bold('REDDIT / WSB TREND HİSSELER')}\n"
+                     f"<i>{AYRAC}</i>\n")
+            rapor += blok("En Çok Konuşulanlar", "🔥", satirlar)
+            rapor += f"\n<i>Kaynak: ApeWisdom (Reddit WSB + Stocks)</i>"
+
         bot.edit_message_text(rapor, chat_id=chat_id,
             message_id=mesaj_id, parse_mode="HTML")
 
