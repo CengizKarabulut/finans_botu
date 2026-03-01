@@ -411,10 +411,6 @@ def komut_haber(message):
         bot.reply_to(message,
             f"⚠️ Örnek: {code('/haber AAPL')}", parse_mode="HTML"); return
     girdi = parcalar[1].upper()
-    if not os.environ.get("FINNHUB_API_KEY"):
-        bot.reply_to(message,
-            "⚠️ FINNHUB_API_KEY tanımlı değil. finnhub.io'dan ücretsiz alın.",
-            parse_mode="HTML"); return
     user_id = message.from_user.id
     bekleme = rate_limit_kontrol(user_id)
     if bekleme > 0:
@@ -435,9 +431,6 @@ def komut_insider(message):
         bot.reply_to(message,
             f"⚠️ Örnek: {code('/insider AAPL')}", parse_mode="HTML"); return
     girdi = parcalar[1].upper()
-    if not os.environ.get("FINNHUB_API_KEY"):
-        bot.reply_to(message,
-            "⚠️ FINNHUB_API_KEY tanımlı değil.", parse_mode="HTML"); return
     user_id = message.from_user.id
     bekleme = rate_limit_kontrol(user_id)
     if bekleme > 0:
@@ -643,9 +636,9 @@ def _haber_isle(chat_id, mesaj_id, sembol):
     try:
         haberler = finnhub_haberler(sembol, gun=14)
         if not haberler:
+            fh_notu = " (Finnhub key eklenirse daha fazla kaynak)" if not os.environ.get("FINNHUB_API_KEY") else ""
             bot.edit_message_text(
-                f"📰 {bold(sembol)} için haber bulunamadı.\n"
-                f"<i>Not: BIST hisseleri Finnhub'da sınırlı kapsama sahiptir.</i>",
+                f"📰 {bold(sembol)} için haber bulunamadı.{fh_notu}",
                 chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML"); return
 
         satirlar = []
