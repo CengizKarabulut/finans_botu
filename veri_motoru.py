@@ -599,23 +599,46 @@ def finnhub_haberler(sembol: str, gun: int = 14) -> list:
         except Exception:
             pass
 
-    # 3. borsapy fallback (BIST)
+    # 3. borsapy fallback (BIST) — DataFrame döndürür
     if not haberler and sembol.upper().endswith(".IS"):
         try:
             import borsapy as bp
+            import pandas as pd
             t = sembol.upper().replace(".IS", "")
-            haberler_bp = bp.Ticker(t).news or []
-            for item in (haberler_bp[:10] if isinstance(haberler_bp, list) else []):
-                baslik = str(item.get("title", "") or item.get("headline", "") or "")
-                tarih  = str(item.get("date", "") or item.get("publishedAt", "") or "")[:10]
-                if baslik:
-                    haberler.append({
-                        "tarih":  tarih,
-                        "baslik": baslik,
-                        "kaynak": "KAP/borsapy",
-                        "url":    item.get("url", ""),
-                        "kaynaktipi": "borsapy",
-                    })
+            news_df = bp.Ticker(t).news
+            if news_df is not None and isinstance(news_df, pd.DataFrame) and not news_df.empty:
+                # Sütun isimlerini normalize et
+                cols = {c.lower(): c for c in news_df.columns}
+                for _, row in news_df.head(10).iterrows():
+                    # Başlık sütunu: Title, Headline, Subject, Konu vb.
+                    baslik = ""
+                    for k in ["title","headline","subject","konu","baslik"]:
+                        if k in cols:
+                            baslik = str(row[cols[k]] or "").strip()
+                            if baslik:
+                                break
+                    # Tarih sütunu: Date, Tarih vb.
+                    tarih = ""
+                    for k in ["date","tarih","publishedat","datetime"]:
+                        if k in cols:
+                            tarih = str(row[cols[k]] or "")[:16]
+                            if tarih:
+                                break
+                    # URL
+                    url = ""
+                    for k in ["url","link","href"]:
+                        if k in cols:
+                            url = str(row[cols[k]] or "")
+                            if url:
+                                break
+                    if baslik:
+                        haberler.append({
+                            "tarih":     tarih,
+                            "baslik":    baslik,
+                            "kaynak":    "KAP",
+                            "url":       url,
+                            "kaynaktipi":"borsapy/KAP",
+                        })
         except Exception:
             pass
 
