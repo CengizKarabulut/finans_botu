@@ -689,4 +689,15 @@ if __name__ == "__main__":
     baslangic_temizligi()
     print(f"[{datetime.now():%H:%M:%S}] 🧹 yFinance cache temizlendi")
     print(f"[{datetime.now():%H:%M:%S}] Bot başlatılıyor...")
-    bot.infinity_polling(timeout=30, long_polling_timeout=20)
+    import time as _time
+    while True:
+        try:
+            bot.infinity_polling(
+                timeout=60,
+                long_polling_timeout=30,
+                restart_on_change=False,
+                skip_pending=True,
+            )
+        except Exception as _e:
+            print(f"[{datetime.now():%H:%M:%S}] ⚠️ Polling hatası: {_e} — 5sn sonra yeniden başlıyor...")
+            _time.sleep(5)
