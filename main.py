@@ -194,31 +194,61 @@ _BILINEN_UZANTILAR = {
 }
 _TICKER_CACHE: dict = {}
 
+# Bilinen BIST hisseleri — yFinance sorgusu yapmadan direkt .IS ekle
+_BIST_HISSELER = {
+    "ASELS","THYAO","TUPRS","GARAN","AKBNK","YKBNK","ISCTR","HALKB","VAKBN",
+    "KCHOL","SABAH","EREGL","BIMAS","MGROS","SISE","ARCLK","TOASO","FROTO",
+    "PGSUS","TAVHL","TKFEN","ENKAI","KOZAL","KRDMD","PETKM","AGHOL","SAHOL",
+    "OTKAR","TTKOM","TCELL","DOHOL","EKGYO","ISGYO","ALKIM","AKSEN","ZOREN",
+    "MAVI","LOGO","NETAS","OYAKC","CEMTS","BRISA","ULKER","BAGFS","GUBRF",
+    "HEKTS","KLNMA","INDES","DENGE","VESTL","KAREL","ADEL","AEFES","ASUZU",
+    "BANVT","BRSAN","BUCIM","CIMSA","DOAS","DYOBY","EGEEN","EGSER","GLYHO",
+    "GOLTS","GOODY","HURGZ","IZMDC","JANTS","KARSN","KATMR","KENT","KERVT",
+    "KIPA","KONTR","KONYA","KOPOL","KORDS","KUTPO","LKMNH","MAALT","MEPET",
+    "MNDRS","MRDIN","NTTUR","NUHCM","PARSN","PENGD","PRKAB","PRKME","PRZMA",
+    "PTOFS","RYSAS","SELGD","SILVR","SKBNK","SMART","SNGYO","TATGD","TSKB",
+    "TTRAK","TURSG","UNYEC","USAK","VKFYO","YKFIN","YPKRK",
+}
+
 def _normalize_ticker(ticker: str) -> str:
     import yfinance as yf
     ticker = ticker.upper().strip()
+
+    # Zaten uzantılı ise direkt dön
     for uzanti in _BILINEN_UZANTILAR:
         if ticker.endswith(uzanti):
             return ticker
+
+    # Cache'de varsa dön
     if ticker in _TICKER_CACHE:
         return _TICKER_CACHE[ticker]
+
+    # Bilinen BIST hissesi ise direkt .IS ekle (yFinance sorgusu yapmadan)
+    if ticker in _BIST_HISSELER:
+        sonuc = ticker + ".IS"
+        _TICKER_CACHE[ticker] = sonuc
+        return sonuc
+
+    # Bilinmeyen sembol: önce direkt dene (ABD hissesi olabilir)
     try:
-        info = yf.Ticker(ticker).fast_info
-        fiyat = getattr(info,"last_price",None) or getattr(info,"regularMarketPrice",None)
-        if fiyat and float(fiyat) > 0:
+        hist = yf.Ticker(ticker).history(period="5d")
+        if not hist.empty and len(hist) > 0:
             _TICKER_CACHE[ticker] = ticker
             return ticker
     except Exception:
         pass
+
+    # Sonra .IS dene (bilinmeyen BIST hissesi)
     ticker_is = ticker + ".IS"
     try:
-        info = yf.Ticker(ticker_is).fast_info
-        fiyat = getattr(info,"last_price",None) or getattr(info,"regularMarketPrice",None)
-        if fiyat and float(fiyat) > 0:
+        hist = yf.Ticker(ticker_is).history(period="5d")
+        if not hist.empty and len(hist) > 0:
             _TICKER_CACHE[ticker] = ticker_is
             return ticker_is
     except Exception:
         pass
+
+    # Hiçbiri çalışmadı, .IS varsayılan
     _TICKER_CACHE[ticker] = ticker_is
     return ticker_is
 
@@ -690,9 +720,9 @@ def _insider_isle(chat_id, mesaj_id, sembol):
     try:
         islemler = finnhub_insider(sembol)
         if not islemler:
+            bist_notu = "\n<i>Not: BIST hisseleri için insider verisi mevcut değil.</i>" if sembol.upper().endswith(".IS") else ""
             bot.edit_message_text(
-                f"🔍 {bold(sembol + ' için insider verisi bulunamadı.')}\n"
-                f"<i>Not: Bu özellik yalnızca ABD hisseleri için çalışır.</i>",
+                f"🔍 {bold(sembol + ' için insider verisi bulunamadı.')}{bist_notu}",
                 chat_id=chat_id, message_id=mesaj_id, parse_mode="HTML")
             return
 
