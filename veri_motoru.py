@@ -610,25 +610,28 @@ def finnhub_haberler(sembol: str, gun: int = 14) -> list:
                 # Sütun isimlerini normalize et
                 cols = {c.lower(): c for c in news_df.columns}
                 for _, row in news_df.head(10).iterrows():
-                    # Başlık sütunu: Title, Headline, Subject, Konu vb.
+                    # Sütun isimlerini küçük harfe normalize et
+                    row_dict = {k.lower().strip(): v for k, v in row.items()}
+
+                    # Başlık
                     baslik = ""
                     for k in ["title","headline","subject","konu","baslik"]:
-                        if k in cols:
-                            baslik = str(row[cols[k]] or "").strip()
+                        if k in row_dict:
+                            baslik = str(row_dict[k] or "").strip()
                             if baslik:
                                 break
-                    # Tarih sütunu: Date, Tarih vb.
+                    # Tarih
                     tarih = ""
                     for k in ["date","tarih","publishedat","datetime"]:
-                        if k in cols:
-                            tarih = str(row[cols[k]] or "")[:16]
+                        if k in row_dict:
+                            tarih = str(row_dict[k] or "")[:16]
                             if tarih:
                                 break
                     # URL
                     url = ""
                     for k in ["url","link","href"]:
-                        if k in cols:
-                            url = str(row[cols[k]] or "")
+                        if k in row_dict:
+                            url = str(row_dict[k] or "")
                             if url:
                                 break
                     if baslik:
