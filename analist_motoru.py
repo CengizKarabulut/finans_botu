@@ -224,7 +224,14 @@ Ichimoku: {_al(teknik, "Ichimoku Bulut")} | T/K: {_al(teknik, "Ichimoku (Tenkan/
 Supertrend(3,10): {_al(teknik, "Supertrend (3,10)")} | AlphaTrend(1,14): {_al(teknik, "AlphaTrend (1,14)")}
 Momentum(10): {_al(teknik, "Momentum (10)")} | ATR(14): {_al(teknik, "ATR (14) Volatilite")}
 Pivot: {_al(teknik, "Pivot (Geleneksel)")}
-EMA Pozisyon: {ema_ozet}""".strip()
+EMA Pozisyon: {ema_ozet}"""
+
+    # Finnhub haberleri varsa ekle
+    haber_ozeti = temel.get("__haberler__", "")
+    if haber_ozeti:
+        sonuc += f"\n\n{haber_ozeti}"
+
+    return sonuc.strip()
 
 
 def _ai_gonder(prompt: str, sistem_promptu: str = None) -> str:
