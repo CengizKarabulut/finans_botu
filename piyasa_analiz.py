@@ -1,8 +1,8 @@
 """
 piyasa_analiz.py — Kripto, Döviz ve Emtia analiz modülü.
 
-Teknik analiz için teknik_analiz.py'deki tam motoru kullanır:
-  Supertrend, AlphaTrend, RSI Divergence, Stoch RSI, MACD, BB, ADX, CMF...
+Kripto: CoinGecko birincil (zengin veri) → yFinance fallback
+Döviz/Emtia: yFinance (birincil, teknik analiz için gerekli)
 """
 
 from cache_yonetici import taze_ticker
@@ -19,7 +19,6 @@ KRIPTO_MAP = {
     "LTC":"LTC-USD","ATOM":"ATOM-USD","NEAR":"NEAR-USD","APT":"APT-USD",
     "OP":"OP-USD","ARB":"ARB-USD","TON":"TON-USD","PEPE":"PEPE-USD",
     "SHIB":"SHIB-USD","TRX":"TRX-USD","SUI":"SUI-USD","INJ":"INJ-USD",
-    # TRY bazlı
     "BTCTRY":"BTC-TRY","ETHTRY":"ETH-TRY","BNBTRY":"BNB-TRY",
     "SOLTRY":"SOL-TRY","XRPTRY":"XRP-TRY",
 }
@@ -69,7 +68,63 @@ def sembol_coz(girdi: str, tip: str) -> tuple:
 
 
 # ─────────────────────────────────────────────────
-#  PİYASA BİLGİSİ (fiyat + genel metrikler)
+#  KRİPTO — CoinGecko önce, yFinance fallback
+# ─────────────────────────────────────────────────
+
+def _kripto_coingecko(yf_sembol: str, goruntu: str) -> dict:
+    """CoinGecko'dan zengin kripto verisi çek."""
+    try:
+        from veri_motoru import coingecko_fiyat
+        cg = coingecko_fiyat(yf_sembol)
+        if cg:
+            cg["_tip"]     = "kripto"
+            cg["_sembol"]  = yf_sembol
+            cg["_goruntu"] = goruntu
+            cg["_kaynak"]  = "CoinGecko"
+            return cg
+    except Exception:
+        pass
+    return {}
+
+
+def _kripto_yfinance(yf_sembol: str, goruntu: str) -> dict:
+    """yFinance kripto verisi (fallback)."""
+    try:
+        hisse = taze_ticker(yf_sembol)
+        info  = hisse.info
+        hist  = hisse.history(period="1y")
+        if hist.empty:
+            return {"Hata": f"{goruntu} için veri bulunamadı."}
+
+        c   = hist["Close"]
+        son = c.iloc[-1]
+        deg = (son - c.iloc[-2]) / c.iloc[-2] * 100 if len(c) > 1 else 0
+        pb  = info.get("currency", "USD")
+
+        s = {
+            "_tip": "kripto", "_sembol": yf_sembol,
+            "_goruntu": goruntu, "_kaynak": "yFinance",
+            "Isim":          info.get("name", goruntu),
+            "Para Birimi":   pb,
+            "Fiyat":         f"{son:.6g} {pb}",
+            "Degisim (%)":   f"{deg:+.2f}%",
+        }
+        mc = info.get("marketCap", 0)
+        if mc:
+            s["Piyasa Degeri"] = f"{mc/1e9:.2f}B {pb}" if mc < 1e12 else f"{mc/1e12:.2f}T {pb}"
+        vol = info.get("volume24Hr") or info.get("regularMarketVolume", 0)
+        if vol:
+            s["Hacim (24s)"] = f"{vol/1e6:.2f}M {pb}"
+        cs = info.get("circulatingSupply")
+        if cs:
+            s["Arz Dolaşım"] = f"{cs:,.0f}"
+        return s
+    except Exception as e:
+        return {"Hata": f"Veri çekilemedi: {e}"}
+
+
+# ─────────────────────────────────────────────────
+#  DÖVİZ / EMTİA — yFinance
 # ─────────────────────────────────────────────────
 
 def _piyasa_bilgisi(yf_sembol: str, goruntu: str, tip: str) -> dict:
@@ -77,74 +132,56 @@ def _piyasa_bilgisi(yf_sembol: str, goruntu: str, tip: str) -> dict:
         hisse = taze_ticker(yf_sembol)
         info  = hisse.info
         hist  = hisse.history(period="1y")
-
         if hist.empty:
-            return {"Hata": f"{goruntu} icin veri bulunamadi."}
+            return {"Hata": f"{goruntu} için veri bulunamadı."}
 
-        c           = hist["Close"]
-        son_fiyat   = c.iloc[-1]
-        onceki      = c.iloc[-2] if len(c) > 1 else son_fiyat
-        degisim_pct = (son_fiyat - onceki) / onceki * 100
-        para_birimi = info.get("currency", "USD")
+        c   = hist["Close"]
+        son = c.iloc[-1]
+        deg = (son - c.iloc[-2]) / c.iloc[-2] * 100 if len(c) > 1 else 0
+        pb  = info.get("currency", "USD")
 
-        s = {"_tip": tip, "_sembol": yf_sembol, "_goruntu": goruntu}
+        s = {"_tip": tip, "_sembol": yf_sembol, "_goruntu": goruntu, "_kaynak": "yFinance"}
 
-        if tip == "kripto":
-            s["Isim"]            = info.get("name", goruntu)
-            s["Para Birimi"]     = para_birimi
-            s["Fiyat"]           = f"{son_fiyat:.6g} {para_birimi}"
-            s["Degisim (%)"]     = f"{degisim_pct:+.2f}%"
-            mkcap = info.get("marketCap", 0)
-            if mkcap:
-                s["Piyasa Degeri"] = f"{mkcap/1e9:.2f}B {para_birimi}" if mkcap < 1e12 else f"{mkcap/1e12:.2f}T {para_birimi}"
-            vol = info.get("volume24Hr") or info.get("regularMarketVolume", 0)
-            if vol:
-                s["Hacim (24s)"] = f"{vol/1e6:.2f}M {para_birimi}"
-            cs = info.get("circulatingSupply")
-            if cs:
-                s["Dolasim Arzi"] = f"{cs:,.0f}"
-            ms = info.get("maxSupply")
-            s["Maks Arz"] = f"{ms:,.0f}" if ms else "Sinırsız"
-
-        elif tip == "doviz":
+        if tip == "doviz":
             s["Parite"]      = goruntu
             s["Aciklama"]    = info.get("shortName", goruntu)
-            s["Fiyat"]       = f"{son_fiyat:.6g}"
-            s["Degisim (%)"] = f"{degisim_pct:+.2f}%"
-            for label, n in [("1 Hafta", 5), ("1 Ay", 21), ("3 Ay", 63), ("1 Yil", 252)]:
+            s["Fiyat"]       = f"{son:.6g}"
+            s["Degisim (%)"] = f"{deg:+.2f}%"
+            for label, n in [("1 Hafta",5),("1 Ay",21),("3 Ay",63),("1 Yil",252)]:
                 if len(c) >= n:
-                    g_pct = (c.iloc[-1] / c.iloc[-n] - 1) * 100
-                    s[f"Getiri ({label})"] = f"{g_pct:+.2f}%"
+                    s[f"Getiri ({label})"] = f"{(c.iloc[-1]/c.iloc[-n]-1)*100:+.2f}%"
 
         elif tip == "emtia":
             s["Aciklama"]    = info.get("shortName") or info.get("longName", goruntu)
-            s["Para Birimi"] = para_birimi
+            s["Para Birimi"] = pb
             s["Borsa"]       = info.get("exchange", "-")
-            s["Fiyat"]       = f"{son_fiyat:.6g} {para_birimi}"
-            s["Degisim (%)"] = f"{degisim_pct:+.2f}%"
-            for label, n in [("1 Hafta", 5), ("1 Ay", 21), ("3 Ay", 63), ("1 Yil", 252)]:
+            s["Fiyat"]       = f"{son:.6g} {pb}"
+            s["Degisim (%)"] = f"{deg:+.2f}%"
+            for label, n in [("1 Hafta",5),("1 Ay",21),("3 Ay",63),("1 Yil",252)]:
                 if len(c) >= n:
-                    g_pct = (c.iloc[-1] / c.iloc[-n] - 1) * 100
-                    s[f"Getiri ({label})"] = f"{g_pct:+.2f}%"
+                    s[f"Getiri ({label})"] = f"{(c.iloc[-1]/c.iloc[-n]-1)*100:+.2f}%"
 
         return s
-
     except Exception as e:
-        return {"Hata": f"Veri cekilemedi: {e}"}
+        return {"Hata": f"Veri çekilemedi: {e}"}
 
 
 # ─────────────────────────────────────────────────
 #  ANA ANALİZ FONKSİYONLARI
-#  Döner: (piyasa_dict, teknik_dict)
-#  teknik_dict → teknik_analiz.py'nin TAM çıktısı
-#  (Supertrend, AlphaTrend, RSI Divergence, Stoch RSI, ADX, CMF...)
 # ─────────────────────────────────────────────────
 
 def kripto_analiz(sembol: str) -> tuple:
+    """CoinGecko → yFinance fallback. Teknik analiz yFinance'tan."""
     yf_sembol, goruntu = sembol_coz(sembol, "kripto")
-    piyasa = _piyasa_bilgisi(yf_sembol, goruntu, "kripto")
+
+    # Piyasa verisi: CoinGecko önce
+    piyasa = _kripto_coingecko(yf_sembol, goruntu)
+    if "Hata" in piyasa or not piyasa:
+        piyasa = _kripto_yfinance(yf_sembol, goruntu)
     if "Hata" in piyasa:
         return piyasa, {}
+
+    # Teknik analiz her zaman yFinance'tan (OHLCV gerektirir)
     teknik = teknik_analiz_yap(yf_sembol)
     return piyasa, teknik
 
