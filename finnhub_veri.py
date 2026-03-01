@@ -58,37 +58,72 @@ def _finnhub_get(endpoint: str, params: dict) -> dict:
 def finnhub_haberler(sembol: str, gun: int = 7) -> list:
     """
     Hisse için son N günün haberlerini döner.
-    Her haber: {datetime, headline, source, url, sentiment}
+    Finnhub key varsa Finnhub, yoksa yFinance news fallback kullanır.
     """
     cache_key = f"haber_{sembol}_{gun}"
     cached = _cache_al(cache_key)
     if cached is not None:
         return cached
 
-    bitis  = datetime.now().strftime("%Y-%m-%d")
-    baslangic = (datetime.now() - timedelta(days=gun)).strftime("%Y-%m-%d")
-
-    # BIST sembollerini Finnhub formatına çevir (THYAO.IS → THYAO:TI)
-    fh_sembol = _sembol_finnhub_formatina_cevir(sembol)
-
-    data = _finnhub_get("company-news", {
-        "symbol": fh_sembol,
-        "from": baslangic,
-        "to": bitis
-    })
-
-    if not isinstance(data, list):
-        _cache_kaydet(cache_key, [])
-        return []
-
     haberler = []
-    for h in data[:10]:  # max 10 haber
-        haberler.append({
-            "tarih":    datetime.fromtimestamp(h.get("datetime", 0)).strftime("%d.%m.%Y"),
-            "baslik":   h.get("headline", ""),
-            "kaynak":   h.get("source", ""),
-            "url":      h.get("url", ""),
+
+    # 1. Finnhub (key varsa)
+    if _finnhub_key():
+        bitis  = datetime.now().strftime("%Y-%m-%d")
+        baslangic = (datetime.now() - timedelta(days=gun)).strftime("%Y-%m-%d")
+        fh_sembol = _sembol_finnhub_formatina_cevir(sembol)
+        data = _finnhub_get("company-news", {
+            "symbol": fh_sembol,
+            "from": baslangic,
+            "to": bitis
         })
+        if isinstance(data, list) and data:
+            for h in data[:10]:
+                haberler.append({
+                    "tarih":  datetime.fromtimestamp(h.get("datetime", 0)).strftime("%d.%m.%Y"),
+                    "baslik": h.get("headline", ""),
+                    "kaynak": h.get("source", ""),
+                    "url":    h.get("url", ""),
+                    "kaynak_tipi": "Finnhub",
+                })
+
+    # 2. yFinance fallback (key yoksa veya Finnhub boş döndüyse)
+    if not haberler:
+        try:
+            import yfinance as yf
+            ticker = yf.Ticker(sembol)
+            yf_haberler = ticker.news or []
+            for h in yf_haberler[:10]:
+                # Zaman damgası
+                ts = h.get("content", {}).get("pubDate") or h.get("providerPublishTime")
+                if ts:
+                    try:
+                        if isinstance(ts, (int, float)):
+                            tarih = datetime.fromtimestamp(ts).strftime("%d.%m.%Y")
+                        else:
+                            tarih = str(ts)[:10]
+                    except Exception:
+                        tarih = "-"
+                else:
+                    tarih = "-"
+
+                baslik = (h.get("content", {}).get("title")
+                          or h.get("title", ""))
+                kaynak = (h.get("content", {}).get("provider", {}).get("displayName")
+                          or h.get("publisher", ""))
+                url    = (h.get("content", {}).get("canonicalUrl", {}).get("url")
+                          or h.get("link", ""))
+
+                if baslik:
+                    haberler.append({
+                        "tarih":  tarih,
+                        "baslik": baslik,
+                        "kaynak": kaynak,
+                        "url":    url,
+                        "kaynak_tipi": "yFinance",
+                    })
+        except Exception:
+            pass
 
     _cache_kaydet(cache_key, haberler)
     return haberler
@@ -97,24 +132,60 @@ def finnhub_haberler(sembol: str, gun: int = 7) -> list:
 def finnhub_insider(sembol: str) -> list:
     """
     Son insider alım/satım işlemleri.
+    Finnhub key varsa Finnhub, yoksa yFinance insider_transactions fallback.
     """
     cache_key = f"insider_{sembol}"
     cached = _cache_al(cache_key)
     if cached is not None:
         return cached
 
-    fh_sembol = _sembol_finnhub_formatina_cevir(sembol)
-    data = _finnhub_get("stock/insider-transactions", {"symbol": fh_sembol})
-
     islemler = []
-    for t in (data.get("data") or [])[:8]:
-        islemler.append({
-            "tarih":    t.get("transactionDate", ""),
-            "isim":     t.get("name", ""),
-            "islem":    "ALIM" if (t.get("change", 0) or 0) > 0 else "SATIM",
-            "adet":     abs(t.get("change", 0) or 0),
-            "fiyat":    t.get("transactionPrice", 0) or 0,
-        })
+
+    # 1. Finnhub (key varsa)
+    if _finnhub_key():
+        fh_sembol = _sembol_finnhub_formatina_cevir(sembol)
+        data = _finnhub_get("stock/insider-transactions", {"symbol": fh_sembol})
+        for t in (data.get("data") or [])[:8]:
+            islemler.append({
+                "tarih": t.get("transactionDate", ""),
+                "isim":  t.get("name", ""),
+                "islem": "ALIM" if (t.get("change", 0) or 0) > 0 else "SATIM",
+                "adet":  abs(t.get("change", 0) or 0),
+                "fiyat": t.get("transactionPrice", 0) or 0,
+                "kaynak_tipi": "Finnhub",
+            })
+
+    # 2. yFinance fallback
+    if not islemler:
+        try:
+            import yfinance as yf
+            ticker = yf.Ticker(sembol)
+            # major_holders veya insider_transactions
+            ins = ticker.insider_transactions
+            if ins is not None and not ins.empty:
+                for _, row in ins.head(8).iterrows():
+                    try:
+                        tarih = str(row.get("Start Date", row.get("Date", "")))[:10]
+                        isim  = str(row.get("Insider", row.get("Name", "-")))
+                        adet  = abs(int(row.get("Shares", 0) or 0))
+                        deger = row.get("Value", row.get("Transaction Value", 0)) or 0
+                        islem_tip = str(row.get("Transaction", row.get("Type", ""))).upper()
+                        if "SALE" in islem_tip or "SELL" in islem_tip or "SAT" in islem_tip:
+                            islem = "SATIM"
+                        else:
+                            islem = "ALIM"
+                        islemler.append({
+                            "tarih": tarih,
+                            "isim":  isim,
+                            "islem": islem,
+                            "adet":  adet,
+                            "fiyat": float(deger) / adet if adet > 0 else 0,
+                            "kaynak_tipi": "yFinance",
+                        })
+                    except Exception:
+                        continue
+        except Exception:
+            pass
 
     _cache_kaydet(cache_key, islemler)
     return islemler
