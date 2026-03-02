@@ -765,9 +765,11 @@ def alphavantage_fiyat(sembol: str) -> dict:
     q = (data or {}).get("Global Quote", {})
     sonuc = {}
     if q.get("05. price"):
+        fiyat_ham = float(q.get("05. price", 0))
         sonuc = {
             "kaynak":      "AlphaVantage",
-            "fiyat":       float(q.get("05. price", 0)),
+            "Fiyat":       f"{fiyat_ham:,.2f} USD",
+            "fiyat":       fiyat_ham,
             "degisim":     float(q.get("09. change", 0)),
             "degisim_pct": q.get("10. change percent", ""),
             "hacim":       int(q.get("06. volume", 0)),
