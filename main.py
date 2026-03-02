@@ -31,7 +31,16 @@ from veri_motoru import (
     coingecko_trending, alphavantage_fiyat,
     ai_icin_haber_ozeti, durum_raporu
 )
-from db import db_init, favori_ekle, favori_sil, favorileri_getir, kullanici_kaydet
+from db import (
+    db_init, favori_ekle, favori_sil, favorileri_getir, kullanici_kaydet,
+    uyari_ekle, uyarilari_getir, uyari_sil,
+    portfoy_guncelle, portfoy_getir, portfoy_sil
+)
+from alert_motoru import uyari_kontrol_dongusu
+from portfoy_motoru import portfoy_ozeti_hazirla
+from tradingview_motoru import tv_grafik_cek
+from analist_motoru import ai_tahmin_yap, ai_nlp_sorgu
+from aiogram.types import FSInputFile
 
 # Logging configuration
 LOG_DIR = "logs"
@@ -928,18 +937,101 @@ async def _trend_isle(chat_id: int, mesaj_id: int, tip: str = "hisse"):
 #  BAŞLAT
 # ─────────────────────────────────────────────
 
+# ─────────────────────────────────────────────
+#  YENİ ÖZELLİK HANDLERLARI
+# ─────────────────────────────────────────────
+
+@dp.message(Command("uyari"))
+async def cmd_uyari(message: Message):
+    """Kullanım: /uyari SEMBOL TIP HEDEF (Örn: /uyari THYAO.IS fiyat_ust 300)"""
+    try:
+        args = message.text.split()
+        if len(args) < 4:
+            await message.answer("❌ Eksik bilgi. Kullanım: <code>/uyari SEMBOL TIP HEDEF</code>\nTipler: fiyat_ust, fiyat_alt, rsi_ust, rsi_alt")
+            return
+        
+        sembol, tip, hedef = args[1].upper(), args[2].lower(), float(args[3])
+        await uyari_ekle(message.from_user.id, sembol, tip, hedef)
+        await message.answer(f"✅ {sembol} için {tip} uyarısı {hedef} seviyesine kuruldu.")
+    except Exception as e:
+        await message.answer(f"❌ Hata: {e}")
+
+@dp.message(Command("portfoy"))
+async def cmd_portfoy(message: Message):
+    """Portföy özetini gösterir."""
+    await message.answer("⌛ Portföyünüz hesaplanıyor...")
+    ozet = await portfoy_ozeti_hazirla(message.from_user.id)
+    await message.answer(ozet)
+
+@dp.message(Command("portfoy_ekle"))
+async def cmd_portfoy_ekle(message: Message):
+    """Kullanım: /portfoy_ekle SEMBOL MIKTAR MALIYET"""
+    try:
+        args = message.text.split()
+        if len(args) < 4:
+            await message.answer("❌ Kullanım: <code>/portfoy_ekle SEMBOL MIKTAR MALIYET</code>")
+            return
+        sembol, miktar, maliyet = args[1].upper(), float(args[2]), float(args[3])
+        await portfoy_guncelle(message.from_user.id, sembol, miktar, maliyet)
+        await message.answer(f"✅ {sembol} portföyünüze eklendi/güncellendi.")
+    except Exception as e:
+        await message.answer(f"❌ Hata: {e}")
+
+@dp.message(Command("grafik"))
+async def cmd_grafik(message: Message):
+    """TradingView grafiği gönderir. Kullanım: /grafik SEMBOL"""
+    args = message.text.split()
+    if len(args) < 2:
+        await message.answer("❌ Kullanım: <code>/grafik SEMBOL</code>")
+        return
+    
+    sembol = args[1].upper()
+    await message.answer(f"📊 {sembol} grafiği hazırlanıyor, lütfen bekleyin...")
+    
+    path = f"logs/chart_{message.from_user.id}.png"
+    success = await tv_grafik_cek(sembol, path)
+    
+    if success:
+        photo = FSInputFile(path)
+        await message.answer_photo(photo, caption=f"📈 {sembol} TradingView Grafiği")
+    else:
+        await message.answer("❌ Grafik çekilemedi. Lütfen sembolü kontrol edin.")
+
+@dp.message(Command("tahmin"))
+async def cmd_tahmin(message: Message):
+    """AI tahmini yapar. Kullanım: /tahmin SEMBOL"""
+    args = message.text.split()
+    if len(args) < 2:
+        await message.answer("❌ Kullanım: <code>/tahmin SEMBOL</code>")
+        return
+    
+    sembol = args[1].upper()
+    await message.answer(f"🤖 {sembol} için AI tahmini hazırlanıyor...")
+    
+    teknik = await _async(teknik_analiz_yap, sembol)
+    tahmin = await _async(ai_tahmin_yap, sembol, teknik)
+    await message.answer(f"🔮 <b>{sembol} AI Tahmini</b>\n\n{tahmin}")
+
+@dp.message(F.text & ~F.text.startswith("/"))
+async def handle_nlp(message: Message):
+    """Komut olmayan mesajları AI asistanı olarak yanıtlar."""
+    await kullanici_kaydet(message.from_user.id, message.from_user.username)
+    yanit = await _async(ai_nlp_sorgu, message.text)
+    await message.answer(yanit)
+
 async def main():
     await db_init()
     baslangic_temizligi()
 
     log.info("Bot başlatılıyor...")
+    
+    # Arka plan görevlerini başlat
+    asyncio.create_task(uyari_kontrol_dongusu(bot))
+
     log.info(f"Finnhub:      {'✅' if os.environ.get('FINNHUB_API_KEY') else '⚠️ KEY YOK'}")
     log.info(f"AlphaVantage: {'✅' if os.environ.get('ALPHAVANTAGE_API_KEY') else '⚠️ KEY YOK'}")
-    log.info(f"CoinGecko:    {'✅' if os.environ.get('COINGECKO_API_KEY') else '⚠️ KEY YOK (ücretsiz limit)'}")
     log.info(f"Gemini:       {'✅' if os.environ.get('GEMINI_API_KEY') else '⚠️ KEY YOK'}")
-    log.info("OpenFIGI:     ✅ (key'siz)")
-    log.info("borsapy:      ✅ (key'siz)")
-    log.info("SEC EDGAR:    ✅ (key'siz)")
+    log.info(f"Anthropic:    {'✅' if os.environ.get('ANTHROPIC_API_KEY') else '⚠️ KEY YOK'}")
 
     await dp.start_polling(bot, skip_updates=True)
 

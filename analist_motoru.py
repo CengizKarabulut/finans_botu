@@ -106,3 +106,52 @@ def ai_piyasa_yorumu(sembol: str, tip: str, piyasa: dict, teknik: dict) -> str:
 
     except Exception as e:
         return f"AI yorumu alınamadı: {e}"
+
+
+def ai_tahmin_yap(sembol: str, teknik: dict) -> str:
+    """Teknik verilere dayanarak kısa vadeli bir AI tahmini üretir."""
+    try:
+        sistem = (
+            "Sen bir kantitatif finans analistisin. "
+            "Verilen teknik göstergeleri analiz ederek kısa vadeli (1-5 gün) bir fiyat tahmini yap. "
+            "Tahminini 'Boğa', 'Ayı' veya 'Nötr' olarak belirt ve nedenlerini açıkla. "
+            "Türkçe yaz. Kesinlik bildirme, olasılıklar üzerinden konuş. "
+            "2-3 paragraf yaz."
+        )
+
+        kullanici = (
+            f"Sembol: {sembol}\n\n"
+            f"TEKNİK GÖSTERGELER:\n{_guvenli_json(teknik)}"
+        )
+
+        yanit = _ai_client().messages.create(
+            model="claude-opus-4-5",
+            max_tokens=512,
+            system=sistem,
+            messages=[{"role": "user", "content": kullanici}]
+        )
+        return yanit.content[0].text
+    except Exception as e:
+        return f"AI tahmini alınamadı: {e}"
+
+
+def ai_nlp_sorgu(mesaj: str) -> str:
+    """Kullanıcının doğal dildeki finansal sorusunu yanıtlar."""
+    try:
+        sistem = (
+            "Sen bir finansal asistansın. Kullanıcının finansal sorularını yanıtla. "
+            "Eğer soru belirli bir hisse veya piyasa verisi gerektiriyorsa, "
+            "kullanıcıya ilgili komutları (/analiz, /teknik vb.) kullanmasını öner. "
+            "Genel finansal kavramlar, piyasa terimleri ve stratejiler hakkında bilgi ver. "
+            "Türkçe yaz. Yatırım tavsiyesi verme."
+        )
+
+        yanit = _ai_client().messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=sistem,
+            messages=[{"role": "user", "content": mesaj}]
+        )
+        return yanit.content[0].text
+    except Exception as e:
+        return f"AI yanıtı alınamadı: {e}"
