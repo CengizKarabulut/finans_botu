@@ -1,0 +1,44 @@
+
+version: '3.8'
+
+services:
+  finans_botu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finans_botu
+    restart: unless-stopped
+    environment:
+      # Telegram Bot Token
+      BOT_TOKEN: ${BOT_TOKEN}
+      # AI API Keys
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # Financial Data API Keys
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY}
+      FMP_API_KEY: ${FMP_API_KEY}
+      ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY}
+      OPENFIGI_API_KEY: ${OPENFIGI_API_KEY}
+      # TradingView Login (if needed)
+      TRADINGVIEW_USERNAME: ${TRADINGVIEW_USERNAME}
+      TRADINGVIEW_PASSWORD: ${TRADINGVIEW_PASSWORD}
+    volumes:
+      - ./logs:/app/logs
+      # Uncomment the line below if TradingView login is required and storage_state.json needs to be persistent
+      # - ./storage_state.json:/app/storage_state.json
+    shm_size: '1gb' # Required for Playwright/Chromium
+
+  # Uncomment the Redis service below if your bot uses Redis for caching or state management
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: finans_botu_redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+
+# volumes:
+#   redis_data:

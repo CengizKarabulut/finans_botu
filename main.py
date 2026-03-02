@@ -33,8 +33,20 @@ from veri_motoru import (
 )
 from db import db_init, favori_ekle, favori_sil, favorileri_getir, kullanici_kaydet
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-log = logging.getLogger(__name__)
+# Logging configuration
+LOG_DIR = "logs"
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(), # Log to STDOUT for docker logs
+        logging.FileHandler(os.path.join(LOG_DIR, "bot.log")) # Log to file for persistence
+    ]
+)
+log = logging.getLogger("finans_botu")
 
 # ─────────────────────────────────────────────
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
