@@ -1,7 +1,7 @@
 """
 tradingview_motoru.py — TradingView grafik ekran görüntüsü alma modülü.
 Playwright + Chromium ile otomasyon.
-✅ DÜZELTİLMİŞ VERSİYON - Login desteği, resource leak fix, robust waiting, retry logic eklendi
+✅ PROFESYONEL VERSİYON - BIST sembol düzeltmesi, login fix, robust waiting.
 """
 import asyncio
 import os
@@ -15,16 +15,10 @@ log = logging.getLogger("finans_botu")
 # ═══════════════════════════════════════════════════════════════════
 # AYARLAR
 # ═══════════════════════════════════════════════════════════════════
-
-# Grafik yükleme için maksimum bekleme süresi (ms)
-GRAFİK_YÜKLEME_TIMEOUT = 30000  # 30 saniye
-
-# Sayfa tamamen yüklenene kadar bekleme (ms)
+GRAFİK_YÜKLEME_TIMEOUT = 45000  # 45 saniye (GCloud Free Tier yavaş olabilir)
 PAGE_LOAD_TIMEOUT = 60000  # 60 saniye
-
-# Retry ayarları
 MAX_RETRY = 3
-RETRY_DELAY = 2  # saniye
+RETRY_DELAY = 3  # saniye
 
 # ═══════════════════════════════════════════════════════════════════
 # YARDIMCI FONKSİYONLAR
@@ -36,28 +30,34 @@ def _prepare_output_path(output_path: str) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     return str(path)
 
-
 def _format_sembol_tv(sembol: str) -> str:
     """Sembolü TradingView formatına çevirir."""
     sembol_upper = sembol.upper().strip()
     
-    # BIST hisseleri
-    if sembol_upper.endswith(".IS") or sembol_upper.endswith(".TR"):
-        return f"BIST:{sembol_upper.replace('.IS', '').replace('.TR', '')}"
+    # BIST hisseleri (ASELS.IS -> BIST:ASELS)
+    if sembol_upper.endswith(".IS"):
+        return f"BIST:{sembol_upper.replace('.IS', '')}"
     
-    # ABD borsaları (NASDAQ, NYSE) - otomatik tespit
+    # Kripto (BTCUSD -> BINANCE:BTCUSD)
+    if any(x in sembol_upper for x in ["BTC", "ETH", "SOL", "USDT"]):
+        if "USD" in sembol_upper:
+            return f"BINANCE:{sembol_upper}"
+    
+    # ABD borsaları (AAPL -> NASDAQ:AAPL veya NYSE:AAPL)
+    # TradingView genellikle NASDAQ:AAPL veya NYSE:AAPL bekler, 
+    # ancak sembol tek başına da çalışabilir.
     if "." not in sembol_upper:
-        return f"NASDAQ:{sembol_upper}"
+        # Önce sembolü olduğu gibi bırakalım, TV otomatik çözer
+        return sembol_upper
     
     return sembol_upper.replace(".", ":")
-
 
 async def _wait_for_chart(page: Page, timeout: int = GRAFİK_YÜKLEME_TIMEOUT) -> bool:
     """TradingView grafiğinin yüklenmesini bekler."""
     try:
         # Grafik container'ını bekle
         await page.wait_for_selector(
-            'div[data-name="chart-container"], .chart-page, .tv-chart-view',
+            'div[data-name="chart-container"], .chart-page, .tv-chart-view, canvas.shifting',
             timeout=timeout,
             state="visible"
         )
@@ -66,18 +66,17 @@ async def _wait_for_chart(page: Page, timeout: int = GRAFİK_YÜKLEME_TIMEOUT) -
         try:
             await page.wait_for_selector(
                 '.tv-loading-spinner, .loading-indicator',
-                timeout=5000,
+                timeout=10000,
                 state="detached"
             )
         except PlaywrightError:
             pass
         
-        await asyncio.sleep(2) # Ekstra bekleme
+        await asyncio.sleep(5) # Grafiğin tam çizilmesi için ekstra bekleme
         return True
     except PlaywrightError as e:
         log.warning(f"Grafik yükleme beklenirken timeout: {e}")
         return False
-
 
 async def _tv_login(page: Page) -> bool:
     """TradingView'a giriş yapar."""
@@ -90,14 +89,13 @@ async def _tv_login(page: Page) -> bool:
         
     try:
         log.info(f"🔐 TradingView'a giriş yapılıyor: {username}")
-        # Login sayfasına git
         await page.goto("https://www.tradingview.com/#signin", wait_until="networkidle", timeout=30000)
         
         # Email ile giriş seçeneğini bul ve tıkla
         email_btn = page.locator('button[name="Email"], span:has-text("Email"), div:has-text("Email")').first
         if await email_btn.is_visible():
             await email_btn.click()
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
             
         # Kullanıcı adı ve şifre gir
         await page.fill('input[name="username"]', username)
@@ -126,6 +124,7 @@ async def tv_grafik_cek(
     """TradingView grafiğinin ekran görüntüsünü alır."""
     output_path = _prepare_output_path(output_path)
     tv_sembol = _format_sembol_tv(sembol)
+    # URL formatı düzeltildi
     url = f"https://www.tradingview.com/chart/?symbol={tv_sembol}"
     
     last_error = None
@@ -137,7 +136,12 @@ async def tv_grafik_cek(
             async with async_playwright() as p:
                 browser: Browser = await p.chromium.launch(
                     headless=True,
-                    args=["--no-sandbox", "--disable-dev-shm-usage"]
+                    args=[
+                        "--no-sandbox", 
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu",
+                        "--disable-software-rasterizer"
+                    ]
                 )
                 
                 async with browser:
@@ -146,7 +150,7 @@ async def tv_grafik_cek(
                         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                     )
                     
-                    # Giriş yap
+                    # Giriş yap (Eğer kullanıcı adı/şifre varsa)
                     await _tv_login(page)
                     
                     # Grafiğe git
