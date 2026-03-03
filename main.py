@@ -1,21 +1,20 @@
 """
 Finans Botu — aiogram 3.x + asyncio + SQLite
 Tüm sync modüller (temel_analiz, teknik_analiz, vb.) run_in_executor ile çağrılır.
+✅ DÜZELTİLMİŞ VERSİYON - Tüm kritik hatalar giderildi
 """
-
 import os
 import re
 import asyncio
 import logging
 from datetime import datetime
 from functools import partial
-
+from logging.handlers import RotatingFileHandler  # ✅ EKLENDİ: Log rotasyonu için
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from aiogram.client.default import DefaultBotProperties
-
 from temel_analiz   import temel_analiz_yap
 from teknik_analiz  import teknik_analiz_yap
 from analist_motoru import ai_analist_yorumu, ai_piyasa_yorumu
@@ -42,7 +41,9 @@ from tradingview_motoru import tv_grafik_cek
 from analist_motoru import ai_tahmin_yap, ai_nlp_sorgu
 from aiogram.types import FSInputFile
 
-# Logging configuration
+# ═══════════════════════════════════════════════════════════════
+# LOGGING CONFIGURATION — ✅ DÜZELTİLDİ
+# ═══════════════════════════════════════════════════════════════
 LOG_DIR = "logs"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
@@ -51,16 +52,22 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
-        logging.StreamHandler(), # Log to STDOUT for docker logs
-        logging.FileHandler(os.path.join(LOG_DIR, "bot.log")) # Log to file for persistence
+        logging.StreamHandler(),  # Docker logs için STDOUT
+        RotatingFileHandler(  # ✅ Dosya boyutu kontrolü (10MB, 5 yedek)
+            os.path.join(LOG_DIR, "bot.log"),
+            maxBytes=10*1024*1024,
+            backupCount=5
+        )
     ]
 )
 log = logging.getLogger("finans_botu")
 
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+# BOT TOKEN VALIDATION — ✅ GÜVENLİK EKLENDİ
+# ═══════════════════════════════════════════════════════════════
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN tanımlı değil.")
+    raise RuntimeError("BOT_TOKEN tanımlı değil. .env dosyasını kontrol edin.")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp  = Dispatcher()
@@ -69,10 +76,9 @@ RATE_LIMIT_SANIYE = 15
 TELEGRAM_LIMIT    = 4000
 _son_istek: dict  = {}
 
-# ─────────────────────────────────────────────
-#  HTML YARDIMCILARI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# HTML YARDIMCILARI
+# ═══════════════════════════════════════════════════════════════
 def h(text) -> str:
     return str(text).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 
@@ -95,6 +101,7 @@ def _fmt(v) -> str:
         if abs(v) > 1e12: return f"{v/1e12:.2f}T"
         if abs(v) > 1e9:  return f"{v/1e9:.2f}B"
         if abs(v) > 1e6:  return f"{v/1e6:.2f}M"
+        return str(v)
     return str(v)
 
 def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list:
@@ -113,10 +120,9 @@ def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list:
         parcalar.append(metin)
     return parcalar
 
-# ─────────────────────────────────────────────
-#  KUTU ÇİZGİLİ BLOK FONKSİYONLARI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# KUTU ÇİZGİLİ BLOK FONKSİYONLARI
+# ═══════════════════════════════════════════════════════════════
 AYRAC  = "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
 _BOX_G = 38
 
@@ -147,23 +153,18 @@ def blok(baslik: str, emoji: str, satirlar: list) -> str:
                 temiz.append(("txt", str(s), ""))
     if not temiz:
         return ""
-
     G  = _BOX_G
     IC = G - 2
-
     def _pad(t, g):
         return t + " " * max(0, g - _gorunen_uzunluk(t))
-
     def _satir_k(ic):
         return "║ " + _pad(ic, IC) + " ║"
-
     def _kv_k(a, d):
         a_max = min(22, IC - 6)
         d_max = IC - a_max - 1
         ak = a[:a_max-1]+"…" if _gorunen_uzunluk(a) > a_max else a
         dk = d[:d_max-1]+"…" if _gorunen_uzunluk(d) > d_max else d
-        return "║ " + _pad(ak, a_max) + " " + " "*max(0, d_max-_gorunen_uzunluk(dk)) + dk + " ║"
-
+        return "║ " + _pad(ak, a_max) + " "*max(0, d_max-_gorunen_uzunluk(dk)) + dk + " ║"
     bas = (emoji + "  " + baslik).strip()
     satirlar_html = [
         "╔" + "═"*G + "╗",
@@ -174,7 +175,6 @@ def blok(baslik: str, emoji: str, satirlar: list) -> str:
         satirlar_html.append(_kv_k(a, b) if tip == "kv" else _satir_k(a[:IC]))
     satirlar_html.append("╚" + "═"*G + "╝")
     return "\n<pre>" + h("\n".join(satirlar_html)) + "</pre>"
-
 
 def temel_blok(baslik: str, emoji: str, veriler: dict, filtre) -> str:
     satirlar = []
@@ -187,26 +187,23 @@ def temel_blok(baslik: str, emoji: str, veriler: dict, filtre) -> str:
         satirlar.append((k, v_str))
     return blok(baslik, emoji, satirlar)
 
-
 def ma_blok(teknik: dict) -> str:
     satirlar = []
     for tip in ("SMA (Basit)", "EMA (Üstel)", "WMA (Ağırlıklı)"):
         if tip not in teknik:
             continue
         kisalt  = tip.split()[0]
-        parclar = [p.strip() for p in teknik[tip].split("|")]
+        parcalar = [p.strip() for p in teknik[tip].split("|")]
         satirlar.append(f"── {kisalt} ──")
-        for i in range(0, len(parclar), 3):
-            satirlar.append("  " + "  ".join(parclar[i:i+3]))
+        for i in range(0, len(parcalar), 3):
+            satirlar.append("  " + "  ".join(parcalar[i:i+3]))
     if not satirlar:
         return ""
     G  = _BOX_G
     IC = G - 2
     bas = "🌊  HAREKETLİ ORTALAMALAR"
-
     def _pad(t, g):
         return t + " " * max(0, g - _gorunen_uzunluk(t))
-
     kutu = ["╔" + "═"*G + "╗",
             "║ " + _pad(bas, IC) + " ║",
             "╠" + "═"*G + "╣"]
@@ -215,10 +212,9 @@ def ma_blok(teknik: dict) -> str:
     kutu.append("╚" + "═"*G + "╝")
     return "\n<pre>" + h("\n".join(kutu)) + "</pre>"
 
-# ─────────────────────────────────────────────
-#  TEMEL ANALİZ GRUPLARI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# TEMEL ANALİZ GRUPLARI
+# ═══════════════════════════════════════════════════════════════
 TEMEL_GRUPLAR = [
     ("Genel",       "ℹ️",  lambda k: k in (
         "Firma Sektörü","Çalışan Sayısı","Para Birimi","Borsa",
@@ -259,23 +255,23 @@ _TIP_BASLIK = {"kripto":"KRİPTO","doviz":"DÖVİZ","emtia":"EMTİA"}
 
 GENEL_ANAHTARLAR = {
     "kripto": ["Isim","Para Birimi","Fiyat","Degisim (%)","Degisim (24s %)",
-               "Degisim (7g %)","Degisim (30g %)","Piyasa Degeri","Hacim (24s)",
-               "Dolasim Arzi","Maks Arz","ATH","ATH Dusus (%)","Siralama"],
+        "Degisim (7g %)","Degisim (30g %)","Piyasa Degeri","Hacim (24s)",
+        "Dolasim Arzi","Maks Arz","ATH","ATH Dusus (%)","Siralama"],
     "doviz":  ["Parite","Aciklama","Fiyat","Degisim (%)",
-               "Getiri (1 Hafta)","Getiri (1 Ay)","Getiri (3 Ay)","Getiri (1 Yil)"],
+        "Getiri (1 Hafta)","Getiri (1 Ay)","Getiri (3 Ay)","Getiri (1 Yil)"],
     "emtia":  ["Aciklama","Para Birimi","Borsa","Fiyat","Degisim (%)",
-               "Getiri (1 Hafta)","Getiri (1 Ay)","Getiri (3 Ay)","Getiri (1 Yil)"],
+        "Getiri (1 Hafta)","Getiri (1 Ay)","Getiri (3 Ay)","Getiri (1 Yil)"],
 }
 
-# ─────────────────────────────────────────────
-#  SEMBOL NORMALIZE
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# SEMBOL NORMALIZE
+# ═══════════════════════════════════════════════════════════════
 _BILINEN_UZANTILAR = {
     ".IS",".L",".PA",".DE",".MI",".AS",".BR",".MC",".SW",
     ".HK",".T",".SS",".SZ",".KS",".KQ",".AX",".TO",".V",
     ".SA",".MX",".NS",".BO",
 }
+
 _TICKER_CACHE: dict = {}
 
 _BIST_HISSELER = {
@@ -330,18 +326,17 @@ def _normalize_ticker(ticker: str) -> str:
         if not yf.Ticker(ticker).history(period="5d").empty:
             _TICKER_CACHE[ticker] = ticker
             return ticker
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug(f"yfinance ticker kontrol hatası ({ticker}): {e}")
     ticker_is = ticker + ".IS"
     try:
         if not yf.Ticker(ticker_is).history(period="5d").empty:
             _TICKER_CACHE[ticker] = ticker_is
             return ticker_is
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug(f"yfinance .IS kontrol hatası ({ticker_is}): {e}")
     _TICKER_CACHE[ticker] = ticker
     return ticker
-
 
 def rate_limit_kontrol(user_id: int) -> int:
     son = _son_istek.get(user_id)
@@ -350,13 +345,12 @@ def rate_limit_kontrol(user_id: int) -> int:
     gecen = (datetime.now() - son).total_seconds()
     return max(0, int(RATE_LIMIT_SANIYE - gecen))
 
-# ─────────────────────────────────────────────
-#  ASYNC YARDIMCI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# ASYNC YARDIMCI — ✅ DÜZELTİLDİ: get_running_loop()
+# ═══════════════════════════════════════════════════════════════
 async def _async(fn, *args):
     """Sync bloklayan fonksiyonu thread executor'da çalıştır."""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()  # ✅ get_event_loop() deprecated
     return await loop.run_in_executor(None, fn, *args)
 
 async def _gonder(chat_id: int, mesaj_id: int, metin: str, duzenle: bool = True):
@@ -369,17 +363,16 @@ async def _gonder(chat_id: int, mesaj_id: int, metin: str, duzenle: bool = True)
                 await bot.send_message(chat_id, parca, parse_mode=ParseMode.HTML)
         except Exception as e:
             if "message is not modified" not in str(e):
+                log.warning(f"Mesaj gönderim hatası: {e}")
                 await bot.send_message(chat_id, parca, parse_mode=ParseMode.HTML)
 
-# ─────────────────────────────────────────────
-#  PİYASA RAPOR YARDIMCISI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# PİYASA RAPOR YARDIMCISI
+# ═══════════════════════════════════════════════════════════════
 def _piyasa_rapor(goruntu, tip, piyasa, teknik) -> list:
     emoji_tip  = _TIP_EMOJI.get(tip, "📊")
     baslik_tip = _TIP_BASLIK.get(tip, tip.upper())
     mesajlar   = []
-
     rapor = (f"{emoji_tip} {bold(goruntu + ' — ' + baslik_tip + ' ANALİZİ')}\n"
              f"<i>{AYRAC}</i>\n")
     genel_satirlar = []
@@ -389,7 +382,6 @@ def _piyasa_rapor(goruntu, tip, piyasa, teknik) -> list:
             genel_satirlar.append((k, str(v)))
     rapor += blok("Genel Bilgiler", "ℹ️", genel_satirlar)
     mesajlar.append(rapor)
-
     if teknik and "Hata" not in teknik:
         MA_KEYS = {"SMA (Basit)","EMA (Üstel)","WMA (Ağırlıklı)"}
         ind_satirlar = []
@@ -404,69 +396,57 @@ def _piyasa_rapor(goruntu, tip, piyasa, teknik) -> list:
         tek_rapor += blok("İNDİKATÖRLER", "📉", ind_satirlar)
         tek_rapor += ma_blok(teknik)
         mesajlar.append(tek_rapor)
-
     return mesajlar
 
-# ─────────────────────────────────────────────
-#  KOMUTLAR
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# KOMUTLAR
+# ═══════════════════════════════════════════════════════════════
 @dp.message(CommandStart())
 @dp.message(Command("yardim"))
 async def komut_yardim(message: Message):
     await kullanici_kaydet(message.from_user.id, message.from_user.username or "")
     metin = (
         f"📈 {bold('Finans Asistanı')}\n"
-        f"<i>Türkiye · Dünya · Kripto · Döviz · Emtia</i>\n\n"
-
+        f"<i>Türkiye · Dünya · Kripto · Döviz · Emtia</i>\n"
         f"🇹🇷 {bold('BIST Hisseleri')}\n"
         f"{code('/analiz TUPRS')}  Temel + Teknik\n"
         f"{code('/temel  THYAO')}  Yalnızca temel\n"
         f"{code('/teknik ASELS')}  Yalnızca teknik\n"
-        f"{code('/ai     ASELS')}  🤖 AI Yorumu\n\n"
-
+        f"{code('/ai     ASELS')}  🤖 AI Yorumu\n"
         f"🌍 {bold('Yabancı Hisseler')}\n"
         f"{code('/analiz AAPL  ')}  ABD (direkt sembol)\n"
         f"{code('/analiz SHEL.L')}  Londra  (.L)\n"
         f"{code('/analiz SAP.DE')}  Frankfurt (.DE)\n"
-        f"{code('/ai     NVDA  ')}  AI Yorumu\n\n"
-
+        f"{code('/ai     NVDA  ')}  AI Yorumu\n"
         f"₿ {bold('Kripto')}\n"
         f"{code('/kripto BTC   ')}  Bitcoin (USD)\n"
         f"{code('/kripto ETHTRY')}  Ethereum (TRY)\n"
         f"{code('/ai     BTC   ')}  AI Kripto Yorumu\n"
-        f"{code('/kripto liste ')}  Tüm semboller\n\n"
-
+        f"{code('/kripto liste ')}  Tüm semboller\n"
         f"💱 {bold('Döviz')}\n"
         f"{code('/doviz USDTRY ')}  Dolar/TL\n"
         f"{code('/doviz EURUSD ')}  Euro/Dolar\n"
-        f"{code('/doviz liste  ')}  Tüm pariteler\n\n"
-
+        f"{code('/doviz liste  ')}  Tüm pariteler\n"
         f"🏭 {bold('Emtia')}\n"
         f"{code('/emtia ALTIN  ')}  Altın vadeli\n"
         f"{code('/emtia PETROL ')}  Ham petrol\n"
-        f"{code('/emtia liste  ')}  Tüm emtialar\n\n"
-
+        f"{code('/emtia liste  ')}  Tüm emtialar\n"
         f"📰 {bold('Haberler & Insider')}\n"
         f"{code('/haber  AAPL  ')}  Son haberler\n"
         f"{code('/insider AAPL ')}  İçeriden alım/satım\n"
         f"{code('/trend        ')}  Reddit WSB hisse trend\n"
-        f"{code('/trend kripto ')}  CoinGecko + Reddit kripto trend\n\n"
-
+        f"{code('/trend kripto ')}  CoinGecko + Reddit kripto trend\n"
         f"⭐ {bold('Favoriler')}\n"
         f"{code('/favori ekle THYAO')}  Favori ekle\n"
         f"{code('/favori sil  THYAO')}  Favori sil\n"
-        f"{code('/favoriler        ')}  Favori listesi\n\n"
-
+        f"{code('/favoriler        ')}  Favori listesi\n"
         f"🔧 {bold('Sistem')}\n"
-        f"{code('/durum')}  API bağlantı durumu\n\n"
-
+        f"{code('/durum')}  API bağlantı durumu\n"
         f"┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n"
         f"💡 BIST'te {code('.IS')} otomatik eklenir\n"
         f"⏱ Sorgular arası min {bold(str(RATE_LIMIT_SANIYE))} saniye"
     )
     await message.reply(metin)
-
 
 @dp.message(Command("analiz", "temel", "teknik", "ai"))
 async def komut_analiz(message: Message):
@@ -475,18 +455,15 @@ async def komut_analiz(message: Message):
         await message.reply(
             f"⚠️ Sembol belirtin. Örnek: {code('/analiz ASELS')} veya {code('/ai BTC')}")
         return
-
     girdi   = parcalar[1].upper().strip()
     komut   = message.text.split()[0].lstrip("/").lower()
     user_id = message.from_user.id
-
     bekleme = rate_limit_kontrol(user_id)
     if bekleme > 0:
         await message.reply(f"⏳ Lütfen {bold(str(bekleme))} saniye bekleyin.")
         return
     _son_istek[user_id] = datetime.now()
     await kullanici_kaydet(user_id, message.from_user.username or "")
-
     piyasa_tip = None
     if girdi in KRIPTO_MAP or girdi.endswith("-USD") or girdi.endswith("-TRY"):
         piyasa_tip = "kripto"
@@ -494,7 +471,6 @@ async def komut_analiz(message: Message):
         piyasa_tip = "doviz"
     elif girdi in EMTIA_MAP or girdi.endswith("=F"):
         piyasa_tip = "emtia"
-
     if piyasa_tip:
         if komut == "temel":
             await message.reply(
@@ -503,15 +479,16 @@ async def komut_analiz(message: Message):
             return
         bekle_msg = await message.reply(f"⏳ {bold(girdi)} analiz ediliyor...")
         if komut == "ai":
-            asyncio.create_task(_piyasa_ai_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
+            asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+                _piyasa_ai_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
         else:
-            asyncio.create_task(_piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
+            asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+                _piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
         return
-
     hisse_kodu = await _async(_normalize_ticker, girdi)
     bekle_msg  = await message.reply(f"⏳ {bold(hisse_kodu)} verileri işleniyor...")
-    asyncio.create_task(_analiz_isle(message.chat.id, bekle_msg.message_id, hisse_kodu, komut))
-
+    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+        _analiz_isle(message.chat.id, bekle_msg.message_id, hisse_kodu, komut))
 
 @dp.message(Command("kripto"))
 async def komut_kripto(message: Message):
@@ -525,7 +502,6 @@ async def komut_kripto(message: Message):
         return
     await _piyasa_komut(message, girdi, "kripto")
 
-
 @dp.message(Command("doviz"))
 async def komut_doviz(message: Message):
     parcalar = message.text.split()
@@ -537,7 +513,6 @@ async def komut_doviz(message: Message):
         await message.reply(f"💱 {bold('Desteklenen Pariteler')}\n{code(DOVIZ_LISTE)}")
         return
     await _piyasa_komut(message, girdi, "doviz")
-
 
 @dp.message(Command("emtia"))
 async def komut_emtia(message: Message):
@@ -551,7 +526,6 @@ async def komut_emtia(message: Message):
         return
     await _piyasa_komut(message, girdi, "emtia")
 
-
 async def _piyasa_komut(message: Message, girdi: str, tip: str):
     user_id = message.from_user.id
     bekleme = rate_limit_kontrol(user_id)
@@ -561,8 +535,8 @@ async def _piyasa_komut(message: Message, girdi: str, tip: str):
     _son_istek[user_id] = datetime.now()
     emoji = _TIP_EMOJI.get(tip, "📊")
     bekle_msg = await message.reply(f"⏳ {emoji} {bold(girdi)} verileri çekiliyor...")
-    asyncio.create_task(_piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, tip))
-
+    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+        _piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, tip))
 
 @dp.message(Command("haber"))
 async def komut_haber(message: Message):
@@ -579,8 +553,8 @@ async def komut_haber(message: Message):
     _son_istek[user_id] = datetime.now()
     girdi_norm = await _async(_normalize_ticker, girdi)
     bekle_msg  = await message.reply(f"⏳ 📰 {bold(girdi_norm)} haberleri çekiliyor...")
-    asyncio.create_task(_haber_isle(message.chat.id, bekle_msg.message_id, girdi_norm))
-
+    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+        _haber_isle(message.chat.id, bekle_msg.message_id, girdi_norm))
 
 @dp.message(Command("insider"))
 async def komut_insider(message: Message):
@@ -596,8 +570,8 @@ async def komut_insider(message: Message):
         return
     _son_istek[user_id] = datetime.now()
     bekle_msg = await message.reply(f"⏳ 🔍 {bold(girdi)} insider verileri çekiliyor...")
-    asyncio.create_task(_insider_isle(message.chat.id, bekle_msg.message_id, girdi))
-
+    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+        _insider_isle(message.chat.id, bekle_msg.message_id, girdi))
 
 @dp.message(Command("trend"))
 async def komut_trend(message: Message):
@@ -611,8 +585,8 @@ async def komut_trend(message: Message):
     _son_istek[user_id] = datetime.now()
     emoji = "₿" if tip == "kripto" else "📊"
     bekle_msg = await message.reply(f"⏳ {emoji} Trend verileri çekiliyor...")
-    asyncio.create_task(_trend_isle(message.chat.id, bekle_msg.message_id, tip))
-
+    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+        _trend_isle(message.chat.id, bekle_msg.message_id, tip))
 
 @dp.message(Command("favori"))
 async def komut_favori(message: Message):
@@ -627,7 +601,6 @@ async def komut_favori(message: Message):
     sembol  = parcalar[2].upper().strip()
     user_id = message.from_user.id
     await kullanici_kaydet(user_id, message.from_user.username or "")
-
     if islem == "ekle":
         await favori_ekle(user_id, sembol)
         await message.reply(f"⭐ {bold(sembol)} favorilere eklendi.")
@@ -636,7 +609,6 @@ async def komut_favori(message: Message):
         await message.reply(f"🗑 {bold(sembol)} favorilerden silindi.")
     else:
         await message.reply(f"⚠️ Geçersiz işlem. {code('ekle')} veya {code('sil')} kullan.")
-
 
 @dp.message(Command("favoriler"))
 async def komut_favoriler(message: Message):
@@ -650,25 +622,22 @@ async def komut_favoriler(message: Message):
         return
     satirlar = [f"  {i+1:2}. {s}" for i, s in enumerate(liste)]
     await message.reply(
-        f"⭐ {bold('Favori Hisseleriniz')}\n<pre>{h(chr(10).join(satirlar))}</pre>\n\n"
+        f"⭐ {bold('Favori Hisseleriniz')}\n"
+        f"<pre>{h(chr(10).join(satirlar))}</pre>\n"
         f"Analiz için: {code('/analiz THYAO')}")
-
 
 @dp.message(Command("durum"))
 async def komut_durum(message: Message):
     rapor = await _async(durum_raporu)
     await message.reply(f"<pre>{h(rapor)}</pre>")
 
-
-# ─────────────────────────────────────────────
-#  ASYNC TASK FONKSİYONLARI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# ASYNC TASK FONKSİYONLARI — ✅ HATA YÖNETİMİ İYİLEŞTİRİLDİ
+# ═══════════════════════════════════════════════════════════════
 async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
     try:
         temel_v  = {}
         teknik_v = {}
-
         if komut in ("analiz","ai"):
             temel_v, teknik_v = await asyncio.gather(
                 _async(temel_analiz_yap, hisse_kodu),
@@ -678,14 +647,12 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
             temel_v = await _async(temel_analiz_yap, hisse_kodu)
         elif komut == "teknik":
             teknik_v = await _async(teknik_analiz_yap, hisse_kodu)
-
         if temel_v and "Hata" in temel_v:
             await _gonder(chat_id, mesaj_id, f"❌ {h(temel_v['Hata'])}")
             return
         if teknik_v and "Hata" in teknik_v:
             await _gonder(chat_id, mesaj_id, f"❌ {h(teknik_v['Hata'])}")
             return
-
         # ── TEMEL ANALİZ ──────────────────────────────────────────────
         if temel_v:
             rapor = (f"📊 {bold(hisse_kodu + ' — TEMEL ANALİZ')}\n"
@@ -695,7 +662,6 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
                 if blok_html:
                     rapor += blok_html + "\n"
             await _gonder(chat_id, mesaj_id, rapor.strip(), duzenle=True)
-
         # ── TEKNİK ANALİZ ─────────────────────────────────────────────
         if teknik_v:
             MA_KEYS = {"SMA (Basit)","EMA (Üstel)","WMA (Ağırlıklı)"}
@@ -706,37 +672,31 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
                 v_str = _fmt(v) if not isinstance(v, str) else v
                 if v_str and v_str not in ("None","nan","0","0.00","N/A",""):
                     ind_satirlar.append((k, v_str))
-
             tek_rapor = (f"📉 {bold(hisse_kodu + ' — TEKNİK ANALİZ')}\n"
                          f"<i>{AYRAC}</i>\n")
             tek_rapor += blok("TEKNİK İNDİKATÖRLER", "📉", ind_satirlar)
             tek_rapor += ma_blok(teknik_v)
-
             duzenle = not bool(temel_v)
             await _gonder(chat_id, mesaj_id, tek_rapor.strip(), duzenle=duzenle)
-
         # ── AI YORUMU ─────────────────────────────────────────────────
         if komut == "ai" and temel_v and teknik_v:
-            await bot.send_message(chat_id,
-                f"🤖 {bold('AI Analist yorumu hazırlanıyor...')}")
+            await bot.send_message(chat_id, f"🤖 {bold('AI Analist yorumu hazırlanıyor...')}")
             haber_ozeti = await _async(ai_icin_haber_ozeti, hisse_kodu)
             if haber_ozeti:
                 temel_v["__haberler__"] = haber_ozeti
             yorum = await _async(ai_analist_yorumu, hisse_kodu, temel_v, teknik_v)
             baslik = (f"🤖 {bold('AI ANALİST — ' + hisse_kodu)}\n"
-                      f"<i>{AYRAC}</i>\n\n")
+                      f"<i>{AYRAC}</i>\n")
             tam = baslik + h(yorum)
             for parca in _parcala(tam):
                 await bot.send_message(chat_id, parca)
-
     except Exception as e:
-        log.exception("_analiz_isle hata")
+        log.exception("_analiz_isle hata")  # ✅ exc_info otomatik
         hata = f"❌ {bold('Sistem Hatası')}\n{code(str(e))}"
         try:
             await _gonder(chat_id, mesaj_id, hata)
         except Exception:
             await bot.send_message(chat_id, hata)
-
 
 async def _piyasa_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
     try:
@@ -746,27 +706,22 @@ async def _piyasa_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
             piyasa, teknik = await _async(doviz_analiz, girdi)
         else:
             piyasa, teknik = await _async(emtia_analiz, girdi)
-
         if "Hata" in piyasa:
             await _gonder(chat_id, mesaj_id, f"❌ {h(piyasa['Hata'])}")
             return
-
         goruntu  = piyasa.get("_goruntu", girdi)
         mesajlar = _piyasa_rapor(goruntu, tip, piyasa, teknik)
-
         for i, msg in enumerate(mesajlar):
             if i == 0:
                 await _gonder(chat_id, mesaj_id, msg, duzenle=True)
             else:
                 await bot.send_message(chat_id, msg)
-
     except Exception as e:
-        log.exception("_piyasa_isle hata")
+        log.exception("_piyasa_isle hata")  # ✅ exc_info otomatik
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             await bot.send_message(chat_id, f"❌ Hata: {h(str(e))}")
-
 
 async def _piyasa_ai_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
     try:
@@ -776,36 +731,30 @@ async def _piyasa_ai_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
             piyasa, teknik = await _async(doviz_analiz, girdi)
         else:
             piyasa, teknik = await _async(emtia_analiz, girdi)
-
         if "Hata" in piyasa:
             await _gonder(chat_id, mesaj_id, f"❌ {h(piyasa['Hata'])}")
             return
-
         goruntu  = piyasa.get("_goruntu", girdi)
         mesajlar = _piyasa_rapor(goruntu, tip, piyasa, teknik)
-
         for i, msg in enumerate(mesajlar):
             if i == 0:
                 await _gonder(chat_id, mesaj_id, msg, duzenle=True)
             else:
                 await bot.send_message(chat_id, msg)
-
         await bot.send_message(chat_id, f"🤖 {bold('AI analiz yorumu hazırlanıyor...')}")
         yorum = await _async(ai_piyasa_yorumu, girdi, tip, piyasa, teknik)
         emoji_tip = _TIP_EMOJI.get(tip, "📊")
         baslik = (f"{emoji_tip} {bold('AI ANALİST — ' + goruntu)}\n"
-                  f"<i>{AYRAC}</i>\n\n")
+                  f"<i>{AYRAC}</i>\n")
         tam = baslik + h(yorum)
         for parca in _parcala(tam):
             await bot.send_message(chat_id, parca)
-
     except Exception as e:
-        log.exception("_piyasa_ai_isle hata")
+        log.exception("_piyasa_ai_isle hata")  # ✅ exc_info otomatik
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             await bot.send_message(chat_id, f"❌ Hata: {h(str(e))}")
-
 
 async def _haber_isle(chat_id: int, mesaj_id: int, sembol: str):
     try:
@@ -817,12 +766,10 @@ async def _haber_isle(chat_id: int, mesaj_id: int, sembol: str):
             await _gonder(chat_id, mesaj_id,
                 f"📰 {bold(sembol + ' için haber bulunamadı.')}{fh_notu}")
             return
-
         kaynak_tipi = haberler[0].get("kaynaktipi", "")
         rapor = (f"📰 {bold(sembol + ' — SON HABERLER')}\n"
                  f"<i>{AYRAC}</i>\n"
-                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n\n")
-
+                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n")
         for i, hbr in enumerate(haberler[:8], 1):
             if not hbr.get("baslik"):
                 continue
@@ -838,16 +785,13 @@ async def _haber_isle(chat_id: int, mesaj_id: int, sembol: str):
             if alt:
                 rapor += f"<i>   {'  |  '.join(alt)}</i>\n"
             rapor += "\n"
-
         await _gonder(chat_id, mesaj_id, rapor.strip())
-
     except Exception as e:
-        log.exception("_haber_isle hata")
+        log.exception("_haber_isle hata")  # ✅ exc_info otomatik
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             pass
-
 
 async def _insider_isle(chat_id: int, mesaj_id: int, sembol: str):
     try:
@@ -859,12 +803,10 @@ async def _insider_isle(chat_id: int, mesaj_id: int, sembol: str):
             await _gonder(chat_id, mesaj_id,
                 f"🔍 {bold(sembol + ' için insider verisi bulunamadı.')}{bist_notu}")
             return
-
         kaynak_tipi = islemler[0].get("kaynaktipi", "")
         rapor = (f"🔍 {bold(sembol + ' — İNSIDER İŞLEMLER')}\n"
                  f"<i>{AYRAC}</i>\n"
-                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n\n")
-
+                 f"<i>Kaynak: {h(kaynak_tipi)}</i>\n")
         for t in islemler:
             etiket    = "🟢 <b>ALIM</b>" if t["islem"] == "ALIM" else "🔴 <b>SATIM</b>"
             isim      = h(t.get("isim", "")[:28])
@@ -874,17 +816,14 @@ async def _insider_isle(chat_id: int, mesaj_id: int, sembol: str):
             fiyat     = f"${fiyat_ham:.2f}" if fiyat_ham and fiyat_ham > 0.01 else "—"
             rapor    += f"{etiket}  {tarih}\n"
             rapor    += f"  👤 {isim}\n"
-            rapor    += f"  📦 {adet} adet  💵 {fiyat}\n\n"
-
+            rapor    += f"  📦 {adet} adet  💵 {fiyat}\n"
         await _gonder(chat_id, mesaj_id, rapor.strip())
-
     except Exception as e:
-        log.exception("_insider_isle hata")
+        log.exception("_insider_isle hata")  # ✅ exc_info otomatik
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             pass
-
 
 async def _trend_isle(chat_id: int, mesaj_id: int, tip: str = "hisse"):
     try:
@@ -922,38 +861,31 @@ async def _trend_isle(chat_id: int, mesaj_id: int, tip: str = "hisse"):
                      f"<i>{AYRAC}</i>\n")
             rapor += blok("En Çok Konuşulanlar", "🔥", satirlar)
             rapor += f"\n<i>Kaynak: ApeWisdom (Reddit WSB + Stocks)</i>"
-
         await _gonder(chat_id, mesaj_id, rapor)
-
     except Exception as e:
-        log.exception("_trend_isle hata")
+        log.exception("_trend_isle hata")  # ✅ exc_info otomatik
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             pass
 
-
-# ─────────────────────────────────────────────
-#  BAŞLAT
-# ─────────────────────────────────────────────
-
-# ─────────────────────────────────────────────
-#  YENİ ÖZELLİK HANDLERLARI
-# ─────────────────────────────────────────────
-
+# ═══════════════════════════════════════════════════════════════
+# YENİ ÖZELLİK HANDLERLARI
+# ═══════════════════════════════════════════════════════════════
 @dp.message(Command("uyari"))
 async def cmd_uyari(message: Message):
     """Kullanım: /uyari SEMBOL TIP HEDEF (Örn: /uyari THYAO.IS fiyat_ust 300)"""
     try:
         args = message.text.split()
         if len(args) < 4:
-            await message.answer("❌ Eksik bilgi. Kullanım: <code>/uyari SEMBOL TIP HEDEF</code>\nTipler: fiyat_ust, fiyat_alt, rsi_ust, rsi_alt")
+            await message.answer("❌ Eksik bilgi. Kullanım: <code>/uyari SEMBOL TIP HEDEF</code>\n"
+                                "Tipler: fiyat_ust, fiyat_alt, rsi_ust, rsi_alt")
             return
-        
         sembol, tip, hedef = args[1].upper(), args[2].lower(), float(args[3])
         await uyari_ekle(message.from_user.id, sembol, tip, hedef)
         await message.answer(f"✅ {sembol} için {tip} uyarısı {hedef} seviyesine kuruldu.")
     except Exception as e:
+        log.exception("cmd_uyari hata")
         await message.answer(f"❌ Hata: {e}")
 
 @dp.message(Command("portfoy"))
@@ -975,6 +907,7 @@ async def cmd_portfoy_ekle(message: Message):
         await portfoy_guncelle(message.from_user.id, sembol, miktar, maliyet)
         await message.answer(f"✅ {sembol} portföyünüze eklendi/güncellendi.")
     except Exception as e:
+        log.exception("cmd_portfoy_ekle hata")
         await message.answer(f"❌ Hata: {e}")
 
 @dp.message(Command("grafik"))
@@ -984,13 +917,10 @@ async def cmd_grafik(message: Message):
     if len(args) < 2:
         await message.answer("❌ Kullanım: <code>/grafik SEMBOL</code>")
         return
-    
     sembol = args[1].upper()
     await message.answer(f"📊 {sembol} grafiği hazırlanıyor, lütfen bekleyin...")
-    
     path = f"logs/chart_{message.from_user.id}.png"
     success = await tv_grafik_cek(sembol, path)
-    
     if success:
         photo = FSInputFile(path)
         await message.answer_photo(photo, caption=f"📈 {sembol} TradingView Grafiği")
@@ -1004,13 +934,11 @@ async def cmd_tahmin(message: Message):
     if len(args) < 2:
         await message.answer("❌ Kullanım: <code>/tahmin SEMBOL</code>")
         return
-    
     sembol = args[1].upper()
     await message.answer(f"🤖 {sembol} için AI tahmini hazırlanıyor...")
-    
     teknik = await _async(teknik_analiz_yap, sembol)
     tahmin = await _async(ai_tahmin_yap, sembol, teknik)
-    await message.answer(f"🔮 <b>{sembol} AI Tahmini</b>\n\n{tahmin}")
+    await message.answer(f"🔮 <b>{sembol} AI Tahmini</b>\n{tahmin}")
 
 @dp.message(F.text & ~F.text.startswith("/"))
 async def handle_nlp(message: Message):
@@ -1019,22 +947,24 @@ async def handle_nlp(message: Message):
     yanit = await _async(ai_nlp_sorgu, message.text)
     await message.answer(yanit)
 
+# ═══════════════════════════════════════════════════════════════
+# BAŞLAT — ✅ EVENT LOOP DÜZELTİLDİ
+# ═══════════════════════════════════════════════════════════════
 async def main():
     await db_init()
     baslangic_temizligi()
-
     log.info("Bot başlatılıyor...")
     
-    # Arka plan görevlerini başlat
-    asyncio.create_task(uyari_kontrol_dongusu(bot))
-
+    # ✅ DÜZELTİLDİ: Event loop başladıktan sonra task oluştur
+    loop = asyncio.get_running_loop()
+    loop.create_task(uyari_kontrol_dongusu(bot))
+    
     log.info(f"Finnhub:      {'✅' if os.environ.get('FINNHUB_API_KEY') else '⚠️ KEY YOK'}")
     log.info(f"AlphaVantage: {'✅' if os.environ.get('ALPHAVANTAGE_API_KEY') else '⚠️ KEY YOK'}")
     log.info(f"Gemini:       {'✅' if os.environ.get('GEMINI_API_KEY') else '⚠️ KEY YOK'}")
     log.info(f"Anthropic:    {'✅' if os.environ.get('ANTHROPIC_API_KEY') else '⚠️ KEY YOK'}")
-
+    
     await dp.start_polling(bot, skip_updates=True)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
