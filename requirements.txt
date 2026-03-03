@@ -1,30 +1,40 @@
-# Core dependencies (existing)
-aiogram>=3.13.0
+# ==============================
+# CORE
+# ==============================
+aiogram==3.13.1
 anthropic==0.20.0
 aiosqlite==0.19.0
-numpy>=2.0.0
+numpy==2.0.2
 pandas==2.2.3
 requests==2.31.0
 yfinance==0.2.36
 google-generativeai==0.3.1
 groq==0.3.0
-borsapy>=0.8.0
+borsapy==0.8.4
 playwright==1.42.0
 python-dotenv==1.0.1
 
-# ✅ NEW: Monitoring
-aiohttp>=3.8.0              # Health check server için (aiogram uyumlu)
-prometheus-client>=0.19.0  # Metrics (opsiyonel, kendi collector'ımız var)
+# ==============================
+# MONITORING
+# ==============================
+aiohttp==3.9.5
+prometheus-client==0.20.0
 
-# ✅ NEW: Config & Validation
-pydantic>=2.1.0    # Tip-güvenli config (aiogram uyumlu)
+# ==============================
+# CONFIG & VALIDATION
+# ==============================
+pydantic==2.8.2
 
-# ✅ NEW: Security & Utilities
-python-jose[cryptography]>=3.3.0  # JWT (future auth)
-cryptography>=41.0.0    # Security primitives
+# ==============================
+# SECURITY
+# ==============================
+python-jose[cryptography]==3.3.0
+cryptography==42.0.5
 
-# ✅ NEW: Development
-pytest>=7.4.0           # Testing
-pytest-asyncio>=0.21.0  # Async test support
-mypy>=1.6.0            # Type checking
-ruff>=0.1.0            # Fast linter
+# ==============================
+# DEVELOPMENT
+# ==============================
+pytest==7.4.4
+pytest-asyncio==0.23.6
+mypy==1.8.0
+ruff==0.4.4
