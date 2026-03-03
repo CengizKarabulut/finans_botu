@@ -1,6 +1,6 @@
 """
 main.py — Finans Botu Ana Giriş Noktası
-✅ MİMARİ GÜNCELLEME - Advanced Graceful Shutdown, i18n ve Webhook/Polling Desteği.
+✅ MİMARİ GÜNCELLEME - Zeki Sembol Doğrulama ve Advanced Graceful Shutdown.
 """
 import os
 import asyncio
@@ -48,7 +48,7 @@ logging.basicConfig(
 log = logging.getLogger("finans_botu")
 
 # ═══════════════════════════════════════════════════════════════
-# GRACEFUL SHUTDOWN (Gelişmiş Sinyal Yönetimi)
+# GRACEFUL SHUTDOWN
 # ═══════════════════════════════════════════════════════════════
 
 async def shutdown(loop, sig=None):
@@ -71,7 +71,101 @@ async def shutdown(loop, sig=None):
     sys.exit(0)
 
 # ═══════════════════════════════════════════════════════════════
-# ANA DÖNGÜ & WEBHOOK/POLLING
+# YARDIMCILAR
+# ═══════════════════════════════════════════════════════════════
+
+async def _async(func, *args, **kwargs):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, partial(func, *args, **kwargs))
+
+# ═══════════════════════════════════════════════════════════════
+# KOMUTLAR
+# ═══════════════════════════════════════════════════════════════
+
+@dp.message(CommandStart())
+async def komut_start(message: Message):
+    await kullanici_kaydet(message.from_user.id, message.from_user.username or "")
+    welcome = (
+        f"🚀 <b>Finans Botu’na Hoş Geldiniz!</b>\n\n"
+        f"Hisse senedi, kripto ve döviz analizleri için emrinizdeyim.\n\n"
+        f"📌 <b>Temel Komutlar:</b>\n"
+        f"• <code>/analiz THYAO</code> - Kapsamlı analiz\n"
+        f"• <code>/grafik BTCUSD</code> - TradingView grafiği\n"
+        f"• <code>/tahmin AAPL</code> - AI fiyat tahmini\n"
+        f"• <code>/trend</code> - Popüler varlıklar\n"
+        f"• <code>/favoriler</code> - Favori listeniz\n\n"
+        f"💡 Herhangi bir şey yazarak AI asistanımla sohbet edebilirsiniz."
+    )
+    await message.reply(welcome)
+
+@dp.message(Command("analiz"))
+async def komut_analiz(message: Message):
+    parcalar = message.text.split()
+    if len(parcalar) < 2:
+        await message.reply(f"⚠️ Örnek: <code>/analiz THYAO</code>")
+        return
+    
+    girdi = sanitize_text(parcalar[1])
+    valid, sembol, tip = validate_symbol(girdi)
+    
+    if not valid:
+        await message.reply("❌ Geçersiz sembol formatı.")
+        return
+
+    bekle_msg = await message.reply(f"⏳ <b>{sembol}</b> ({tip}) verileri işleniyor...")
+    
+    try:
+        temel_v, teknik_v = await asyncio.gather(
+            _async(temel_analiz_yap, sembol),
+            _async(teknik_analiz_yap, sembol)
+        )
+        
+        if ("Hata" in temel_v or not temel_v) and ("Hata" in teknik_v or not teknik_v):
+            await bekle_msg.edit_text(f"❌ Veri bulunamadı: {sembol}")
+            return
+
+        fiyat = temel_v.get("Fiyat", teknik_v.get("Fiyat", "—"))
+        degisim = temel_v.get("Günlük Değişim (%)", "—")
+        
+        rapor = (
+            f"📊 <b>{sembol} Analiz Özeti</b>\n"
+            f"💰 Fiyat: <b>{fiyat}</b>\n"
+            f"📈 Değişim: <b>{degisim}</b>\n\n"
+            f"Detaylı analiz için aşağıdaki butonları kullanabilirsiniz."
+        )
+        
+        reply_markup = build_analiz_menu(sembol)
+        await bekle_msg.edit_text(rapor, reply_markup=reply_markup)
+        
+    except Exception as e:
+        log.exception("Analiz hatası")
+        await bekle_msg.edit_text(f"❌ Hata oluştu: {e}")
+
+@dp.message(Command("grafik"))
+async def komut_grafik(message: Message):
+    parcalar = message.text.split()
+    if len(parcalar) < 2:
+        await message.reply(f"⚠️ Örnek: <code>/grafik THYAO</code>")
+        return
+    
+    girdi = sanitize_text(parcalar[1])
+    valid, sembol, tip = validate_symbol(girdi)
+    
+    if not valid:
+        await message.reply("❌ Geçersiz sembol formatı.")
+        return
+
+    await message.answer(f"📊 <b>{sembol}</b> grafiği hazırlanıyor, lütfen bekleyin...")
+    
+    path = f"logs/chart_{message.from_user.id}.png"
+    success = await tv_grafik_cek(sembol, path)
+    if success:
+        await message.answer_photo(FSInputFile(path), caption=f"📈 {sembol} TradingView Grafiği")
+    else:
+        await message.answer(f"❌ {sembol} grafiği çekilemedi. Sembolü kontrol edin.")
+
+# ═══════════════════════════════════════════════════════════════
+# ANA DÖNGÜ
 # ═══════════════════════════════════════════════════════════════
 
 async def main():
@@ -102,17 +196,7 @@ async def main():
         loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(shutdown(loop, s)))
 
     log.info("🚀 Finans Botu başlatıldı!")
-    
-    # Webhook vs Polling Seçimi (Config üzerinden)
-    use_webhook = os.getenv('USE_WEBHOOK', 'false').lower() == 'true'
-    
-    if use_webhook:
-        log.info("🌐 Webhook modu aktif ediliyor (Henüz yapılandırılmadı)...")
-        # Webhook setup buraya gelecek
-        await dp.start_polling(bot, skip_updates=True)
-    else:
-        log.info("📡 Polling modu aktif.")
-        await dp.start_polling(bot, skip_updates=True)
+    await dp.start_polling(bot, skip_updates=True)
 
 if __name__ == "__main__":
     try:

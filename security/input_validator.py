@@ -4,37 +4,42 @@ security/input_validator.py — Kullanıcı girdilerini denetler.
 """
 import re
 import logging
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 log = logging.getLogger("finans_botu")
 
-def validate_symbol(symbol: str) -> bool:
+def validate_symbol(symbol: str) -> Tuple[bool, str, str]:
     """
-    Sembolün geçerli bir formatta olup olmadığını kontrol eder.
-    Geçerli formatlar:
-    - THYAO, THYAO.IS (BIST)
-    - BTCUSD, BTC-USD, BTC-TRY (Kripto)
-    - AAPL, MSFT (Global)
-    - USDTRY, EURUSD (Döviz)
+    Sembolü doğrular ve tipini belirler.
+    Dönüş: (Geçerli mi?, Normalize Sembol, Tip)
+    Tipler: 'BIST', 'CRYPTO', 'GLOBAL', 'UNKNOWN'
     """
     if not symbol or not isinstance(symbol, str):
-        return False
+        return False, "", "UNKNOWN"
     
-    # 1. Uzunluk kontrolü (Min 2, Max 15)
-    if not (2 <= len(symbol) <= 15):
-        return False
+    s = symbol.upper().strip()
     
-    # 2. Karakter kontrolü (Harf, rakam, nokta, tire, eşittir)
-    # Regex: Sadece izin verilen karakterler
-    if not re.match(r'^[A-Z0-9.\-=]+$', symbol.upper()):
-        log.warning(f"Geçersiz karakter içeren sembol reddedildi: {symbol}")
-        return False
+    # 1. Kripto Kontrolü (BTCUSD, BTC-USDT, ETH/TRY vb.)
+    kripto_regex = r'^([A-Z0-9]{2,10})[-/]? (USD|USDT|TRY|EUR|BTC|ETH)$'
+    kripto_match = re.match(kripto_regex, s)
+    if kripto_match:
+        base, quote = kripto_match.groups()
+        return True, f"{base}-{quote}", "CRYPTO"
     
-    # 3. Özel durumlar (Sadece nokta veya sadece tire olamaz)
-    if symbol.strip(".-=") == "":
-        return False
+    # 2. BIST Kontrolü (THYAO, ASELS.IS vb.)
+    bist_regex = r'^([A-Z]{4,5})(\.IS)?$'
+    bist_match = re.match(bist_regex, s)
+    if bist_match:
+        base = bist_match.group(1)
+        return True, f"{base}.IS", "BIST"
+    
+    # 3. Global Kontrol (AAPL, TSLA, MSFT vb.)
+    global_regex = r'^([A-Z]{1,5})$'
+    global_match = re.match(global_regex, s)
+    if global_match:
+        return True, s, "GLOBAL"
         
-    return True
+    return False, s, "UNKNOWN"
 
 def sanitize_text(text: str, max_length: int = 1000) -> str:
     """

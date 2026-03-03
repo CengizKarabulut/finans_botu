@@ -1,6 +1,6 @@
 """
 veri_motoru.py — Tüm harici veri kaynaklarını tek çatıda toplar.
-✅ MİMARİ GÜNCELLEME - Circuit Breaker, Prometheus Metrics ve Robust Parsing.
+✅ MİMARİ GÜNCELLEME - Robust Regex Parsing, Structured Logging ve Prometheus Metrics.
 """
 import os
 import time
@@ -12,7 +12,7 @@ from typing import Optional, Dict, Any, List
 from prometheus_client import Counter, Histogram
 
 from config import settings
-from security.circuit_breaker import cb_yfinance, cb_fmp, cb_alphavantage
+from security.circuit_breaker import cb_yfinance
 
 log = logging.getLogger("finans_botu")
 
@@ -40,24 +40,32 @@ async def _c_set(key: str, val: Any) -> None:
         _cache[key] = {"v": val, "ts": time.time()}
 
 # ═══════════════════════════════════════════════════════════════════
-# ROBUST PARSING
+# ROBUST PARSING (Regex Tabanlı)
 # ═══════════════════════════════════════════════════════════════════
 
 def _parse_fiyat(fiyat_str: str) -> Optional[float]:
+    """
+    Fiyatı her türlü formattan (1.234,56 USD, 1,234.56 BTC vb.) güvenle ayrıştırır.
+    ✅ MİMARİ GÜNCELLEME - Regex tabanlı robust parsing.
+    """
     if not fiyat_str or not isinstance(fiyat_str, str):
         return None
     try:
-        temiz = ''.join(c for c in fiyat_str if c.isdigit() or c in '.,-')
+        # Sadece sayısal karakterleri, nokta ve virgülü al
+        temiz = re.sub(r'[^\d.,]', '', fiyat_str)
+        
+        # Türk formatı (1.234,56) vs Global format (1,234.56) tespiti
         if ',' in temiz and '.' in temiz:
-            if temiz.find('.') < temiz.find(','):
+            if temiz.find('.') < temiz.find(','): # Türk formatı
                 temiz = temiz.replace('.', '').replace(',', '.')
-            else:
+            else: # Global format
                 temiz = temiz.replace(',', '')
-        elif ',' in temiz:
+        elif ',' in temiz: # Sadece virgül varsa (1234,56)
             temiz = temiz.replace(',', '.')
+            
         return float(temiz)
     except (ValueError, AttributeError) as e:
-        log.debug(f"Fiyat parse hatası ('{fiyat_str}'): {e}")
+        log.warning(f"⚠️ Fiyat parse hatası ('{fiyat_str}'): {str(e)}")
         return None
 
 # ═══════════════════════════════════════════════════════════════════
@@ -65,23 +73,22 @@ def _parse_fiyat(fiyat_str: str) -> Optional[float]:
 # ═══════════════════════════════════════════════════════════════════
 
 async def get_fiyat_hiyerarsik(sembol: str) -> Dict[str, Any]:
-    """
-    Hiyerarşik fiyat çekme:
-    ✅ MİMARİ İYİLEŞTİRME: Circuit Breaker ve Prometheus Metrics entegre edildi.
-    """
+    """Hiyerarşik fiyat çekme motoru."""
     s = sembol.upper().strip()
     
-    # Cache kontrolü (TTL config'den geliyor)
+    # Cache kontrolü
     ck = f"price_{s}"
     cached = await _c_al(ck, settings.CACHE_TTL_PRICE)
     if cached: return cached
 
-    # 1. yFinance (Fallback & Primary for BIST/Crypto)
+    # 1. yFinance (Primary)
     res = await cb_yfinance.call(_fetch_yfinance, s)
     if res:
         await _c_set(ck, res)
         return res
     
+    # Hata durumunda boş dönmek yerine logla
+    log.error(f"❌ {s} için hiçbir kaynaktan veri çekilemedi.")
     return {}
 
 async def _fetch_yfinance(sembol: str) -> Optional[Dict[str, Any]]:
@@ -103,9 +110,13 @@ async def _fetch_yfinance(sembol: str) -> Optional[Dict[str, Any]]:
                 "degisim": float(degisim) if degisim else 0.0,
                 "kaynak": "yFinance"
             }
+        else:
+            log.warning(f"⚠️ yFinance {sembol} için fiyat bulamadı.")
+            API_CALLS.labels(provider='yfinance', endpoint='price', status='no_data').inc()
+            
     except Exception as e:
         API_CALLS.labels(provider='yfinance', endpoint='price', status='error').inc()
-        log.error(f"yFinance hatası ({sembol}): {e}", exc_info=True)
+        log.error(f"❌ yFinance hatası ({sembol}): {str(e)}", exc_info=True)
         raise e # Circuit Breaker'ın hatayı görmesi için
     finally:
         REQUEST_DURATION.labels(provider='yfinance').observe(time.time() - start_time)
