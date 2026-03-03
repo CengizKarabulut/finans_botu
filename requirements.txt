@@ -5,32 +5,32 @@
 aiogram==3.13.1
 anthropic==0.20.0
 aiosqlite==0.19.0
-numpy==2.4.2
-pandas==2.2.3
-requests==2.31.0
-yfinance==0.2.36
-google-generativeai==0.3.1
-groq==0.3.0
-borsapy==0.8.4
-playwright==1.42.0
-python-dotenv==1.0.1
+numpy
+pandas
+requests
+yfinance
+google-generativeai
+groq
+borsapy>=0.8.1
+playwright
+python-dotenv
 
 # ==============================
-# MONITORING
+# MONITORING & WEBSOCKET
 # ==============================
 
-aiohttp==3.9.5
-prometheus-client==0.20.0
+aiohttp
+prometheus-client
 
 # ==============================
 # CONFIG & VALIDATION
 # ==============================
 
-pydantic==2.8.2
+pydantic
 
 # ==============================
 # SECURITY
 # ==============================
 
-python-jose[cryptography]==3.3.0
-cryptography==42.0.5
+python-jose[cryptography]
+cryptography
