@@ -8,7 +8,7 @@ requests==2.31.0
 yfinance==0.2.36
 google-generativeai==0.3.1
 groq==0.3.0
-borsapy==0.0.10
+borsapy>=0.8.0
 playwright==1.42.0
 python-dotenv==1.0.1
 
