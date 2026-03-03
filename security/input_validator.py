@@ -1,51 +1,44 @@
-"""Input validation and sanitization helpers."""
+"""
+security/input_validator.py — Kullanıcı girdilerini denetler.
+✅ MİMARİ GÜNCELLEME - Zeki sembol doğrulama ve sanitizasyon.
+"""
 import re
 import logging
 from typing import Optional, List
 
 log = logging.getLogger("finans_botu")
 
-# Güvenli sembol pattern'i (sadece harf, sayı, nokta, tire)
-SYMBOL_PATTERN = re.compile(r'^[A-Z0-9.\-]{1,20}$', re.IGNORECASE)
-
-# Güvenli mesaj pattern'i (XSS önleme)
-UNSAFE_CHARS = re.compile(r'[<>"\';\\]')
-
-def validate_symbol(symbol: str, allow_extensions: bool = True) -> Optional[str]:
+def validate_symbol(symbol: str) -> bool:
     """
-    Sembolü validate et ve normalize et.
-    
-    Returns:
-        Normalized symbol veya None (geçersiz ise)
+    Sembolün geçerli bir formatta olup olmadığını kontrol eder.
+    Geçerli formatlar:
+    - THYAO, THYAO.IS (BIST)
+    - BTCUSD, BTC-USD, BTC-TRY (Kripto)
+    - AAPL, MSFT (Global)
+    - USDTRY, EURUSD (Döviz)
     """
     if not symbol or not isinstance(symbol, str):
-        return None
+        return False
     
-    # Trim ve uppercase
-    symbol = symbol.strip().upper()
+    # 1. Uzunluk kontrolü (Min 2, Max 15)
+    if not (2 <= len(symbol) <= 15):
+        return False
     
-    # Bilinen borsaları koru
-    if allow_extensions:
-        known_extensions = {'.IS', '.L', '.DE', '.PA', '.MI', '.AS', '.HK', '.T'}
-        for ext in known_extensions:
-            if symbol.endswith(ext):
-                base = symbol[:-len(ext)]
-                if SYMBOL_PATTERN.match(base):
-                    return symbol
+    # 2. Karakter kontrolü (Harf, rakam, nokta, tire, eşittir)
+    # Regex: Sadece izin verilen karakterler
+    if not re.match(r'^[A-Z0-9.\-=]+$', symbol.upper()):
+        log.warning(f"Geçersiz karakter içeren sembol reddedildi: {symbol}")
+        return False
     
-    # Base sembol kontrolü
-    if SYMBOL_PATTERN.match(symbol):
-        return symbol
-    
-    log.warning(f"Invalid symbol rejected: {symbol}")
-    return None
+    # 3. Özel durumlar (Sadece nokta veya sadece tire olamaz)
+    if symbol.strip(".-=") == "":
+        return False
+        
+    return True
 
 def sanitize_text(text: str, max_length: int = 1000) -> str:
     """
     Kullanıcı girdisini sanitize et (XSS prevention).
-    
-    Returns:
-        Temizlenmiş metin
     """
     if not text or not isinstance(text, str):
         return ""
@@ -53,30 +46,17 @@ def sanitize_text(text: str, max_length: int = 1000) -> str:
     # Length limit
     text = text[:max_length]
     
-    # Unsafe karakterleri escape et
-    replacements = {
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        ';': '&#x3B;',
-        '\\': '&#x5C;',
-    }
-    
-    for unsafe, safe in replacements.items():
-        text = text.replace(unsafe, safe)
-    
-    return text.strip()
+    # Sadece harf, rakam ve temel finansal karakterleri bırak
+    clean = re.sub(r'[^\w\s.\-=]', '', text)
+    return clean.strip().upper()
 
 def validate_numeric(value: str, min_val: float = None, max_val: float = None) -> Optional[float]:
     """
     String değeri numeric'e çevir ve range kontrolü yap.
-    
-    Returns:
-        float değer veya None (geçersiz ise)
     """
     try:
-        num = float(value)
+        # Virgülü noktaya çevir (TR formatı desteği)
+        num = float(value.replace(',', '.'))
         if min_val is not None and num < min_val:
             return None
         if max_val is not None and num > max_val:
@@ -85,26 +65,6 @@ def validate_numeric(value: str, min_val: float = None, max_val: float = None) -
     except (ValueError, TypeError):
         return None
 
-def validate_command_args(args: List[str], expected_count: int, 
-                         validators: List[callable] = None) -> bool:
-    """
-    Komut argümanlarını validate et.
-    
-    Args:
-        args: Argüman listesi
-        expected_count: Beklenen argüman sayısı
-        validators: Her argüman için validation fonksiyonları (opsiyonel)
-    
-    Returns:
-        True if valid, False otherwise
-    """
-    if len(args) != expected_count:
-        return False
-    
-    if validators:
-        for i, (arg, validator) in enumerate(zip(args, validators)):
-            if validator and not validator(arg):
-                log.warning(f"Arg {i} validation failed: {arg}")
-                return False
-    
-    return True
+def validate_command_args(args: List[str], expected_count: int) -> bool:
+    """Komut argüman sayısını kontrol et."""
+    return len(args) == expected_count
