@@ -1,19 +1,23 @@
 """
-Finans Botu — aiogram 3.x + asyncio + SQLite
-✅ MİMARİ GÜNCELLEME - Zeki sembol normalizasyonu, input validasyonu ve async-safe db.
+main.py — Finans Botu Ana Giriş Noktası
+✅ MİMARİ GÜNCELLEME - Graceful Shutdown, Prometheus Metrics ve Pydantic Settings.
 """
 import os
 import re
 import asyncio
 import logging
+import signal
+import sys
 from datetime import datetime
 from functools import partial
 from logging.handlers import RotatingFileHandler
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.client.default import DefaultBotProperties
+from prometheus_client import start_http_server
 
 # ═══════════════════════════════════════════════════════════════
 # IMPORTLAR
@@ -32,16 +36,16 @@ from db import (
     portfoy_guncelle, portfoy_getir, portfoy_sil, close_db
 )
 from alert_motoru import uyari_kontrol_dongusu
-from tradingview_motoru import tv_grafik_cek
+from tradingview_motoru import tv_grafik_cek, TVBrowser
 
 # ═══════════════════════════════════════════════════════════════
-# LOGGING
+# LOGGING (Structured & Rotating)
 # ═══════════════════════════════════════════════════════════════
 LOG_DIR = "logs"
 if not os.path.exists(LOG_DIR): os.makedirs(LOG_DIR)
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, settings.LOG_LEVEL),
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
         logging.StreamHandler(),
@@ -53,43 +57,25 @@ log = logging.getLogger("finans_botu")
 # ═══════════════════════════════════════════════════════════════
 # BOT & DISPATCHER
 # ═══════════════════════════════════════════════════════════════
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-if not BOT_TOKEN: raise RuntimeError("BOT_TOKEN tanımlı değil.")
-
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp  = Dispatcher()
-
-_son_istek: dict = {}
 
 # ═══════════════════════════════════════════════════════════════
 # YARDIMCILAR — ✅ ZEKİ SEMBOL NORMALİZASYONU
 # ═══════════════════════════════════════════════════════════════
 
 def _normalize_ticker(ticker: str) -> str:
-    """
-    Sembolü zeki bir şekilde normalize eder:
-    - BTCUSD -> BTC-USD (Kripto)
-    - THYAO -> THYAO.IS (BIST)
-    - AAPL -> AAPL (Global)
-    """
+    """Sembolü zeki bir şekilde normalize eder."""
     t = ticker.upper().strip()
-    
-    # 1. Zaten formatlıysa dokunma
     if t.endswith(".IS") or "-" in t or "=" in t:
         return t
-    
-    # 2. Kripto Kontrolü (Yaygın çiftler)
     kripto_ciftleri = ["USD", "TRY", "USDT", "EUR"]
     for cift in kripto_ciftleri:
         if t.endswith(cift) and len(t) > len(cift):
             base = t[:-len(cift)]
             return f"{base}-{cift}"
-    
-    # 3. BIST Kontrolü (4-5 karakterli harf)
     if t.isalpha() and 4 <= len(t) <= 5:
         return f"{t}.IS"
-    
-    # 4. Varsayılan (Global Hisse)
     return t
 
 async def _async(func, *args, **kwargs):
@@ -211,7 +197,7 @@ async def callback_close(callback: CallbackQuery):
     await callback.message.delete()
 
 # ═══════════════════════════════════════════════════════════════
-# NLP & STARTUP
+# NLP & SHUTDOWN
 # ═══════════════════════════════════════════════════════════════
 
 @dp.message(F.text & ~F.text.startswith("/"))
@@ -220,17 +206,48 @@ async def handle_nlp(message: Message):
     yanit = await ai_nlp_sorgu(message.text)
     await message.answer(yanit)
 
+async def shutdown(bot: Bot, dp: Dispatcher):
+    """Botu ve kaynakları temiz bir şekilde kapatır."""
+    log.info("🛑 Bot kapatılıyor, kaynaklar temizleniyor...")
+    await dp.stop_polling()
+    await close_db()
+    await TVBrowser.close()
+    await bot.session.close()
+    log.info("✅ Bot başarıyla kapatıldı.")
+    sys.exit(0)
+
 async def main():
-    validate_startup()
+    try:
+        validate_startup()
+    except Exception as e:
+        log.critical(f"❌ Başlatma hatası: {e}")
+        return
+
     await db_init()
     baslangic_temizligi()
     
+    # Monitoring (Prometheus)
+    try:
+        start_http_server(settings.HEALTH_PORT)
+        log.info(f"🔍 Monitoring server: http://localhost:{settings.HEALTH_PORT}/metrics")
+    except Exception as e:
+        log.error(f"Monitoring server başlatılamadı: {e}")
+
     asyncio.create_task(uyari_kontrol_dongusu(bot))
-    log.info("🚀 Bot başlatıldı.")
+    
+    # Graceful Shutdown
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, lambda: asyncio.create_task(shutdown(bot, dp)))
+
+    log.info("🚀 Finans Botu başlatıldı!")
     try:
         await dp.start_polling(bot)
     finally:
-        await close_db()
+        await shutdown(bot, dp)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        pass

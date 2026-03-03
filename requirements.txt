@@ -27,6 +27,7 @@ prometheus-client
 # ==============================
 
 pydantic
+pydantic-settings
 
 # ==============================
 # SECURITY
