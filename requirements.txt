@@ -1,32 +1,36 @@
 # ==============================
-# CORE - Python 3.13 Uyumlu
+# CORE - Python 3.13 Stable
 # ==============================
-aiogram>=3.13.0
+
+aiogram==3.13.1
 anthropic==0.20.0
 aiosqlite==0.19.0
-numpy>=2.0.0
-pandas>=2.2.0
+numpy==2.4.2
+pandas==2.2.3
 requests==2.31.0
 yfinance==0.2.36
 google-generativeai==0.3.1
 groq==0.3.0
-borsapy>=0.8.0
+borsapy==0.8.4
 playwright==1.42.0
 python-dotenv==1.0.1
 
 # ==============================
 # MONITORING
 # ==============================
-aiohttp>=3.9.0
-prometheus-client>=0.19.0
+
+aiohttp==3.9.5
+prometheus-client==0.20.0
 
 # ==============================
 # CONFIG & VALIDATION
 # ==============================
-pydantic>=2.1.0
+
+pydantic==2.8.2
 
 # ==============================
 # SECURITY
 # ==============================
-python-jose[cryptography]>=3.3.0
-cryptography>=41.0.0
+
+python-jose[cryptography]==3.3.0
+cryptography==42.0.5
