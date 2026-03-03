@@ -1067,8 +1067,8 @@ async def main():
     log.info("🚀 Bot başlatılıyor...")
     
     # 8. Background tasks
-    loop = asyncio.get_running_loop()
-    loop.create_task(uyari_kontrol_dongusu(bot))
+    # ✅ FIX: Event loop başladıktan sonra task oluşturuluyor
+    asyncio.create_task(uyari_kontrol_dongusu(bot))
     
     # 9. ✅ MONITORING: Metrics
     inc_counter("bot_starts_total")

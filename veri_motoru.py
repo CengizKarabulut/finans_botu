@@ -595,22 +595,36 @@ def fmp_analist(sembol: str) -> dict:
 # ═══════════════════════════════════════════════════════════════════
 
 def _fh_sembol(sembol: str) -> str:
-    """Finnhub için sembol normalizasyonu — ✅ Daha robust."""
-    s = sembol.upper()
-    donusum = {".L": ":LN", ".DE": ":GR", ".PA": ":FP",
-               ".HK": ":HK", ".MI": ":IM", ".AS": ":NA"}
+    """Sembol normalizasyonu: THYAO.IS → THYAO"""
+    s = sembol.upper().strip()
+    # Finnhub için sembol dönüşümleri
+    donusum = {
+        ".IS": "", 
+        ".TR": "", 
+        ".L": ":LN", 
+        ".DE": ":GR", 
+        ".PA": ":FP",
+        ".HK": ":HK", 
+        ".MI": ":IM", 
+        ".AS": ":NA"
+    }
     for uzanti, fh in donusum.items():
         if s.endswith(uzanti):
             return s.replace(uzanti, "") + fh
-    return s.replace(".IS", "").replace(".TR", "")
+    
+    # Varsayılan temizleme
+    return s.split(".")[0] if "." in s else s
 
 
-def _fh_get(endpoint: str, params: dict) -> Optional[dict]:
+def _fh_get(endpoint: str, params: dict = None) -> Optional[dict]:
     """Finnhub API GET wrapper — ✅ Error handling."""
     k = _key("FINNHUB_API_KEY")
     if not k:
         log.debug("FINNHUB_API_KEY tanımlı değil")
         return None
+    
+    if params is None:
+        params = {}
     params["token"] = k
     # ✅ FIX: URL'deki trailing space kaldırıldı
     return _get(f"https://finnhub.io/api/v1/{endpoint}", params=params)
