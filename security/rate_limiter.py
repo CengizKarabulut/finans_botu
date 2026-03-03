@@ -1,88 +1,49 @@
-"""Enhanced rate limiting with Redis/DB backend."""
+"""
+security/rate_limiter.py — Kullanıcı bazlı istek sınırlama (Rate Limiting).
+✅ MİMARİ GÜNCELLEME - Sliding Window algoritması ile hassas denetim.
+"""
 import time
 import asyncio
 import logging
-from typing import Optional, Dict
-from collections import defaultdict
+from collections import defaultdict, deque
+from typing import Dict, Tuple
 
 log = logging.getLogger("finans_botu")
 
-class MemoryRateLimiter:
+class SlidingWindowRateLimiter:
     """
-    In-memory rate limiter (development/single-instance).
-    Production'da RedisRateLimiter kullanılmalı.
+    Sliding Window Rate Limiter.
+    Belirli bir zaman penceresinde (window) maksimum istek sayısını (max_requests) denetler.
     """
-    
-    def __init__(self, max_requests: int, window_seconds: int):
+    def __init__(self, max_requests: int = 10, window: int = 60):
         self.max_requests = max_requests
-        self.window_seconds = window_seconds
-        self._requests: Dict[str, list] = defaultdict(list)
+        self.window = window
+        self.user_requests: Dict[int, deque] = defaultdict(lambda: deque())
         self._lock = asyncio.Lock()
-    
-    async def is_allowed(self, key: str) -> bool:
-        """Request izin verilir mi kontrol et."""
+
+    async def check(self, user_id: int) -> Tuple[bool, int]:
+        """
+        İsteğe izin verilip verilmediğini kontrol eder.
+        Returns: (allowed: bool, wait_time: int)
+        """
         async with self._lock:
             now = time.time()
-            window_start = now - self.window_seconds
-            
-            # Eski request'leri temizle
-            self._requests[key] = [
-                ts for ts in self._requests[key] if ts > window_start
-            ]
-            
-            # Limit kontrolü
-            if len(self._requests[key]) >= self.max_requests:
-                return False
-            
-            # Yeni request'i kaydet
-            self._requests[key].append(now)
-            return True
-    
-    async def get_remaining(self, key: str) -> int:
-        """Kalan request hakkını döndür."""
-        async with self._lock:
-            now = time.time()
-            window_start = now - self.window_seconds
-            current = len([ts for ts in self._requests[key] if ts > window_start])
-            return max(0, self.max_requests - current)
-    
-    async def get_reset_time(self, key: str) -> float:
-        """Window'un sıfırlanacağı zamanı döndür."""
-        async with self._lock:
-            if not self._requests[key]:
-                return 0
-            oldest = min(self._requests[key])
-            return max(0, oldest + self.window_seconds - time.time())
+            requests = self.user_requests[user_id]
 
-# Global instances (config ile override edilebilir)
-_default_limiter = MemoryRateLimiter(max_requests=30, window_seconds=60)  # 30/dakika
-_api_limiter = MemoryRateLimiter(max_requests=100, window_seconds=60)  # API calls için
+            # Pencere dışındaki eski istekleri temizle
+            while requests and requests[0] < now - self.window:
+                requests.popleft()
 
-async def check_rate_limit(user_id: int, limit_type: str = "default") -> tuple[bool, dict]:
-    """
-    Rate limit kontrolü yap.
-    
-    Returns:
-        (allowed: bool, info: dict with remaining/reset info)
-    """
-    key = f"{limit_type}:{user_id}"
-    limiter = _api_limiter if limit_type == "api" else _default_limiter
-    
-    allowed = await limiter.is_allowed(key)
-    remaining = await limiter.get_remaining(key)
-    reset_in = await limiter.get_reset_time(key)
-    
-    return allowed, {
-        "remaining": remaining,
-        "reset_in_seconds": round(reset_in, 1),
-        "limit": limiter.max_requests,
-        "window_seconds": limiter.window_seconds,
-    }
+            if len(requests) >= self.max_requests:
+                # En eski isteğin pencereden çıkmasına ne kadar kaldı?
+                wait_time = int(self.window - (now - requests[0]))
+                log.warning(f"Rate limit aşıldı: User {user_id}, Bekleme: {wait_time}s")
+                return False, max(1, wait_time)
 
-def get_rate_limit_headers(remaining: int, reset_in: float, limit: int) -> Dict[str, str]:
-    """Rate limit info için HTTP-style headers döndür (opsiyonel)."""
-    return {
-        "X-RateLimit-Limit": str(limit),
-        "X-RateLimit-Remaining": str(remaining),
-        "X-RateLimit-Reset": str(int(time.time() + reset_in)),
-    }
+            # Yeni isteği kaydet
+            requests.append(now)
+            return True, 0
+
+# Global rate limiter örneği
+# Varsayılan: 1 dakikada 10 istek
+limiter = SlidingWindowRateLimiter(max_requests=10, window=60)

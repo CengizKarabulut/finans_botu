@@ -1,6 +1,6 @@
 """
 db.py — aiosqlite tabanlı asenkron veritabanı yönetimi.
-✅ MİMARİ GÜNCELLEME - Singleton connection, TEXT precision ve async-safe.
+✅ MİMARİ GÜNCELLEME - Singleton Connection Pool, SQL Injection Koruması ve Async-Safe.
 """
 import os
 import logging
@@ -11,21 +11,30 @@ from datetime import datetime
 log = logging.getLogger("finans_botu")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "finans_bot.db")
-_db_conn: Optional[aiosqlite.Connection] = None
 
-async def get_db() -> aiosqlite.Connection:
-    """Singleton veritabanı bağlantısı — bot boyunca açık kalır ve kilitlenmeleri önler."""
-    global _db_conn
-    if _db_conn is None:
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        _db_conn = await aiosqlite.connect(DB_PATH)
-        _db_conn.row_factory = aiosqlite.Row
-        log.info(f"Veritabanı bağlantısı açıldı: {DB_PATH}")
-    return _db_conn
+class DBPool:
+    """Singleton veritabanı bağlantısı — bot boyunca açık kalır ve sızıntıları önler."""
+    _conn: Optional[aiosqlite.Connection] = None
+
+    @classmethod
+    async def get_conn(cls) -> aiosqlite.Connection:
+        if cls._conn is None:
+            os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+            cls._conn = await aiosqlite.connect(DB_PATH)
+            cls._conn.row_factory = aiosqlite.Row
+            log.info(f"Veritabanı bağlantısı açıldı: {DB_PATH}")
+        return cls._conn
+
+    @classmethod
+    async def close(cls):
+        if cls._conn:
+            await cls._conn.close()
+            cls._conn = None
+            log.info("Veritabanı bağlantısı kapatıldı.")
 
 async def db_init():
     """Tabloları oluştur (yoksa)."""
-    db = await get_db()
+    db = await DBPool.get_conn()
     
     # Kullanıcılar
     await db.execute("""
@@ -48,7 +57,7 @@ async def db_init():
         )
     """)
     
-    # Uyarılar (hedef_deger TEXT olarak saklanarak hassasiyet korunur)
+    # Uyarılar
     await db.execute("""
         CREATE TABLE IF NOT EXISTS uyarilar (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +70,7 @@ async def db_init():
         )
     """)
     
-    # Portföy (miktar ve maliyet TEXT olarak saklanarak hassasiyet korunur)
+    # Portföy
     await db.execute("""
         CREATE TABLE IF NOT EXISTS portfoy (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,8 +86,10 @@ async def db_init():
     await db.commit()
     log.info("Veritabanı tabloları hazır.")
 
+# ✅ SQL INJECTION KORUMASI: Tüm sorgularda parametreli yapı kullanıldı.
+
 async def kullanici_kaydet(user_id: int, username: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("""
         INSERT INTO kullanicilar (user_id, username, son_giris)
         VALUES (?, ?, datetime('now'))
@@ -89,7 +100,7 @@ async def kullanici_kaydet(user_id: int, username: str):
     await db.commit()
 
 async def favori_ekle(user_id: int, sembol: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("""
         INSERT OR IGNORE INTO favoriler (user_id, sembol)
         VALUES (?, ?)
@@ -97,14 +108,14 @@ async def favori_ekle(user_id: int, sembol: str):
     await db.commit()
 
 async def favori_sil(user_id: int, sembol: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("""
         DELETE FROM favoriler WHERE user_id = ? AND sembol = ?
     """, (user_id, sembol.upper()))
     await db.commit()
 
 async def favorileri_getir(user_id: int) -> List[str]:
-    db = await get_db()
+    db = await DBPool.get_conn()
     async with db.execute("""
         SELECT sembol FROM favoriler
         WHERE user_id = ?
@@ -114,7 +125,7 @@ async def favorileri_getir(user_id: int) -> List[str]:
         return [row["sembol"] for row in rows]
 
 async def uyari_ekle(user_id: int, sembol: str, tip: str, hedef: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("""
         INSERT INTO uyarilar (user_id, sembol, tip, hedef_deger)
         VALUES (?, ?, ?, ?)
@@ -122,7 +133,7 @@ async def uyari_ekle(user_id: int, sembol: str, tip: str, hedef: str):
     await db.commit()
 
 async def uyarilari_getir(user_id: int = None) -> List[Dict[str, Any]]:
-    db = await get_db()
+    db = await DBPool.get_conn()
     if user_id:
         query = "SELECT * FROM uyarilar WHERE user_id = ? AND aktif = 1"
         params = (user_id,)
@@ -135,12 +146,12 @@ async def uyarilari_getir(user_id: int = None) -> List[Dict[str, Any]]:
         return [dict(row) for row in rows]
 
 async def uyari_sil(uyari_id: int):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("DELETE FROM uyarilar WHERE id = ?", (uyari_id,))
     await db.commit()
 
 async def portfoy_guncelle(user_id: int, sembol: str, miktar: str, maliyet: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("""
         INSERT INTO portfoy (user_id, sembol, miktar, maliyet)
         VALUES (?, ?, ?, ?)
@@ -151,19 +162,15 @@ async def portfoy_guncelle(user_id: int, sembol: str, miktar: str, maliyet: str)
     await db.commit()
 
 async def portfoy_getir(user_id: int) -> List[Dict[str, Any]]:
-    db = await get_db()
+    db = await DBPool.get_conn()
     async with db.execute("SELECT * FROM portfoy WHERE user_id = ?", (user_id,)) as cursor:
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
 async def portfoy_sil(user_id: int, sembol: str):
-    db = await get_db()
+    db = await DBPool.get_conn()
     await db.execute("DELETE FROM portfoy WHERE user_id = ? AND sembol = ?", (user_id, sembol.upper()))
     await db.commit()
 
 async def close_db():
-    global _db_conn
-    if _db_conn:
-        await _db_conn.close()
-        _db_conn = None
-        log.info("Veritabanı bağlantısı kapatıldı.")
+    await DBPool.close()
