@@ -1,6 +1,6 @@
 """
 alert_motoru.py — Fiyat ve RSI uyarılarını arka planda kontrol eder.
-✅ MİMARİ GÜNCELLEME - Hiyerarşik veri çekme, async-safe döngü ve Decimal hassasiyeti.
+✅ MİMARİ GÜNCELLEME - Robust Parsing, Async-Safe Döngü ve Decimal Hassasiyeti.
 """
 import asyncio
 import logging
@@ -24,8 +24,17 @@ def _parse_decimal(val: Any) -> Optional[Decimal]:
     try:
         # Eğer string ise temizle (virgül, para birimi vb.)
         if isinstance(val, str):
-            clean_val = re.sub(r'[^\d.]', '', val.replace(',', ''))
-            return Decimal(clean_val) if clean_val else None
+            # Sadece sayısal karakterleri, nokta ve virgülü tut
+            temiz = ''.join(c for c in val if c.isdigit() or c in '.,-')
+            # Türk formatı (1.234,56) -> Global format (1234.56)
+            if ',' in temiz and '.' in temiz:
+                if temiz.find('.') < temiz.find(','): # 1.234,56
+                    temiz = temiz.replace('.', '').replace(',', '.')
+                else: # 1,234.56
+                    temiz = temiz.replace(',', '')
+            elif ',' in temiz: # 1234,56
+                temiz = temiz.replace(',', '.')
+            return Decimal(temiz) if temiz else None
         return Decimal(str(val))
     except Exception as e:
         log.debug(f"Decimal parse hatası ('{val}'): {e}")
@@ -108,6 +117,7 @@ async def _uyari_islem_yap(bot, uyari: Dict[str, Any]):
 
     # 2. Teknik Uyarılar (RSI vb.)
     elif tip.startswith('rsi'):
+        # ✅ DÜZELTİLDİ: teknik_analiz_yap async-safe çağrıldı
         teknik = await _async_call(teknik_analiz_yap, sembol)
         mevcut_deger = _parse_decimal(teknik.get('RSI (14)'))
         

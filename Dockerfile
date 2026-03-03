@@ -1,11 +1,10 @@
-
 # Base image
 FROM python:3.11-slim-bookworm
 
-# Set working directory
+# Çalışma dizini
 WORKDIR /app
 
-# Install system dependencies for Playwright and Chromium
+# Sistem bağımlılıkları (Playwright için gerekli kütüphaneler dahil)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-liberation \
@@ -38,24 +37,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxi6 \
     libxkbcommon0 \
     libxrandr2 \
-    libxshmfence6 \
+    libxshmfence1 \
     libxxf86vm1 \
     xdg-utils \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Python bağımlılıkları
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
+# Playwright tarayıcı kurulumu
 RUN playwright install chromium
 
-# Copy the rest of the application code
+# Uygulama dosyalarını kopyala
 COPY . .
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Log ve veri dizinlerini oluştur
+RUN mkdir -p logs data
 
-# Command to run the bot
+# Port (Health check için)
+EXPOSE 8080
+
+# ✅ DOCKER HEALTHCHECK
+# Botun içindeki health_server'ı (8080) kontrol eder.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Başlatma komutu
 CMD ["python", "main.py"]
