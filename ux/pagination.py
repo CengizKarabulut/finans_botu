@@ -1,4 +1,4 @@
-"""Pagination helper — Uzun listeleri sayfalama."""
+"""Pagination helper for long lists."""
 from typing import List, Any, Callable, Optional
 from dataclasses import dataclass
 
