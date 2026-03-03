@@ -17,7 +17,7 @@ aiohttp~=3.8.5              # Health check server için (aiogram uyumlu)
 prometheus-client>=0.19.0  # Metrics (opsiyonel, kendi collector'ımız var)
 
 # ✅ NEW: Config & Validation
-pydantic>=1.10.0,<2.0   # Settings validation (v1 for BaseSettings compatibility)
+pydantic>=2.1.1,<2.4    # Tip-güvenli config (aiogram uyumlu)
 
 # ✅ NEW: Security & Utilities
 python-jose[cryptography]>=3.3.0  # JWT (future auth)
