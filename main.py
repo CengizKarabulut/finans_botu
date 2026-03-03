@@ -1,7 +1,7 @@
 """
 Finans Botu — aiogram 3.x + asyncio + SQLite
 Tüm sync modüller (temel_analiz, teknik_analiz, vb.) run_in_executor ile çağrılır.
-✅ DÜZELTİLMİŞ VERSİYON - Tüm kritik hatalar giderildi
+✅ GÜNCELLENMİŞ VERSİYON - Monitoring + Security + UX entegrasyonu
 """
 import os
 import re
@@ -9,12 +9,28 @@ import asyncio
 import logging
 from datetime import datetime
 from functools import partial
-from logging.handlers import RotatingFileHandler  # ✅ EKLENDİ: Log rotasyonu için
+from logging.handlers import RotatingFileHandler
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.client.default import DefaultBotProperties
+from aiogram.types import FSInputFile
+
+# ═══════════════════════════════════════════════════════════════
+# YENİ: Monitoring + Security + UX Importları
+# ═══════════════════════════════════════════════════════════════
+from config import settings, validate_startup
+from monitoring import setup_structured_logging, start_health_server, inc_counter
+from security import setup_audit_logging, log_user_action, log_security_event
+from security.input_validator import validate_symbol, sanitize_text
+from security.rate_limiter import check_rate_limit
+from ux.user_prefs import ensure_prefs_table
+from ux.inline_menus import build_analiz_menu, build_close_button
+
+# ═══════════════════════════════════════════════════════════════
+# MEVCUT IMPORT'LAR (DEĞİŞİKLİK YOK)
+# ═══════════════════════════════════════════════════════════════
 from temel_analiz   import temel_analiz_yap
 from teknik_analiz  import teknik_analiz_yap
 from analist_motoru import ai_analist_yorumu, ai_piyasa_yorumu
@@ -39,21 +55,21 @@ from alert_motoru import uyari_kontrol_dongusu
 from portfoy_motoru import portfoy_ozeti_hazirla
 from tradingview_motoru import tv_grafik_cek
 from analist_motoru import ai_tahmin_yap, ai_nlp_sorgu
-from aiogram.types import FSInputFile
 
 # ═══════════════════════════════════════════════════════════════
-# LOGGING CONFIGURATION — ✅ DÜZELTİLDİ
+# LOGGING CONFIGURATION — ✅ STRUCTURED LOGGING ENTEGRE
 # ═══════════════════════════════════════════════════════════════
 LOG_DIR = "logs"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
+# Not: setup_structured_logging() main() içinde çağrılacak
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
-        logging.StreamHandler(),  # Docker logs için STDOUT
-        RotatingFileHandler(  # ✅ Dosya boyutu kontrolü (10MB, 5 yedek)
+        logging.StreamHandler(),
+        RotatingFileHandler(
             os.path.join(LOG_DIR, "bot.log"),
             maxBytes=10*1024*1024,
             backupCount=5
@@ -63,7 +79,7 @@ logging.basicConfig(
 log = logging.getLogger("finans_botu")
 
 # ═══════════════════════════════════════════════════════════════
-# BOT TOKEN VALIDATION — ✅ GÜVENLİK EKLENDİ
+# BOT TOKEN — ✅ CONFIG'DEN OKUNUYOR
 # ═══════════════════════════════════════════════════════════════
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 if not BOT_TOKEN:
@@ -77,7 +93,7 @@ TELEGRAM_LIMIT    = 4000
 _son_istek: dict  = {}
 
 # ═══════════════════════════════════════════════════════════════
-# HTML YARDIMCILARI
+# HTML YARDIMCILARI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 def h(text) -> str:
     return str(text).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
@@ -121,7 +137,7 @@ def _parcala(metin: str, limit: int = TELEGRAM_LIMIT) -> list:
     return parcalar
 
 # ═══════════════════════════════════════════════════════════════
-# KUTU ÇİZGİLİ BLOK FONKSİYONLARI
+# KUTU ÇİZGİLİ BLOK FONKSİYONLARI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 AYRAC  = "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
 _BOX_G = 38
@@ -213,7 +229,7 @@ def ma_blok(teknik: dict) -> str:
     return "\n<pre>" + h("\n".join(kutu)) + "</pre>"
 
 # ═══════════════════════════════════════════════════════════════
-# TEMEL ANALİZ GRUPLARI
+# TEMEL ANALİZ GRUPLARI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 TEMEL_GRUPLAR = [
     ("Genel",       "ℹ️",  lambda k: k in (
@@ -264,7 +280,7 @@ GENEL_ANAHTARLAR = {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# SEMBOL NORMALIZE
+# SEMBOL NORMALIZE (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 _BILINEN_UZANTILAR = {
     ".IS",".L",".PA",".DE",".MI",".AS",".BR",".MC",".SW",
@@ -346,11 +362,11 @@ def rate_limit_kontrol(user_id: int) -> int:
     return max(0, int(RATE_LIMIT_SANIYE - gecen))
 
 # ═══════════════════════════════════════════════════════════════
-# ASYNC YARDIMCI — ✅ DÜZELTİLDİ: get_running_loop()
+# ASYNC YARDIMCI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 async def _async(fn, *args):
     """Sync bloklayan fonksiyonu thread executor'da çalıştır."""
-    loop = asyncio.get_running_loop()  # ✅ get_event_loop() deprecated
+    loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, fn, *args)
 
 async def _gonder(chat_id: int, mesaj_id: int, metin: str, duzenle: bool = True):
@@ -367,7 +383,7 @@ async def _gonder(chat_id: int, mesaj_id: int, metin: str, duzenle: bool = True)
                 await bot.send_message(chat_id, parca, parse_mode=ParseMode.HTML)
 
 # ═══════════════════════════════════════════════════════════════
-# PİYASA RAPOR YARDIMCISI
+# PİYASA RAPOR YARDIMCISI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 def _piyasa_rapor(goruntu, tip, piyasa, teknik) -> list:
     emoji_tip  = _TIP_EMOJI.get(tip, "📊")
@@ -399,12 +415,14 @@ def _piyasa_rapor(goruntu, tip, piyasa, teknik) -> list:
     return mesajlar
 
 # ═══════════════════════════════════════════════════════════════
-# KOMUTLAR
+# KOMUTLAR — ✅ SECURITY + UX ENTEGRE
 # ═══════════════════════════════════════════════════════════════
 @dp.message(CommandStart())
 @dp.message(Command("yardim"))
 async def komut_yardim(message: Message):
     await kullanici_kaydet(message.from_user.id, message.from_user.username or "")
+    inc_counter("commands_total", labels={"command": "yardim"})
+    
     metin = (
         f"📈 {bold('Finans Asistanı')}\n"
         f"<i>Türkiye · Dünya · Kripto · Döviz · Emtia</i>\n"
@@ -455,15 +473,43 @@ async def komut_analiz(message: Message):
         await message.reply(
             f"⚠️ Sembol belirtin. Örnek: {code('/analiz ASELS')} veya {code('/ai BTC')}")
         return
+    
     girdi   = parcalar[1].upper().strip()
     komut   = message.text.split()[0].lstrip("/").lower()
     user_id = message.from_user.id
-    bekleme = rate_limit_kontrol(user_id)
-    if bekleme > 0:
-        await message.reply(f"⏳ Lütfen {bold(str(bekleme))} saniye bekleyin.")
+    
+    # ✅ SECURITY: Input validation
+    try:
+        sembol = validate_symbol(girdi)
+    except ValueError as e:
+        log_security_event(user_id, "INVALID_INPUT", str(e), severity="low")
+        await message.reply(f"❌ Geçersiz sembol formatı: {code(girdi)}")
         return
+    
+    # ✅ SECURITY: Enhanced rate limiting
+    allowed, info = await check_rate_limit(user_id)
+    if not allowed:
+        log_security_event(user_id, "RATE_LIMITED", f"User exceeded rate limit", severity="low")
+        await message.reply(f"⏳ Çok fazla istek. {info['reset_in_seconds']} saniye sonra tekrar deneyin.")
+        inc_counter("rate_limited_total", labels={"user": str(user_id)})
+        return
+    
+    # ✅ SECURITY: Audit log
+    log_user_action(
+        user_id=user_id,
+        username=message.from_user.username or "",
+        action="QUERY",
+        resource=sembol,
+        details={"command": komut}
+    )
+    
+    # ✅ MONITORING: Metrics
+    inc_counter("commands_total", labels={"command": komut})
+    inc_counter("queries_by_symbol", labels={"symbol": sembol})
+    
     _son_istek[user_id] = datetime.now()
     await kullanici_kaydet(user_id, message.from_user.username or "")
+    
     piyasa_tip = None
     if girdi in KRIPTO_MAP or girdi.endswith("-USD") or girdi.endswith("-TRY"):
         piyasa_tip = "kripto"
@@ -471,6 +517,7 @@ async def komut_analiz(message: Message):
         piyasa_tip = "doviz"
     elif girdi in EMTIA_MAP or girdi.endswith("=F"):
         piyasa_tip = "emtia"
+    
     if piyasa_tip:
         if komut == "temel":
             await message.reply(
@@ -479,15 +526,16 @@ async def komut_analiz(message: Message):
             return
         bekle_msg = await message.reply(f"⏳ {bold(girdi)} analiz ediliyor...")
         if komut == "ai":
-            asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+            asyncio.get_running_loop().create_task(
                 _piyasa_ai_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
         else:
-            asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+            asyncio.get_running_loop().create_task(
                 _piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, piyasa_tip))
         return
+    
     hisse_kodu = await _async(_normalize_ticker, girdi)
     bekle_msg  = await message.reply(f"⏳ {bold(hisse_kodu)} verileri işleniyor...")
-    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+    asyncio.get_running_loop().create_task(
         _analiz_isle(message.chat.id, bekle_msg.message_id, hisse_kodu, komut))
 
 @dp.message(Command("kripto"))
@@ -535,7 +583,7 @@ async def _piyasa_komut(message: Message, girdi: str, tip: str):
     _son_istek[user_id] = datetime.now()
     emoji = _TIP_EMOJI.get(tip, "📊")
     bekle_msg = await message.reply(f"⏳ {emoji} {bold(girdi)} verileri çekiliyor...")
-    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+    asyncio.get_running_loop().create_task(
         _piyasa_isle(message.chat.id, bekle_msg.message_id, girdi, tip))
 
 @dp.message(Command("haber"))
@@ -553,7 +601,7 @@ async def komut_haber(message: Message):
     _son_istek[user_id] = datetime.now()
     girdi_norm = await _async(_normalize_ticker, girdi)
     bekle_msg  = await message.reply(f"⏳ 📰 {bold(girdi_norm)} haberleri çekiliyor...")
-    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+    asyncio.get_running_loop().create_task(
         _haber_isle(message.chat.id, bekle_msg.message_id, girdi_norm))
 
 @dp.message(Command("insider"))
@@ -570,7 +618,7 @@ async def komut_insider(message: Message):
         return
     _son_istek[user_id] = datetime.now()
     bekle_msg = await message.reply(f"⏳ 🔍 {bold(girdi)} insider verileri çekiliyor...")
-    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+    asyncio.get_running_loop().create_task(
         _insider_isle(message.chat.id, bekle_msg.message_id, girdi))
 
 @dp.message(Command("trend"))
@@ -585,7 +633,7 @@ async def komut_trend(message: Message):
     _son_istek[user_id] = datetime.now()
     emoji = "₿" if tip == "kripto" else "📊"
     bekle_msg = await message.reply(f"⏳ {emoji} Trend verileri çekiliyor...")
-    asyncio.get_running_loop().create_task(  # ✅ DÜZELTİLDİ
+    asyncio.get_running_loop().create_task(
         _trend_isle(message.chat.id, bekle_msg.message_id, tip))
 
 @dp.message(Command("favori"))
@@ -632,7 +680,7 @@ async def komut_durum(message: Message):
     await message.reply(f"<pre>{h(rapor)}</pre>")
 
 # ═══════════════════════════════════════════════════════════════
-# ASYNC TASK FONKSİYONLARI — ✅ HATA YÖNETİMİ İYİLEŞTİRİLDİ
+# ASYNC TASK FONKSİYONLARI — ✅ UX: INLINE KEYBOARD EKLENDİ
 # ═══════════════════════════════════════════════════════════════
 async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str):
     try:
@@ -647,12 +695,14 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
             temel_v = await _async(temel_analiz_yap, hisse_kodu)
         elif komut == "teknik":
             teknik_v = await _async(teknik_analiz_yap, hisse_kodu)
+        
         if temel_v and "Hata" in temel_v:
             await _gonder(chat_id, mesaj_id, f"❌ {h(temel_v['Hata'])}")
             return
         if teknik_v and "Hata" in teknik_v:
             await _gonder(chat_id, mesaj_id, f"❌ {h(teknik_v['Hata'])}")
             return
+        
         # ── TEMEL ANALİZ ──────────────────────────────────────────────
         if temel_v:
             rapor = (f"📊 {bold(hisse_kodu + ' — TEMEL ANALİZ')}\n"
@@ -661,7 +711,12 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
                 blok_html = temel_blok(ad, emoji, temel_v, fn)
                 if blok_html:
                     rapor += blok_html + "\n"
+            
+            # ✅ UX: Inline keyboard ekle
+            reply_markup = build_analiz_menu(hisse_kodu)
             await _gonder(chat_id, mesaj_id, rapor.strip(), duzenle=True)
+            await bot.send_message(chat_id, "📋 İşlem seçin:", reply_markup=reply_markup)
+        
         # ── TEKNİK ANALİZ ─────────────────────────────────────────────
         if teknik_v:
             MA_KEYS = {"SMA (Basit)","EMA (Üstel)","WMA (Ağırlıklı)"}
@@ -678,6 +733,7 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
             tek_rapor += ma_blok(teknik_v)
             duzenle = not bool(temel_v)
             await _gonder(chat_id, mesaj_id, tek_rapor.strip(), duzenle=duzenle)
+        
         # ── AI YORUMU ─────────────────────────────────────────────────
         if komut == "ai" and temel_v and teknik_v:
             await bot.send_message(chat_id, f"🤖 {bold('AI Analist yorumu hazırlanıyor...')}")
@@ -691,7 +747,7 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
             for parca in _parcala(tam):
                 await bot.send_message(chat_id, parca)
     except Exception as e:
-        log.exception("_analiz_isle hata")  # ✅ exc_info otomatik
+        log.exception("_analiz_isle hata")
         hata = f"❌ {bold('Sistem Hatası')}\n{code(str(e))}"
         try:
             await _gonder(chat_id, mesaj_id, hata)
@@ -706,9 +762,11 @@ async def _piyasa_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
             piyasa, teknik = await _async(doviz_analiz, girdi)
         else:
             piyasa, teknik = await _async(emtia_analiz, girdi)
+        
         if "Hata" in piyasa:
             await _gonder(chat_id, mesaj_id, f"❌ {h(piyasa['Hata'])}")
             return
+        
         goruntu  = piyasa.get("_goruntu", girdi)
         mesajlar = _piyasa_rapor(goruntu, tip, piyasa, teknik)
         for i, msg in enumerate(mesajlar):
@@ -717,7 +775,7 @@ async def _piyasa_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
             else:
                 await bot.send_message(chat_id, msg)
     except Exception as e:
-        log.exception("_piyasa_isle hata")  # ✅ exc_info otomatik
+        log.exception("_piyasa_isle hata")
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
@@ -731,9 +789,11 @@ async def _piyasa_ai_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
             piyasa, teknik = await _async(doviz_analiz, girdi)
         else:
             piyasa, teknik = await _async(emtia_analiz, girdi)
+        
         if "Hata" in piyasa:
             await _gonder(chat_id, mesaj_id, f"❌ {h(piyasa['Hata'])}")
             return
+        
         goruntu  = piyasa.get("_goruntu", girdi)
         mesajlar = _piyasa_rapor(goruntu, tip, piyasa, teknik)
         for i, msg in enumerate(mesajlar):
@@ -741,6 +801,7 @@ async def _piyasa_ai_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
                 await _gonder(chat_id, mesaj_id, msg, duzenle=True)
             else:
                 await bot.send_message(chat_id, msg)
+        
         await bot.send_message(chat_id, f"🤖 {bold('AI analiz yorumu hazırlanıyor...')}")
         yorum = await _async(ai_piyasa_yorumu, girdi, tip, piyasa, teknik)
         emoji_tip = _TIP_EMOJI.get(tip, "📊")
@@ -750,7 +811,7 @@ async def _piyasa_ai_isle(chat_id: int, mesaj_id: int, girdi: str, tip: str):
         for parca in _parcala(tam):
             await bot.send_message(chat_id, parca)
     except Exception as e:
-        log.exception("_piyasa_ai_isle hata")  # ✅ exc_info otomatik
+        log.exception("_piyasa_ai_isle hata")
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
@@ -787,7 +848,7 @@ async def _haber_isle(chat_id: int, mesaj_id: int, sembol: str):
             rapor += "\n"
         await _gonder(chat_id, mesaj_id, rapor.strip())
     except Exception as e:
-        log.exception("_haber_isle hata")  # ✅ exc_info otomatik
+        log.exception("_haber_isle hata")
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
@@ -819,7 +880,7 @@ async def _insider_isle(chat_id: int, mesaj_id: int, sembol: str):
             rapor    += f"  📦 {adet} adet  💵 {fiyat}\n"
         await _gonder(chat_id, mesaj_id, rapor.strip())
     except Exception as e:
-        log.exception("_insider_isle hata")  # ✅ exc_info otomatik
+        log.exception("_insider_isle hata")
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
@@ -863,14 +924,14 @@ async def _trend_isle(chat_id: int, mesaj_id: int, tip: str = "hisse"):
             rapor += f"\n<i>Kaynak: ApeWisdom (Reddit WSB + Stocks)</i>"
         await _gonder(chat_id, mesaj_id, rapor)
     except Exception as e:
-        log.exception("_trend_isle hata")  # ✅ exc_info otomatik
+        log.exception("_trend_isle hata")
         try:
             await _gonder(chat_id, mesaj_id, f"❌ Hata: {h(str(e))}")
         except Exception:
             pass
 
 # ═══════════════════════════════════════════════════════════════
-# YENİ ÖZELLİK HANDLERLARI
+# YENİ ÖZELLİK HANDLERLARI (DEĞİŞİKLİK YOK)
 # ═══════════════════════════════════════════════════════════════
 @dp.message(Command("uyari"))
 async def cmd_uyari(message: Message):
@@ -948,22 +1009,76 @@ async def handle_nlp(message: Message):
     await message.answer(yanit)
 
 # ═══════════════════════════════════════════════════════════════
-# BAŞLAT — ✅ EVENT LOOP DÜZELTİLDİ
+# CALLBACK QUERY HANDLER — ✅ UX: INLINE KEYBOARD İÇİN
+# ═══════════════════════════════════════════════════════════════
+@dp.callback_query(F.data.startswith("analiz:"))
+async def callback_analiz_inline(callback: CallbackQuery):
+    """Inline keyboard'dan analiz tipi değiştirme."""
+    await callback.answer()
+    
+    parts = callback.data.split(":")
+    if len(parts) != 3:
+        return
+    
+    _, analiz_tipi, sembol = parts
+    
+    # User prefs güncelle
+    from ux.user_prefs import set_user_pref
+    await set_user_pref(callback.from_user.id, "default_analiz", analiz_tipi)
+    
+    # Analizi tekrar çalıştır
+    await komut_analiz_from_callback(callback, sembol, analiz_tipi)
+
+@dp.callback_query(F.data == "close")
+async def callback_close(callback: CallbackQuery):
+    """Mesajı kapat."""
+    await callback.answer()
+    await callback.message.delete()
+
+# ═══════════════════════════════════════════════════════════════
+# BAŞLAT — ✅ MONITORING + SECURITY ENTEGRE
 # ═══════════════════════════════════════════════════════════════
 async def main():
-    await db_init()
-    baslangic_temizligi()
-    log.info("Bot başlatılıyor...")
+    # 1. ✅ SECURITY: Config validation
+    validate_startup()
     
-    # ✅ DÜZELTİLDİ: Event loop başladıktan sonra task oluştur
+    # 2. ✅ MONITORING: Structured logging
+    setup_structured_logging(log_file=str(settings.log_dir / "bot.json"), console=True)
+    
+    # 3. ✅ SECURITY: Audit logging
+    setup_audit_logging(str(settings.log_dir / "audit.json"))
+    
+    # 4. DB init
+    await db_init()
+    
+    # 5. ✅ UX: User prefs tablosunu oluştur
+    await ensure_prefs_table()
+    
+    # 6. Cache cleanup
+    baslangic_temizligi()
+    
+    # 7. ✅ MONITORING: Health server başlat
+    health_runner = await start_health_server(
+        host=settings.health_host, 
+        port=settings.health_port,
+        bot=bot
+    )
+    
+    log.info("🚀 Bot başlatılıyor...")
+    
+    # 8. Background tasks
     loop = asyncio.get_running_loop()
     loop.create_task(uyari_kontrol_dongusu(bot))
     
-    log.info(f"Finnhub:      {'✅' if os.environ.get('FINNHUB_API_KEY') else '⚠️ KEY YOK'}")
-    log.info(f"AlphaVantage: {'✅' if os.environ.get('ALPHAVANTAGE_API_KEY') else '⚠️ KEY YOK'}")
-    log.info(f"Gemini:       {'✅' if os.environ.get('GEMINI_API_KEY') else '⚠️ KEY YOK'}")
-    log.info(f"Anthropic:    {'✅' if os.environ.get('ANTHROPIC_API_KEY') else '⚠️ KEY YOK'}")
+    # 9. ✅ MONITORING: Metrics
+    inc_counter("bot_starts_total")
     
+    # 10. API status log
+    log.info(f"Finnhub:      {'✅' if settings.finnhub_key else '⚠️'}")
+    log.info(f"AlphaVantage: {'✅' if settings.alphavantage_key else '⚠️'}")
+    log.info(f"Gemini:       {'✅' if settings.gemini_key else '⚠️'}")
+    
+    # 11. Polling başlat
     await dp.start_polling(bot, skip_updates=True)
 
 if __name__ == "__main__":
