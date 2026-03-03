@@ -1011,29 +1011,70 @@ async def handle_nlp(message: Message):
 # ═══════════════════════════════════════════════════════════════
 # CALLBACK QUERY HANDLER — ✅ UX: INLINE KEYBOARD İÇİN
 # ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
+# CALLBACK QUERY HANDLERS — ✅ UX: TÜM BUTONLAR AKTİF EDİLDİ
+# ═══════════════════════════════════════════════════════════════
+
 @dp.callback_query(F.data.startswith("analiz:"))
 async def callback_analiz_inline(callback: CallbackQuery):
     """Inline keyboard'dan analiz tipi değiştirme."""
-    await callback.answer()
-    
     parts = callback.data.split(":")
     if len(parts) != 3:
+        await callback.answer("Geçersiz veri.")
         return
     
     _, analiz_tipi, sembol = parts
+    await callback.answer(f"{sembol} için {analiz_tipi} analizi hazırlanıyor...")
     
-    # User prefs güncelle
-    from ux.user_prefs import set_user_pref
-    await set_user_pref(callback.from_user.id, "default_analiz", analiz_tipi)
+    # Analiz işlemini başlat
+    bekle_msg = await callback.message.answer(f"⏳ {bold(sembol)} {analiz_tipi} verileri işleniyor...")
+    asyncio.get_running_loop().create_task(
+        _analiz_isle(callback.message.chat.id, bekle_msg.message_id, sembol, analiz_tipi)
+    )
+
+@dp.callback_query(F.data.startswith("favori:toggle:"))
+async def callback_favori_toggle(callback: CallbackQuery):
+    """Favori ekle/sil butonu."""
+    sembol = callback.data.split(":")[-1]
+    user_id = callback.from_user.id
     
-    # Analizi tekrar çalıştır
-    await komut_analiz_from_callback(callback, sembol, analiz_tipi)
+    favoriler = await favorileri_getir(user_id)
+    if sembol in favoriler:
+        await favori_sil(user_id, sembol)
+        await callback.answer(f"🗑 {sembol} favorilerden silindi.")
+    else:
+        await favori_ekle(user_id, sembol)
+        await callback.answer(f"⭐ {sembol} favorilere eklendi.")
+
+@dp.callback_query(F.data.startswith("grafik:"))
+async def callback_grafik(callback: CallbackQuery):
+    """Grafik butonu."""
+    sembol = callback.data.split(":")[-1]
+    await callback.answer(f"{sembol} grafiği hazırlanıyor...")
+    
+    path = f"logs/chart_{callback.from_user.id}.png"
+    success = await tv_grafik_cek(sembol, path)
+    if success:
+        photo = FSInputFile(path)
+        await callback.message.answer_photo(photo, caption=f"📈 {sembol} TradingView Grafiği")
+    else:
+        await callback.message.answer(f"❌ {sembol} grafiği çekilemedi.")
+
+@dp.callback_query(F.data.startswith("uyari:set:"))
+async def callback_uyari_set(callback: CallbackQuery):
+    """Uyari kurma butonu (bilgilendirme)."""
+    sembol = callback.data.split(":")[-1]
+    await callback.answer("Uyarı kurmak için /uyari komutunu kullanın.", show_alert=True)
+    await callback.message.answer(f"🔔 {bold(sembol)} için uyarı kurmak için:\n<code>/uyari {sembol} fiyat_ust 100</code>")
 
 @dp.callback_query(F.data == "close")
 async def callback_close(callback: CallbackQuery):
     """Mesajı kapat."""
     await callback.answer()
-    await callback.message.delete()
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
 
 # ═══════════════════════════════════════════════════════════════
 # BAŞLAT — ✅ MONITORING + SECURITY ENTEGRE
