@@ -1,5 +1,5 @@
 # Core dependencies (existing)
-aiogram==3.1.1
+aiogram>=3.13.0
 anthropic==0.20.0
 aiosqlite==0.19.0
 numpy>=2.0.0
@@ -13,11 +13,11 @@ playwright==1.42.0
 python-dotenv==1.0.1
 
 # ✅ NEW: Monitoring
-aiohttp~=3.8.5              # Health check server için (aiogram uyumlu)
+aiohttp>=3.8.0              # Health check server için (aiogram uyumlu)
 prometheus-client>=0.19.0  # Metrics (opsiyonel, kendi collector'ımız var)
 
 # ✅ NEW: Config & Validation
-pydantic>=2.1.1,<2.4    # Tip-güvenli config (aiogram uyumlu)
+pydantic>=2.1.0    # Tip-güvenli config (aiogram uyumlu)
 
 # ✅ NEW: Security & Utilities
 python-jose[cryptography]>=3.3.0  # JWT (future auth)
