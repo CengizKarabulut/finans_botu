@@ -1,3 +1,4 @@
+# Core dependencies (existing)
 aiogram==3.1.1
 anthropic==0.20.0
 aiosqlite==0.19.0
@@ -10,3 +11,20 @@ groq==0.3.0
 borsapy==0.0.10
 playwright==1.42.0
 python-dotenv==1.0.1
+
+# ✅ NEW: Monitoring
+aiohttp>=3.9.0          # Health check server
+prometheus-client>=0.19.0  # Metrics (opsiyonel, kendi collector'ımız var)
+
+# ✅ NEW: Config & Validation
+pydantic>=1.10.0,<2.0   # Settings validation (v1 for BaseSettings compatibility)
+
+# ✅ NEW: Security & Utilities
+python-jose[cryptography]>=3.3.0  # JWT (future auth)
+cryptography>=41.0.0    # Security primitives
+
+# ✅ NEW: Development
+pytest>=7.4.0           # Testing
+pytest-asyncio>=0.21.0  # Async test support
+mypy>=1.6.0            # Type checking
+ruff>=0.1.0            # Fast linter
