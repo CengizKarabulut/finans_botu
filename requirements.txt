@@ -13,7 +13,7 @@ playwright==1.42.0
 python-dotenv==1.0.1
 
 # ✅ NEW: Monitoring
-aiohttp>=3.9.0          # Health check server
+aiohttp~=3.8.5              # Health check server için (aiogram uyumlu)
 prometheus-client>=0.19.0  # Metrics (opsiyonel, kendi collector'ımız var)
 
 # ✅ NEW: Config & Validation
