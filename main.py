@@ -1,6 +1,5 @@
 """
 Finans Botu — aiogram 3.x + asyncio + SQLite
-Tüm sync modüller (temel_analiz, teknik_analiz, vb.) run_in_executor ile çağrılır.
 ✅ PROFESYONEL VERSİYON - Callback fix, AI fallback, TradingView fix.
 """
 import os
@@ -94,7 +93,7 @@ def rate_limit_kontrol(user_id: int) -> int:
     now = datetime.now()
     if user_id in _son_istek:
         fark = (now - _son_istek[user_id]).total_seconds()
-        if fark < 5: return int(5 - fark)
+        if fark < 3: return int(3 - fark)
     return 0
 
 async def _gonder(chat_id, mesaj_id, metin, duzenle=False, reply_markup=None):
@@ -109,9 +108,11 @@ async def _gonder(chat_id, mesaj_id, metin, duzenle=False, reply_markup=None):
 
 def _normalize_ticker(ticker: str) -> str:
     t = ticker.upper().strip()
-    if t.isalpha() and len(t) <= 5: # ABD hissesi varsayalım
+    # Eğer zaten .IS veya kripto formatındaysa dokunma
+    if t.endswith(".IS") or "-" in t or "=" in t:
         return t
-    if "." not in t and len(t) >= 4: # BIST hissesi varsayalım
+    # BIST hissesi varsayalım (4-5 karakterli harf)
+    if t.isalpha() and 4 <= len(t) <= 5:
         return t + ".IS"
     return t
 
@@ -185,8 +186,30 @@ async def komut_tahmin(message: Message):
     await message.answer(f"🤖 {bold(sembol)} için AI tahmini hazırlanıyor...")
     
     teknik = await _async(teknik_analiz_yap, sembol)
-    tahmin = await _async(ai_tahmin_yap, sembol, teknik)
+    tahmin = await ai_tahmin_yap(sembol, teknik)
     await message.answer(f"🔮 {bold(sembol + ' AI Tahmini')}\n\n{tahmin}")
+
+@dp.message(Command("trend"))
+async def komut_trend(message: Message):
+    await message.answer("⏳ Trend verileri çekiliyor...")
+    trending = await _async(reddit_trend)
+    if not trending:
+        await message.answer("📊 Trend verisi alınamadı.")
+        return
+    
+    rapor = f"📊 {bold('GÜNCEL TRENDLER')}\n\n"
+    for i, t in enumerate(trending[:10], 1):
+        rapor += f"{i}. {bold(t['sembol'])} - {t['mention']} mention\n"
+    
+    await message.answer(rapor)
+
+@dp.message(Command("favoriler"))
+async def komut_favoriler(message: Message):
+    liste = await favorileri_getir(message.from_user.id)
+    if not liste:
+        await message.answer("⭐ Favori listeniz boş.")
+        return
+    await message.answer(f"⭐ {bold('Favorileriniz:')}\n" + "\n".join(liste))
 
 # ═══════════════════════════════════════════════════════════════
 # ASYNC İŞLEMLER
@@ -200,11 +223,11 @@ async def _analiz_isle(chat_id: int, mesaj_id: int, hisse_kodu: str, komut: str)
             _async(teknik_analiz_yap, hisse_kodu)
         )
         
-        if "Hata" in temel_v and "Hata" in teknik_v:
+        if ("Hata" in temel_v or not temel_v) and ("Hata" in teknik_v or not teknik_v):
             await _gonder(chat_id, mesaj_id, f"❌ Veri bulunamadı: {hisse_kodu}", duzenle=True)
             return
 
-        # Rapor oluştur (Basitleştirilmiş özet)
+        # Rapor oluştur
         fiyat = temel_v.get("Fiyat", teknik_v.get("Fiyat", "—"))
         degisim = temel_v.get("Günlük Değişim (%)", "—")
         
@@ -235,15 +258,22 @@ async def callback_analiz(callback: CallbackQuery):
         bekle = await callback.message.answer(f"🤖 {bold(sembol)} AI yorumu hazırlanıyor...")
         temel = await _async(temel_analiz_yap, sembol)
         teknik = await _async(teknik_analiz_yap, sembol)
-        yorum = await _async(ai_analist_yorumu, sembol, temel, teknik)
+        yorum = await ai_analist_yorumu(sembol, temel, teknik)
         await bekle.edit_text(f"🤖 {bold(sembol + ' AI Analizi')}\n\n{yorum}")
     elif tip == "teknik":
         teknik = await _async(teknik_analiz_yap, sembol)
-        # Teknik rapor formatla ve gönder...
-        await callback.message.answer(f"📉 {bold(sembol)} Teknik Veriler:\n{str(teknik)[:500]}...")
+        res = f"📉 {bold(sembol + ' Teknik Veriler')}\n\n"
+        for k, v in teknik.items():
+            if not k.startswith("_") and "SMA" not in k and "EMA" not in k:
+                res += f"• {k}: {v}\n"
+        await callback.message.answer(res[:4000])
     elif tip == "temel":
         temel = await _async(temel_analiz_yap, sembol)
-        await callback.message.answer(f"📊 {bold(sembol)} Temel Veriler:\n{str(temel)[:500]}...")
+        res = f"📊 {bold(sembol + ' Temel Veriler')}\n\n"
+        for k, v in temel.items():
+            if not k.startswith("_"):
+                res += f"• {k}: {v}\n"
+        await callback.message.answer(res[:4000])
 
 @dp.callback_query(F.data.startswith("grafik:"))
 async def callback_grafik_btn(callback: CallbackQuery):
@@ -254,6 +284,18 @@ async def callback_grafik_btn(callback: CallbackQuery):
         await callback.message.answer_photo(FSInputFile(path), caption=f"📈 {sembol} Grafiği")
     else:
         await callback.message.answer("❌ Grafik hatası.")
+
+@dp.callback_query(F.data.startswith("favori:toggle:"))
+async def callback_favori(callback: CallbackQuery):
+    sembol = callback.data.split(":")[-1]
+    user_id = callback.from_user.id
+    favoriler = await favorileri_getir(user_id)
+    if sembol in favoriler:
+        await favori_sil(user_id, sembol)
+        await callback.answer(f"🗑 {sembol} favorilerden silindi.")
+    else:
+        await favori_ekle(user_id, sembol)
+        await callback.answer(f"⭐ {sembol} favorilere eklendi.")
 
 @dp.callback_query(F.data == "close")
 async def callback_close(callback: CallbackQuery):
@@ -267,7 +309,7 @@ async def callback_close(callback: CallbackQuery):
 @dp.message(F.text & ~F.text.startswith("/"))
 async def handle_nlp(message: Message):
     await kullanici_kaydet(message.from_user.id, message.from_user.username or "")
-    yanit = await _async(ai_nlp_sorgu, message.text)
+    yanit = await ai_nlp_sorgu(message.text)
     await message.answer(yanit)
 
 async def main():
