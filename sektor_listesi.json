@@ -1,0 +1,3608 @@
+{
+  "DMRGD": {
+    "name": "(Simit Sarayı) Dmr Unlu Mamuller Üretim Gıda Toptan Perakende İhracat A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "BINHO": {
+    "name": "1000 YATIRIMLAR HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AVOD": {
+    "name": "A.V.O.D. KURUTULMUŞ GIDA VE TARIM ÜRÜNLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "A1CAP": {
+    "name": "A1 CAPITAL YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "A1YEN": {
+    "name": "A1 YENILENEBILIR ENERJI URETIM A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ACSEL": {
+    "name": "ACISELSAN ACIPAYAM SELÜLOZ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ADEL": {
+    "name": "ADEL KALEMCİLİK TİCARET VE SANAYİ A.Ş.",
+    "sector": "İmalat",
+    "industry": "İmalat",
+    "kaynak": "pusula"
+  },
+  "ADESE": {
+    "name": "ADESE GAYRİMENKUL YATIRIM A.Ş.",
+    "sector": "Gayrimenkul Faaliyetleri",
+    "industry": "Gayrimenkul Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "ADGYO": {
+    "name": "ADRA GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "AFYON": {
+    "name": "AFYON ÇİMENTO SANAYİ T.A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "AGHOL": {
+    "name": "AG ANADOLU GRUBU HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AGESA": {
+    "name": "AGESA HAYAT VE EMEKLİLİK A.Ş.",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AHGAZ": {
+    "name": "AHLATCI DOĞAL GAZ DAĞITIM ENERJİ VE YATIRIM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AKBNK": {
+    "name": "AKBANK T.A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "AKYHO": {
+    "name": "AKDENİZ YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AKENR": {
+    "name": "AKENERJİ ELEKTRİK ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AKFGY": {
+    "name": "AKFEN GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "AKFYE": {
+    "name": "AKFEN YENILENEBILIR ENERJI A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AKHAN": {
+    "name": "AKHAN UN FABRİKASI VE TARIM ÜRÜNLERİ GIDA SANAYİ TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ATEKS": {
+    "name": "AKIN TEKSTİL A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "AKMGY": {
+    "name": "AKMERKEZ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "AKSA": {
+    "name": "AKSA AKRİLİK KİMYA SANAYİİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "AKSEN": {
+    "name": "AKSA ENERJİ ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AKSUE": {
+    "name": "AKSU ENERJİ VE TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AKGRT": {
+    "name": "AKSİGORTA A.Ş.",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AKCNS": {
+    "name": "AKÇANSA ÇİMENTO SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "AKSGY": {
+    "name": "AKİŞ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ALCAR": {
+    "name": "ALARKO CARRIER SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ALGYO": {
+    "name": "ALARKO GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ALARK": {
+    "name": "ALARKO HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ALBRK": {
+    "name": "ALBARAKA TÜRK KATILIM BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "ALCTL": {
+    "name": "ALCATEL LUCENT TELETAŞ TELEKOMÜNİKASYON A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ALFAS": {
+    "name": "ALFA SOLAR ENERJİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ALKIM": {
+    "name": "ALKİM ALKALİ KİMYA A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ALKA": {
+    "name": "ALKİM KAĞIT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "AYCES": {
+    "name": "ALTIN YUNUS ÇEŞME TURİSTİK TESİSLER A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "ANSGR": {
+    "name": "ANADOLU ANONİM TÜRK SİGORTA ŞİRKETİ",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AEFES": {
+    "name": "ANADOLU EFES BİRACILIK VE MALT SANAYİİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ANHYT": {
+    "name": "ANADOLU HAYAT EMEKLİLİK A.Ş.",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ASUZU": {
+    "name": "ANADOLU ISUZU OTOMOTİV SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ANGEN": {
+    "name": "ANATOLİA TANI VE BİYOTEKNOLOJİ ÜRÜNLERİ ARAŞTIRMA GELİŞTİRME SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ANELE": {
+    "name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "ARDYZ": {
+    "name": "ARD GRUP BİLİŞİM TEKNOLOJİLERİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ARENA": {
+    "name": "ARENA BİLGİSAYAR SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ARFYE": {
+    "name": "ARF BIO YENILENEBILIR ENERJI URETIM A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ARSAN": {
+    "name": "ARSAN TEKSTİL TİCARET VE SANAYİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "ARZUM": {
+    "name": "ARZUM ELEKTRİKLİ EV ALETLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "ARCLK": {
+    "name": "ARÇELİK A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ASGYO": {
+    "name": "ASCE GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ASELS": {
+    "name": "ASELSAN ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Savunma",
+    "industry": "Savunma",
+    "kaynak": "pusula"
+  },
+  "ASTOR": {
+    "name": "ASTOR ENERJI A.S.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ATAGY": {
+    "name": "ATA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ATATR": {
+    "name": "ATA TURİZM İŞLETMECİLİK TAŞIMACILIK MADENCİLİK KUYUMCULUK SANAYİ VE DIŞ TİCARET A.Ş.",
+    "sector": "Madencilik ve Taş Ocakçılığı",
+    "industry": "Madencilik ve Taş Ocakçılığı",
+    "kaynak": "pusula"
+  },
+  "ATAKP": {
+    "name": "ATAKEY PATATES GIDA SANAYI VE TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "AGYO": {
+    "name": "ATAKULE GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ATSYH": {
+    "name": "ATLANTİS YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ATLAS": {
+    "name": "ATLAS MENKUL KIYMETLER YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ATATP": {
+    "name": "ATP TİCARİ BİLGİSAYAR AĞI VE ELEKTRİK GÜÇ KAYNAKLARI ÜRETİM PAZARLAMA VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "AVGYO": {
+    "name": "AVRASYA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "AVTUR": {
+    "name": "AVRASYA PETROL VE TURİSTİK TESİSLER YATIRIMLAR A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "AVHOL": {
+    "name": "AVRUPA YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "AYDEM": {
+    "name": "AYDEM YENİLENEBİLİR ENERJİ A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AYEN": {
+    "name": "AYEN ENERJİ A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "AYES": {
+    "name": "AYES ÇELİK HASIR VE ÇİT SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "AYGAZ": {
+    "name": "AYGAZ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "AZTEK": {
+    "name": "AZTEK TEKNOLOJİ ÜRÜNLERİ TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "AGROT": {
+    "name": "Agrotech Yüksek Teknoloji ve Yatırım A.Ş.",
+    "sector": "Tarım ve Hayvancılık, Avcılık",
+    "industry": "Tarım ve Hayvancılık, Avcılık",
+    "kaynak": "pusula"
+  },
+  "AHSGY": {
+    "name": "Ahes Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "AKFIS": {
+    "name": "Akfen İnşaat Turizm ve Ticaret A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "ALTNY": {
+    "name": "Altınay Savunma Teknolojileri A.Ş.",
+    "sector": "Savunma",
+    "industry": "Savunma",
+    "kaynak": "pusula"
+  },
+  "ALKLC": {
+    "name": "Altınkılıç Gıda ve Süt San. Tic. A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ALVES": {
+    "name": "Alves Kablo San. ve Tic. A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ARMGD": {
+    "name": "Armada Gıda Ticaret Sanayi A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ARTMS": {
+    "name": "Artemis Halı A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "AVPGY": {
+    "name": "Avrupakent Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "BAGFS": {
+    "name": "BAGFAŞ BANDIRMA GÜBRE FABRİKALARI A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "BAKAB": {
+    "name": "BAK AMBALAJ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "BALAT": {
+    "name": "BALATACILAR BALATACILIK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "BNTAS": {
+    "name": "BANTAŞ BANDIRMA AMBALAJ SANAYİ TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "BANVT": {
+    "name": "BANVİT BANDIRMA VİTAMİNLİ YEM SANAYİİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "BARMA": {
+    "name": "BAREM AMBALAJ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "BSOKE": {
+    "name": "BATISÖKE SÖKE ÇİMENTO SANAYİİ T.A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BTCIM": {
+    "name": "BATIÇİM BATI ANADOLU ÇİMENTO SANAYİİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BYDNR": {
+    "name": "BAYDONER RESTORANLARI A.S.",
+    "sector": "Yiyecek ve İçecek Hizmetleri",
+    "industry": "Yiyecek ve İçecek Hizmetleri",
+    "kaynak": "pusula"
+  },
+  "BAYRK": {
+    "name": "BAYRAK EBT TABAN SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "BASGZ": {
+    "name": "BAŞKENT DOĞALGAZ DAĞITIM GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "BASCM": {
+    "name": "BAŞTAŞ BAŞKENT ÇİMENTO SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BERA": {
+    "name": "BERA HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "BRKSN": {
+    "name": "BERKOSAN YALITIM VE TECRİT MADDELERİ ÜRETİM VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "BESLR": {
+    "name": "BESLER GIDA VE KIMYA SANAYI VE TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "BESTE": {
+    "name": "BEST BRANDS GRUP ENERJI YATIRIM A.S.",
+    "sector": "",
+    "industry": "",
+    "kaynak": "pusula"
+  },
+  "BEYAZ": {
+    "name": "BEYAZ FİLO OTO KİRALAMA A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "BJKAS": {
+    "name": "BEŞİKTAŞ FUTBOL YATIRIMLARI SANAYİ VE TİCARET A.Ş.",
+    "sector": "Spor",
+    "industry": "Spor",
+    "kaynak": "pusula"
+  },
+  "BIENY": {
+    "name": "BIEN YAPI URUNLERI SAN. TUR. VE TIC. A.S.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BIGTK": {
+    "name": "BIG MEDYA TEKNOLOJI A.S.",
+    "sector": "Yayıncılık",
+    "industry": "Yayıncılık",
+    "kaynak": "pusula"
+  },
+  "BLUME": {
+    "name": "BLUME METAL KIMYA A.S.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BMSTL": {
+    "name": "BMS BİRLEŞİK METAL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BMSCH": {
+    "name": "BMS ÇELİK HASIR SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BRSAN": {
+    "name": "BORUSAN MANNESMANN BORU SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BRYAT": {
+    "name": "BORUSAN YATIRIM VE PAZARLAMA A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "BFREN": {
+    "name": "BOSCH FREN SİSTEMLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "BOSSA": {
+    "name": "BOSSA TİCARET VE SANAYİ İŞLETMELERİ T.A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "BOBET": {
+    "name": "BOĞAZİÇİ BETON SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BRISA": {
+    "name": "BRİSA BRIDGESTONE SABANCI LASTİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "BVSAN": {
+    "name": "BULBULOGLU VINC SANAYI VE TICARET A.S.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "BUCIM": {
+    "name": "BURSA ÇİMENTO FABRİKASI A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "BURCE": {
+    "name": "BURÇELİK BURSA ÇELİK DÖKÜM SANAYİİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BURVA": {
+    "name": "BURÇELİK VANA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "BIGCH": {
+    "name": "BUYUK SEFLER GIDA TUR. TEKS. DANIS. ORG. EG. SAN. VE TIC. A.S.",
+    "sector": "Yiyecek ve İçecek Hizmetleri",
+    "industry": "Yiyecek ve İçecek Hizmetleri",
+    "kaynak": "pusula"
+  },
+  "BAHKM": {
+    "name": "Bahadır Kimya San.ve Tic. A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "BALSU": {
+    "name": "Balsu Gıda San. ve Tic. A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "BEGYO": {
+    "name": "Batı Ege Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "BINBN": {
+    "name": "Bin Ulaşım ve Akıllı Şehir Teknolojileri A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "BIGEN": {
+    "name": "Birleşim Grup Enerji Yatırımları A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "BORSK": {
+    "name": "Bor Şeker A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "BORLS": {
+    "name": "Borlease Otomotiv A.Ş.",
+    "sector": "Kiralama ve Leasing Faaliyetleri",
+    "industry": "Kiralama ve Leasing Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "BULGS": {
+    "name": "Bulls Girişim Sermayesi Yatırım Ortaklığı A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "BLCYT": {
+    "name": "BİLİCİ YATIRIM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "BIMAS": {
+    "name": "BİM BİRLEŞİK MAĞAZALAR A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "BIOEN": {
+    "name": "BİOTREND ÇEVRE VE ENERJİ YATIRIMLARI A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "BRKO": {
+    "name": "BİRKO BİRLEŞİK KOYUNLULULAR MENSUCAT TİCARET VE SANAYİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "BRLSM": {
+    "name": "BİRLEŞİM MÜHENDİSLİK ISITMA SOĞUTMA HAVALANDIRMA SANAYİ VE TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "BRMEN": {
+    "name": "BİRLİK MENSUCAT TİCARET VE SANAYİ İŞLETMESİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "BRKVY": {
+    "name": "BİRİKİM VARLIK YÖNETİM A.Ş.",
+    "sector": "Varlık Yönetim Şirketleri",
+    "industry": "Varlık Yönetim Şirketleri",
+    "kaynak": "pusula"
+  },
+  "BIZIM": {
+    "name": "BİZİM TOPTAN SATIŞ MAĞAZALARI A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "CRFSA": {
+    "name": "CARREFOURSA CARREFOUR SABANCI TİCARET MERKEZİ A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "CASA": {
+    "name": "CASA EMTİA PETROL KİMYEVİ VE TÜREVLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "CEOEM": {
+    "name": "CEO EVENT MEDYA A.Ş.",
+    "sector": "Büro Yönetimi, Büro Desteği Faaliyetleri",
+    "industry": "Büro Yönetimi, Büro Desteği Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "CCOLA": {
+    "name": "COCA-COLA İÇECEK A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "CONSE": {
+    "name": "CONSUS ENERJİ İŞLETMECİLİĞİ VE HİZMETLERİ A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "COSMO": {
+    "name": "COSMOS YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "CRDFA": {
+    "name": "CREDITWEST FAKTORİNG A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "CVKMD": {
+    "name": "CVK MADEN ISLETMELERI SANAYI VE TICARET A.S.",
+    "sector": "Metal Cevheri Madenciliği",
+    "industry": "Metal Cevheri Madenciliği",
+    "kaynak": "pusula"
+  },
+  "CWENE": {
+    "name": "CW ENERJI MUHENDISLIK TICARET VE SANAYI A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "CEMZY": {
+    "name": "Cem Zeytin A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "DAGI": {
+    "name": "DAGİ GİYİM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "DAPGM": {
+    "name": "DAP GAYRİMENKUL GELİŞTİRME A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "DARDL": {
+    "name": "DARDANEL ÖNENTAŞ GIDA SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "DGATE": {
+    "name": "DATAGATE BİLGİSAYAR MALZEMELERİ TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "DMSAS": {
+    "name": "DEMİSAŞ DÖKÜM EMAYE MAMÜLLERİ SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "DENGE": {
+    "name": "DENGE YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "DZGYO": {
+    "name": "DENİZ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "DERHL": {
+    "name": "DERLÜKS YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "DERIM": {
+    "name": "DERİMOD KONFEKSİYON AYAKKABI DERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "DESA": {
+    "name": "DESA DERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "DESPC": {
+    "name": "DESPEC BİLGİSAYAR PAZARLAMA VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "DEVA": {
+    "name": "DEVA HOLDİNG A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "DOCO": {
+    "name": "DO & CO AKTIENGESELLSCHAFT",
+    "sector": "Yiyecek ve İçecek Hizmetleri",
+    "industry": "Yiyecek ve İçecek Hizmetleri",
+    "kaynak": "pusula"
+  },
+  "DOFRB": {
+    "name": "DOF ROBOTIK SANAYI A.S.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "DOHOL": {
+    "name": "DOĞAN ŞİRKETLER GRUBU HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "DGNMO": {
+    "name": "DOĞANLAR MOBİLYA GRUBU İMALAT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "ARASE": {
+    "name": "DOĞU ARAS ENERJİ YATIRIMLARI A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "DOGUB": {
+    "name": "DOĞUSAN BORU SANAYİİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "DGGYO": {
+    "name": "DOĞUŞ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "DOAS": {
+    "name": "DOĞUŞ OTOMOTİV SERVİS VE TİCARET A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "DUNYH": {
+    "name": "DUNYA HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "DURDO": {
+    "name": "DURAN DOĞAN BASIM VE AMBALAJ SANAYİ A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "DYOBY": {
+    "name": "DYO BOYA FABRİKALARI SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "DCTTR": {
+    "name": "Dct Trading Dış Ticaret A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "DSTKF": {
+    "name": "Destek Finans Faktoring A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "DOFER": {
+    "name": "Dofer Yapı Malzemeleri San. ve Tic. A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "DURKN": {
+    "name": "Durukan Şekerleme San. ve Tic. A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "DOKTA": {
+    "name": "DÖKTAŞ DÖKÜMCÜLÜK TİCARET VE SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "DNISI": {
+    "name": "DİNAMİK ISI MAKİNA YALITIM MALZEMELERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "DIRIT": {
+    "name": "DİRİTEKS DİRİLİŞ TEKSTİL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "DITAS": {
+    "name": "DİTAŞ DOĞAN YEDEK PARÇA İMALAT VE TEKNİK A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "EDATA": {
+    "name": "E-DATA TEKNOLOJİ PAZARLAMA A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ECZYT": {
+    "name": "ECZACIBAŞI YATIRIM HOLDİNG ORTAKLIĞI A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "EDIP": {
+    "name": "EDİP GAYRİMENKUL YATIRIM SANAYİ VE TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "EFOR": {
+    "name": "EFOR YATIRIM SANAYI TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "EGEEN": {
+    "name": "EGE ENDÜSTRİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "EGGUB": {
+    "name": "EGE GÜBRE SANAYİİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "EGPRO": {
+    "name": "EGE PROFİL TİCARET VE SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "EGSER": {
+    "name": "EGE SERAMİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "EPLAS": {
+    "name": "EGEPLAST EGE PLASTİK TİCARET VE SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "EKSUN": {
+    "name": "EKSUN GIDA TARIM SANAYI VE TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "EKIZ": {
+    "name": "EKİZ KİMYA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ELITE": {
+    "name": "ELİTE NATUREL ORGANİK GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "EMKEL": {
+    "name": "EMEK ELEKTRİK ENDÜSTRİSİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "EKGYO": {
+    "name": "EMLAK KONUT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EMPAE": {
+    "name": "EMPA ELEKTRONIK SANAYI VE TICARET A.S.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "EMNIS": {
+    "name": "EMİNİŞ AMBALAJ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ENJSA": {
+    "name": "ENERJİSA ENERJİ A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ENERY": {
+    "name": "ENERYA ENERJI A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ENKAI": {
+    "name": "ENKA İNŞAAT VE SANAYİ A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "ENSRI": {
+    "name": "ENSARİ DERİ GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "ERBOS": {
+    "name": "ERBOSAN ERCİYAS BORU SANAYİİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "ERCB": {
+    "name": "ERCİYAS ÇELİK BORU SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "EREGL": {
+    "name": "EREĞLİ DEMİR VE ÇELİK FABRİKALARI T.A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KIMMR": {
+    "name": "ERSAN ALIŞVERİŞ HİZMETLERİ VE GIDA SANAYİ TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "ERSU": {
+    "name": "ERSU MEYVE VE GIDA SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ESCAR": {
+    "name": "ESCAR FİLO KİRALAMA HİZMETLERİ A.Ş.",
+    "sector": "Kiralama ve Leasing Faaliyetleri",
+    "industry": "Kiralama ve Leasing Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "ESCOM": {
+    "name": "ESCORT TEKNOLOJİ YATIRIM A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ESEN": {
+    "name": "ESENBOĞA ELEKTRİK ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ETILR": {
+    "name": "ETİLER GIDA VE TİCARİ YATIRIMLAR SANAYİ VE TİCARET A.Ş.",
+    "sector": "Yiyecek ve İçecek Hizmetleri",
+    "industry": "Yiyecek ve İçecek Hizmetleri",
+    "kaynak": "pusula"
+  },
+  "EUKYO": {
+    "name": "EURO KAPİTAL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EUYO": {
+    "name": "EURO MENKUL KIYMET YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ETYAT": {
+    "name": "EURO TREND YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EUHOL": {
+    "name": "EURO YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TEZOL": {
+    "name": "EUROPAP TEZOL KAĞIT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "EUREN": {
+    "name": "EUROPEN ENDÜSTRİ İNŞAAT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "EUPWR": {
+    "name": "EUROPOWER ENERJI VE OTOMASYON TEKNOLOJILERI SANAYI TICARET A.S.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "EYGYO": {
+    "name": "EYG GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EBEBK": {
+    "name": "Ebebek Mağazacılık A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "ECOGR": {
+    "name": "Ecogreen Enerji Holding A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "EGEGY": {
+    "name": "Egeyapı Avrupa Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EKOS": {
+    "name": "Ekos Teknoloji ve Elektrik A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ENDAE": {
+    "name": "Enda Enerji Holding A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ECILC": {
+    "name": "EİS ECZACIBAŞI İLAÇ SINAİ VE FİNANSAL YATIRIMLAR SANAYİ VE TİCARET A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "FADE": {
+    "name": "FADE GIDA YATIRIM SANAYİ TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "FMIZP": {
+    "name": "FEDERAL-MOGUL İZMİT PİSTON VE PİM ÜRETİM TESİSLERİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "FENER": {
+    "name": "FENERBAHÇE FUTBOL A.Ş.",
+    "sector": "Spor",
+    "industry": "Spor",
+    "kaynak": "pusula"
+  },
+  "FLAP": {
+    "name": "FLAP KONGRE TOPLANTI HİZMETLERİ OTOMOTİV VE TURİZM A.Ş.",
+    "sector": "Büro Yönetimi, Büro Desteği Faaliyetleri",
+    "industry": "Büro Yönetimi, Büro Desteği Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "FONET": {
+    "name": "FONET BİLGİ TEKNOLOJİLERİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "FROTO": {
+    "name": "FORD OTOMOTİV SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "FORMT": {
+    "name": "FORMET METAL VE CAM SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "FRMPL": {
+    "name": "FORMUL PLASTIK VE METAL SANAYI A.S.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "FORTE": {
+    "name": "FORTE BILGI ILETISIM TEKNOLOJILERI VE SAVUNMA SANAYI A.S.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "FRIGO": {
+    "name": "FRİGO-PAK GIDA MADDELERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "FZLGY": {
+    "name": "FUZUL GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "GWIND": {
+    "name": "GALATA WIND ENERJİ A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "GSRAY": {
+    "name": "GALATASARAY SPORTİF SINAİ VE TİCARİ YATIRIMLAR A.Ş.",
+    "sector": "Spor",
+    "industry": "Spor",
+    "kaynak": "pusula"
+  },
+  "GARFA": {
+    "name": "GARANTİ FAKTORİNG A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GRNYO": {
+    "name": "GARANTİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "GATEG": {
+    "name": "GATE GROUP TEKNOLOJI MEDYA VE SIBER GUVENLIK HIZMETLERI A.S.",
+    "sector": "Güvenlik ve Soruşturma Faaliyetleri",
+    "industry": "Güvenlik ve Soruşturma Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "GEDIK": {
+    "name": "GEDİK YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "GEDZA": {
+    "name": "GEDİZ AMBALAJ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "GLCVY": {
+    "name": "GELECEK VARLIK YÖNETİMİ A.Ş.",
+    "sector": "Varlık Yönetim Şirketleri",
+    "industry": "Varlık Yönetim Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GENIL": {
+    "name": "GEN İLAÇ VE SAĞLIK ÜRÜNLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "GENTS": {
+    "name": "GENTAŞ DEKORATİF YÜZEYLER SANAYİ VE TİCARET A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "GEREL": {
+    "name": "GERSAN ELEKTRİK TİCARET VE SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "GZNMI": {
+    "name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş.",
+    "sector": "Seyahat Acentesi, Tur Operatörü",
+    "industry": "Seyahat Acentesi, Tur Operatörü",
+    "kaynak": "pusula"
+  },
+  "GLBMD": {
+    "name": "GLOBAL MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "GLYHO": {
+    "name": "GLOBAL YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GOKNR": {
+    "name": "GOKNUR GIDA MADDELERI ENERJI IMALAT ITH. IHR. TIC. VE SAN. A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "GOODY": {
+    "name": "GOODYEAR LASTİKLERİ T.A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "GRTHO": {
+    "name": "GRAINTURK HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GSDDE": {
+    "name": "GSD DENİZCİLİK GAYRİMENKUL İNŞAAT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "GSDHO": {
+    "name": "GSD HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GOLTS": {
+    "name": "GÖLTAŞ GÖLLER BÖLGESİ ÇİMENTO SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "GOZDE": {
+    "name": "GÖZDE GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "GUBRF": {
+    "name": "GÜBRE FABRİKALARI T.A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "GLRYH": {
+    "name": "GÜLER YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "GRSEL": {
+    "name": "GÜR-SEL TURİZM TAŞIMACILIK VE SERVİS TİCARET A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "GLRMK": {
+    "name": "Gülermak Ağır Sanayi İnşaat ve Taahhüt A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "GUNDG": {
+    "name": "Gündoğdu Gıda Süt Ürünleri San. ve Dış Tic. A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "GMTAS": {
+    "name": "GİMAT MAĞAZACILIK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "GESAN": {
+    "name": "GİRİŞİM ELEKTRİK SANAYİ TAAHHÜT VE TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "GIPTA": {
+    "name": "Gıpta Ofis Kırtasiye ve Promosyon Ürünleri İmalat Sanayi A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "SAHOL": {
+    "name": "HACI ÖMER SABANCI HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "HLGYO": {
+    "name": "HALK GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "HATEK": {
+    "name": "HATEKS HATAY TEKSTİL İŞLETMELERİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "HDFGS": {
+    "name": "HEDEF GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "HEDEF": {
+    "name": "HEDEF HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "HEKTS": {
+    "name": "HEKTAŞ TİCARET T.A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "HUBVC": {
+    "name": "HUB GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "HUNER": {
+    "name": "HUN YENİLENEBİLİR ENERJİ ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "HRKET": {
+    "name": "Hareket Proje Taşımacılığı ve Yük Mühendisliği A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "HATSN": {
+    "name": "Hat-San Gemi İnşaa Bakım Onarım Deniz Nakliyat San. ve Tic. A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "HOROZ": {
+    "name": "Horoz Lojistik Kargo Hizmetleri ve Tic. A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "HURGZ": {
+    "name": "HÜRRİYET GAZETECİLİK VE MATBAACILIK A.Ş.",
+    "sector": "Yayıncılık",
+    "industry": "Yayıncılık",
+    "kaynak": "pusula"
+  },
+  "HKTM": {
+    "name": "HİDROPAR HAREKET KONTROL TEKNOLOJİLERİ MERKEZİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "HTTBT": {
+    "name": "HİTİT BİLGİSAYAR HİZMETLERİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ICBCT": {
+    "name": "ICBC TURKEY BANK A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "ICUGS": {
+    "name": "ICU GIRISIM SERMAYESI YATIRIM ORTAKLIGI A.S.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "INGRM": {
+    "name": "INGRAM MICRO BILISIM SISTEMLERI A.S.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "INTEK": {
+    "name": "INNOSA TEKNOLOJI A.S.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "INVEO": {
+    "name": "INVEO YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "INVES": {
+    "name": "INVESTCO HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "IZENR": {
+    "name": "IZDEMIR ENERJI ELEKTRIK URETIM A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ENTRA": {
+    "name": "Ic Enterra Yenilenebilir Enerji A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ISKPL": {
+    "name": "IŞIK PLASTİK SANAYİ VE DIŞ TİCARET PAZARLAMA A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "IEYHO": {
+    "name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "JANTS": {
+    "name": "JANTSA JANT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "KFEIN": {
+    "name": "KAFEİN YAZILIM HİZMETLERİ TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "KLKIM": {
+    "name": "KALEKİM KİMYEVİ MADDELER SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "KLSER": {
+    "name": "KALESERAMIK CANAKKALE KALEBODUR SERAMIK SANAYI A.S.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "KAPLM": {
+    "name": "KAPLAMİN AMBALAJ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "KRDMA": {
+    "name": "KARDEMİR KARABÜK DEMİR ÇELİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KRDMB": {
+    "name": "KARDEMİR KARABÜK DEMİR ÇELİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KRDMD": {
+    "name": "KARDEMİR KARABÜK DEMİR ÇELİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KAREL": {
+    "name": "KAREL ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "KARSN": {
+    "name": "KARSAN OTOMOTİV SANAYİİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "KRTEK": {
+    "name": "KARSU TEKSTİL SANAYİİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "KARTN": {
+    "name": "KARTONSAN KARTON SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "KTLEV": {
+    "name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş.",
+    "sector": "Finansman Şirketleri",
+    "industry": "Finansman Şirketleri",
+    "kaynak": "pusula"
+  },
+  "KATMR": {
+    "name": "KATMERCİLER ARAÇ ÜSTÜ EKİPMAN SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "KAYSE": {
+    "name": "KAYSERI SEKER FABRIKASI A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KENT": {
+    "name": "KENT GIDA MADDELERİ SANAYİİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KRVGD": {
+    "name": "KERVAN GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KERVN": {
+    "name": "KERVANSARAY YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "KZBGY": {
+    "name": "KIZILBÜK GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "KLMSN": {
+    "name": "KLİMASAN KLİMA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "KCAER": {
+    "name": "KOCAER ÇELİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KLSYN": {
+    "name": "KOLEKSİYON MOBİLYA SANAYİ A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "KNFRT": {
+    "name": "KONFRUT GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KONTR": {
+    "name": "KONTROLMATİK TEKNOLOJİ ENERJİ VE MÜHENDİSLİK A.Ş.",
+    "sector": "Mimarlık ve Mühendislik Faaliyetleri",
+    "industry": "Mimarlık ve Mühendislik Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "KONKA": {
+    "name": "KONYA KAĞIT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "KONYA": {
+    "name": "KONYA ÇİMENTO SANAYİİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "KGYO": {
+    "name": "KORAY GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "KORDS": {
+    "name": "KORDSA TEKNİK TEKSTİL A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "KRPLS": {
+    "name": "KOROPLAST TEMİZLİK AMBALAJ ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "KOPOL": {
+    "name": "KOZA POLYESTER SANAYI VE TICARET A.S.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "KCHOL": {
+    "name": "KOÇ HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "KRONT": {
+    "name": "KRON TEKNOLOJİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "KRSTL": {
+    "name": "KRİSTAL KOLA VE MEŞRUBAT SANAYİ TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KUVVA": {
+    "name": "KUVVA GIDA TİCARET VE SANAYİ YATIRIMLARI A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "KUYAS": {
+    "name": "KUYAŞ YATIRIM A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "KZGYO": {
+    "name": "KUZUGRUP GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "KSTUR": {
+    "name": "KUŞTUR KUŞADASI TURİZM ENDÜSTRİ A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "KLYPV": {
+    "name": "Kalyon Güneş Teknolojileri Üretim A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "KOTON": {
+    "name": "Koton Mağazacılık Tekstil San. ve Tic. A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "KOCMT": {
+    "name": "Koç Metalurji A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "KBORU": {
+    "name": "Kuzey Boru A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "KRGYO": {
+    "name": "KÖRFEZ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "KUTPO": {
+    "name": "KÜTAHYA PORSELEN SANAYİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "KTSKR": {
+    "name": "KÜTAHYA ŞEKER FABRİKASI A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "KLGYO": {
+    "name": "KİLER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "KLRHO": {
+    "name": "KİLER HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "KMPUR": {
+    "name": "KİMTEKS POLİÜRETAN SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "TCKRC": {
+    "name": "Kıraç Galvaniz Telekominikasyon Metal Makine İnşaat Elektrik San. ve Tic. A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "LIDER": {
+    "name": "LDR TURİZM A.Ş.",
+    "sector": "Kiralama ve Leasing Faaliyetleri",
+    "industry": "Kiralama ve Leasing Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "LOGO": {
+    "name": "LOGO YAZILIM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "LKMNH": {
+    "name": "LOKMAN HEKİM ENGÜRÜSAĞ SAĞLIK TURİZM EĞİTİM HİZMETLERİ VE İNŞAAT TAAHHÜT A.Ş.",
+    "sector": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "industry": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "kaynak": "pusula"
+  },
+  "LRSHO": {
+    "name": "LORAS HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "LYDHO": {
+    "name": "LYDIA HOLDING A.S.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "LYDYE": {
+    "name": "LYDIA YESIL ENERJI KAYNAKLARI A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "LILAK": {
+    "name": "Lila Kağıt San. ve Tic. A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "LMKDC": {
+    "name": "Limak Doğu Anadolu Çimento San. ve Tic. A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "LUKSK": {
+    "name": "LÜKS KADİFE TİCARET VE SANAYİİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "LIDFA": {
+    "name": "LİDER FAKTORİNG A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "LINK": {
+    "name": "LİNK BİLGİSAYAR SİSTEMLERİ YAZILIMI VE DONANIMI SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "MACKO": {
+    "name": "MACKOLIK INTERNET HIZMETLERI TICARET A.S.",
+    "sector": "Spor",
+    "industry": "Spor",
+    "kaynak": "pusula"
+  },
+  "MAKIM": {
+    "name": "MAKİM MAKİNA TEKNOLOJİLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "MAKTK": {
+    "name": "MAKİNA TAKIM ENDÜSTRİSİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "MANAS": {
+    "name": "MANAS ENERJİ YÖNETİMİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "MAGEN": {
+    "name": "MARGÜN ENERJİ ÜRETİM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "MARKA": {
+    "name": "MARKA YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "MARMR": {
+    "name": "MARMARA HOLDING A.S.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "MAALT": {
+    "name": "MARMARİS ALTINYUNUS TURİSTİK TESİSLER A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "MRSHL": {
+    "name": "MARSHALL BOYA VE VERNİK SANAYİİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "MRGYO": {
+    "name": "MARTI GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "MARTI": {
+    "name": "MARTI OTEL İŞLETMELERİ A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "MTRKS": {
+    "name": "MATRİKS BİLGİ DAĞITIM HİZMETLERİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "MAVI": {
+    "name": "MAVİ GİYİM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "MZHLD": {
+    "name": "MAZHAR ZORLU HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "MEDTR": {
+    "name": "MEDİTERA TIBBİ MALZEME SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "MEGAP": {
+    "name": "MEGA POLİETİLEN KÖPÜK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "MNDRS": {
+    "name": "MENDERES TEKSTİL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "MEPET": {
+    "name": "MEPET METRO PETROL VE TESİSLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "MERCN": {
+    "name": "MERCAN KİMYA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "MERKO": {
+    "name": "MERKO GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "MERIT": {
+    "name": "MERİT TURİZM YATIRIM VE İŞLETME A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "METRO": {
+    "name": "METRO TİCARİ VE MALİ YATIRIMLAR HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "MTRYO": {
+    "name": "METRO YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "MEYSU": {
+    "name": "MEYSU GIDA SANAYI VE TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "MHRGY": {
+    "name": "MHR Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "MPARK": {
+    "name": "MLP SAĞLIK HİZMETLERİ A.Ş.",
+    "sector": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "industry": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "kaynak": "pusula"
+  },
+  "MMCAS": {
+    "name": "MMC SANAYİ VE TİCARİ YATIRIMLAR A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "MOBTL": {
+    "name": "MOBİLTEL İLETİŞİM HİZMETLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "MNDTR": {
+    "name": "MONDİ TURKEY OLUKLU MUKAVVA KAĞIT VE AMBALAJ SANAYİ A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "MEGMT": {
+    "name": "Mega Metal San. ve Tic. A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "MEKAG": {
+    "name": "Meka Beton Santralleri İmalat San. ve Tic. A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "MOGAN": {
+    "name": "Mogan Enerji Yatırım Holding A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "MOPAS": {
+    "name": "Mopaş Marketcilik Gıda San. ve Tic. A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "MIATK": {
+    "name": "MİA TEKNOLOJİ A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "MGROS": {
+    "name": "MİGROS TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "MSGYO": {
+    "name": "MİSTRAL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "EGEPO": {
+    "name": "NASMED ÖZEL SAĞLIK HİZMETLERİ TİCARET A.Ş.",
+    "sector": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "industry": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "kaynak": "pusula"
+  },
+  "NATEN": {
+    "name": "NATUREL YENİLENEBİLİR ENERJİ TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "NTGAZ": {
+    "name": "NATURELGAZ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "NTHOL": {
+    "name": "NET HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "NETAS": {
+    "name": "NETAŞ TELEKOMÜNİKASYON A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "NETCD": {
+    "name": "NETCAD YAZILIM A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "NUHCM": {
+    "name": "NUH ÇİMENTO SANAYİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "NUGYO": {
+    "name": "NUROL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "NIBAS": {
+    "name": "NİĞBAŞ NİĞDE BETON SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "OBASE": {
+    "name": "OBASE BİLGİSAYAR VE DANIŞMANLIK HİZMETLERİ TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ODAS": {
+    "name": "ODAŞ ELEKTRİK ÜRETİM SANAYİ TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "OFSYM": {
+    "name": "OFIS YEM GIDA SANAYI TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ONCSM": {
+    "name": "ONCOSEM ONKOLOJIK SISTEMLER SANAYI VE TICARET A.S.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ORGE": {
+    "name": "ORGE ENERJİ ELEKTRİK TAAHHÜT A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "ORMA": {
+    "name": "ORMA ORMAN MAHSULLERİ İNTEGRE SANAYİ VE TİCARET A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "ORCAY": {
+    "name": "ORÇAY ORTAKÖY ÇAY SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "OSMEN": {
+    "name": "OSMANLI YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "OSTIM": {
+    "name": "OSTİM ENDÜSTRİYEL YATIRIMLAR VE İŞLETME A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "OTKAR": {
+    "name": "OTOKAR OTOMOTİV VE SAVUNMA SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "OTTO": {
+    "name": "OTTO HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "OYYAT": {
+    "name": "OYAK YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "OYAYO": {
+    "name": "OYAK YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "OYAKC": {
+    "name": "OYAK ÇİMENTO FABRİKALARI A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "OYLUM": {
+    "name": "OYLUM SINAİ YATIRIMLAR A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "OBAMS": {
+    "name": "Oba Makarnacılık San. ve Tic. A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "ODINE": {
+    "name": "Odine Solutions Teknoloji Tic. ve San. A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "ONRYT": {
+    "name": "Onur Yüksek Teknoloji A.Ş.",
+    "sector": "Savunma",
+    "industry": "Savunma",
+    "kaynak": "pusula"
+  },
+  "PAMEL": {
+    "name": "PAMEL YENİLENEBİLİR ELEKTRİK ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "PNLSN": {
+    "name": "PANELSAN ÇATI CEPHE SİSTEMLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "PAGYO": {
+    "name": "PANORA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "PAPIL": {
+    "name": "PAPİLON SAVUNMA TEKNOLOJİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "PRDGS": {
+    "name": "PARDUS GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "PRKME": {
+    "name": "PARK ELEKTRİK ÜRETİM MADENCİLİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kömür ve Linyit Madenciliği",
+    "industry": "Kömür ve Linyit Madenciliği",
+    "kaynak": "pusula"
+  },
+  "PARSN": {
+    "name": "PARSAN MAKİNA PARÇALARI SANAYİİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "PASEU": {
+    "name": "PASIFIK EURASIA LOJISTIK DIS TICARET A.S.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "PAHOL": {
+    "name": "PASIFIK HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "PSGYO": {
+    "name": "PASİFİK GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "PCILT": {
+    "name": "PC İLETİŞİM VE MEDYA HİZMETLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Reklamcılık ve Pazar Araştırması",
+    "industry": "Reklamcılık ve Pazar Araştırması",
+    "kaynak": "pusula"
+  },
+  "PGSUS": {
+    "name": "PEGASUS HAVA TAŞIMACILIĞI A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "PEKGY": {
+    "name": "PEKER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "PENGD": {
+    "name": "PENGUEN GIDA SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "PENTA": {
+    "name": "PENTA TEKNOLOJİ ÜRÜNLERİ DAĞITIM TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "PSDTC": {
+    "name": "PERGAMON STATUS DIŞ TİCARET A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "PETKM": {
+    "name": "PETKİM PETROKİMYA HOLDİNG A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "PKENT": {
+    "name": "PETROKENT TURİZM A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "PETUN": {
+    "name": "PINAR ENTEGRE ET VE UN SANAYİİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "PINSU": {
+    "name": "PINAR SU VE İÇECEK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "PNSUT": {
+    "name": "PINAR SÜT MAMULLERİ SANAYİİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "PKART": {
+    "name": "PLASTİKKART AKILLI KART İLETİŞİM SİSTEMLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "PLTUR": {
+    "name": "PLATFORM TURİZM TAŞIMACILIK GIDA İNŞAAT TEMİZLİK HİZMETLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kiralama ve Leasing Faaliyetleri",
+    "industry": "Kiralama ve Leasing Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "POLHO": {
+    "name": "POLİSAN HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "POLTK": {
+    "name": "POLİTEKNİK METAL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "PRZMA": {
+    "name": "PRİZMA PRES MATBAACILIK YAYINCILIK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "PATEK": {
+    "name": "Pasifik Donanım ve Yazılım Bilgi Teknolojileri A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "QNBFK": {
+    "name": "QNB FINANS FINANSAL KIRALAMA A.S.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "QUAGR": {
+    "name": "QUA GRANITE HAYAL YAPI VE ÜRÜNLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "RALYH": {
+    "name": "RAL YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "RAYSG": {
+    "name": "RAY SİGORTA A.Ş.",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "RNPOL": {
+    "name": "RAİNBOW POLİKARBONAT SANAYİ TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "RYGYO": {
+    "name": "REYSAŞ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "RYSAS": {
+    "name": "REYSAŞ TAŞIMACILIK VE LOJİSTİK TİCARET A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "RODRG": {
+    "name": "RODRİGO TEKSTİL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "ROYAL": {
+    "name": "ROYAL HALI İPLİK TEKSTİL MOBİLYA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "RTALB": {
+    "name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "RUBNS": {
+    "name": "RUBENİS TEKSTİL SANAYİ TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "RUZYE": {
+    "name": "RUZY MADENCILIK VE ENERJI YATIRIMLARI SANAYI VE TICARET A.S.",
+    "sector": "Kömür ve Linyit Madenciliği",
+    "industry": "Kömür ve Linyit Madenciliği",
+    "kaynak": "pusula"
+  },
+  "REEDR": {
+    "name": "Reeder Teknoloji San. ve Tic. A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "RGYAS": {
+    "name": "Rönesans Gayrimenkul Yatırım A.Ş.",
+    "sector": "Gayrimenkul Faaliyetleri",
+    "industry": "Gayrimenkul Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "SAFKR": {
+    "name": "SAFKAR EGE SOĞUTMACILIK KLİMA SOĞUK HAVA TESİSLERİ İHRACAT İTHALAT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "SANEL": {
+    "name": "SAN-EL MÜHENDİSLİK ELEKTRİK TAAHHÜT SANAYİ VE TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "SANKO": {
+    "name": "SANKO PAZARLAMA İTHALAT İHRACAT A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "SNICA": {
+    "name": "SANİCA ISI SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "SANFM": {
+    "name": "SANİFOAM ENDÜSTRİ VE TÜKETİM ÜRÜNLERİ SANAYİ TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "SAMAT": {
+    "name": "SARAY MATBAACILIK KAĞITÇILIK KIRTASİYECİLİK TİCARET VE SANAYİ A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "SARKY": {
+    "name": "SARKUYSAN ELEKTROLİTİK BAKIR SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "SASA": {
+    "name": "SASA POLYESTER SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "SAYAS": {
+    "name": "SAY YENİLENEBİLİR ENERJİ EKİPMANLARI SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "SDTTR": {
+    "name": "SDT UZAY VE SAVUNMA TEKNOLOJILERI A.S.",
+    "sector": "Savunma",
+    "industry": "Savunma",
+    "kaynak": "pusula"
+  },
+  "SEKUR": {
+    "name": "SEKURO PLASTİK AMBALAJ SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "SELVA": {
+    "name": "SELVA GIDA SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "SELEC": {
+    "name": "SELÇUK ECZA DEPOSU TİCARET VE SANAYİ A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "SRVGY": {
+    "name": "SERVET GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "SEYKM": {
+    "name": "SEYİTLER KİMYA SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "SKYLP": {
+    "name": "SKYALP FINANSAL TEKNOLOJILER VE DANISMANLIK A.S.",
+    "sector": "Hukuk ve Muhasebe Faaliyetleri",
+    "industry": "Hukuk ve Muhasebe Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "SMRTG": {
+    "name": "SMART GÜNEŞ ENERJİSİ TEKNOLOJİLERİ ARAŞTIRMA GELİŞTİRME ÜRETİM SANAYİ VE TİCARET A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "SMART": {
+    "name": "SMARTİKS YAZILIM A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "SODSN": {
+    "name": "SODAŞ SODYUM SANAYİİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "SOKE": {
+    "name": "SOKE DEGIRMENCILIK SANAYI VE TICARET A.S.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "SUMAS": {
+    "name": "SUMAŞ SUNİ TAHTA VE MOBİLYA SANAYİ A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "SUNTK": {
+    "name": "SUN TEKSTİL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "SUWEN": {
+    "name": "SUWEN TEKSTİL SANAYİ PAZARLAMA A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "SERNT": {
+    "name": "Seranit Granit Seramik San. ve Tic. A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "SEGMN": {
+    "name": "Seğmen Kardeşler Gıda Üretim ve Ambalaj Sanayi A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "SURGY": {
+    "name": "Sur Tatil Evleri Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "SKTAS": {
+    "name": "SÖKTAŞ TEKSTİL SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "SONME": {
+    "name": "SÖNMEZ FİLAMENT SENTETİK İPLİK VE ELYAF SANAYİ A.Ş.",
+    "sector": "Gayrimenkul Faaliyetleri",
+    "industry": "Gayrimenkul Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "SNPAM": {
+    "name": "SÖNMEZ PAMUKLU SANAYİİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "SILVR": {
+    "name": "SİLVERLİNE ENDÜSTRİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "SNGYO": {
+    "name": "SİNPAŞ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "TNZTP": {
+    "name": "TAPDI OKSIJEN OZEL SAGLIK VE EGITIM HIZMETLERI SAN. VE TIC. A.S.",
+    "sector": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "industry": "İnsan Sağlığı ve Sosyal Hizmetler",
+    "kaynak": "pusula"
+  },
+  "TARKM": {
+    "name": "TARKIM BITKI KORUMA SANAYI VE TICARET A.S.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "TATGD": {
+    "name": "TAT GIDA SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "TATEN": {
+    "name": "TATLIPINAR ENERJI URETIM A.S.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "TAVHL": {
+    "name": "TAV HAVALİMANLARI HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TEKTU": {
+    "name": "TEK-ART İNŞAAT TİCARET TURİZM SANAYİ VE YATIRIMLAR A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "TKFEN": {
+    "name": "TEKFEN HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TKNSA": {
+    "name": "TEKNOSA İÇ VE DIŞ TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "TMPOL": {
+    "name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "TRHOL": {
+    "name": "TERA FINANSAL YATIRIMLAR HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TERA": {
+    "name": "TERA YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "TEHOL": {
+    "name": "TERA YATIRIM TEKNOLOJI HOLDING A.S.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TGSAS": {
+    "name": "TGS DIŞ TİCARET A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "TOASO": {
+    "name": "TOFAŞ TÜRK OTOMOBİL FABRİKASI A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "TRGYO": {
+    "name": "TORUNLAR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "TRMET": {
+    "name": "TR ANADOLU METAL MADENCILIK ISLETMELERI A.S.",
+    "sector": "Metal Cevheri Madenciliği",
+    "industry": "Metal Cevheri Madenciliği",
+    "kaynak": "pusula"
+  },
+  "TRENJ": {
+    "name": "TR DOGAL ENERJI KAYNAKLARI ARASTIRMA VE URETIM A.S.",
+    "sector": "Petrol ve Doğalgaz",
+    "industry": "Petrol ve Doğalgaz",
+    "kaynak": "pusula"
+  },
+  "TLMAN": {
+    "name": "TRABZON LİMAN İŞLETMECİLİĞİ A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "TSPOR": {
+    "name": "TRABZONSPOR SPORTİF YATIRIM VE FUTBOL İŞLETMECİLİĞİ TİCARET A.Ş.",
+    "sector": "Spor",
+    "industry": "Spor",
+    "kaynak": "pusula"
+  },
+  "TDGYO": {
+    "name": "TREND GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "TSGYO": {
+    "name": "TSKB GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "TUKAS": {
+    "name": "TUKAŞ GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "TRCAS": {
+    "name": "TURCAS PETROL A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "TUREX": {
+    "name": "TUREKS TURİZM TAŞIMACILIK A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "TRALT": {
+    "name": "TURK ALTIN ISLETMELERI A.S.",
+    "sector": "Metal Cevheri Madenciliği",
+    "industry": "Metal Cevheri Madenciliği",
+    "kaynak": "pusula"
+  },
+  "TRILC": {
+    "name": "TURK İLAÇ VE SERUM SANAYİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "TCELL": {
+    "name": "TURKCELL İLETİŞİM HİZMETLERİ A.Ş.",
+    "sector": "Telekomünikasyon",
+    "industry": "Telekomünikasyon",
+    "kaynak": "pusula"
+  },
+  "TUCLK": {
+    "name": "TUĞÇELİK ALÜMİNYUM VE METAL MAMÜLLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "TABGD": {
+    "name": "Tab Gıda San. ve Tic. A.Ş.",
+    "sector": "Yiyecek ve İçecek Hizmetleri",
+    "industry": "Yiyecek ve İçecek Hizmetleri",
+    "kaynak": "pusula"
+  },
+  "MARBL": {
+    "name": "Tureks Turunç Madencilik İç ve Dış Tic. A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "TMSN": {
+    "name": "TÜMOSAN MOTOR VE TRAKTÖR SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "TUPRS": {
+    "name": "TÜPRAŞ-TÜRKİYE PETROL RAFİNERİLERİ A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "THYAO": {
+    "name": "TÜRK HAVA YOLLARI A.O.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "PRKAB": {
+    "name": "TÜRK PRYSMİAN KABLO VE SİSTEMLERİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "TTKOM": {
+    "name": "TÜRK TELEKOMÜNİKASYON A.Ş.",
+    "sector": "Telekomünikasyon",
+    "industry": "Telekomünikasyon",
+    "kaynak": "pusula"
+  },
+  "TTRAK": {
+    "name": "TÜRK TRAKTÖR VE ZİRAAT MAKİNELERİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "TBORG": {
+    "name": "TÜRK TUBORG BİRA VE MALT SANAYİİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "TURGG": {
+    "name": "TÜRKER PROJE GAYRİMENKUL VE YATIRIM GELİŞTİRME A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "GARAN": {
+    "name": "TÜRKİYE GARANTİ BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "HALKB": {
+    "name": "TÜRKİYE HALK BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "KLNMA": {
+    "name": "TÜRKİYE KALKINMA VE YATIRIM BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "TSKB": {
+    "name": "TÜRKİYE SINAİ KALKINMA BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "TURSG": {
+    "name": "TÜRKİYE SİGORTA A.Ş.",
+    "sector": "Sigorta Şirketleri",
+    "industry": "Sigorta Şirketleri",
+    "kaynak": "pusula"
+  },
+  "VAKBN": {
+    "name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "ISCTR": {
+    "name": "TÜRKİYE İŞ BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "SISE": {
+    "name": "TÜRKİYE ŞİŞE VE CAM FABRİKALARI A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "UCAYM": {
+    "name": "UCAY MUHENDISLIK ENERJI VE IKLIMLENDIRME TEKNOLOJILERI A.S.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "UFUK": {
+    "name": "UFUK YATIRIM YÖNETİM VE GAYRİMENKUL A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ULAS": {
+    "name": "ULAŞLAR TURİZM YATIRIMLARI VE DAYANIKLI TÜKETİM MALLARI TİCARET PAZARLAMA A.Ş.",
+    "sector": "Konaklama",
+    "industry": "Konaklama",
+    "kaynak": "pusula"
+  },
+  "ULUFA": {
+    "name": "ULUSAL FAKTORİNG A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ULUSE": {
+    "name": "ULUSOY ELEKTRİK İMALAT TAAHHÜT VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "ULUUN": {
+    "name": "ULUSOY UN SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "UMPAS": {
+    "name": "UMPAŞ HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "USAK": {
+    "name": "UŞAK SERAMİK SANAYİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "VAKFA": {
+    "name": "VAKIF FAKTORİNG A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "VAKFN": {
+    "name": "VAKIF FİNANSAL KİRALAMA A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "VKGYO": {
+    "name": "VAKIF GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "VKFYO": {
+    "name": "VAKIF MENKUL KIYMET YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "VAKKO": {
+    "name": "VAKKO TEKSTİL VE HAZIR GİYİM SANAYİ İŞLETMELERİ A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "VANGD": {
+    "name": "VANET GIDA SANAYİ İÇ VE DIŞ TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "VBTYZ": {
+    "name": "VBT YAZILIM A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "VERUS": {
+    "name": "VERUSA HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "VERTU": {
+    "name": "VERUSATURK GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "VESBE": {
+    "name": "VESTEL BEYAZ EŞYA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "VESTL": {
+    "name": "VESTEL ELEKTRONİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "VRGYO": {
+    "name": "Vera Konsept Gayrimenkul Yatırım Ortaklığı A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "VSNMD": {
+    "name": "Vişne Madencilik Üretim San. ve Tic. A.Ş.",
+    "sector": "Madencilik ve Taş Ocakçılığı",
+    "industry": "Madencilik ve Taş Ocakçılığı",
+    "kaynak": "pusula"
+  },
+  "VKING": {
+    "name": "VİKİNG KAĞIT VE SELÜLOZ A.Ş.",
+    "sector": "Kağıt ve Kağıt Ürünleri Basım",
+    "industry": "Kağıt ve Kağıt Ürünleri Basım",
+    "kaynak": "pusula"
+  },
+  "YKBNK": {
+    "name": "YAPI VE KREDİ BANKASI A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "YAPRK": {
+    "name": "YAPRAK SÜT VE BESİ ÇİFTLİKLERİ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tarım ve Hayvancılık, Avcılık",
+    "industry": "Tarım ve Hayvancılık, Avcılık",
+    "kaynak": "pusula"
+  },
+  "YATAS": {
+    "name": "YATAŞ YATAK VE YORGAN SANAYİ TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "YYLGD": {
+    "name": "YAYLA AGRO GIDA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "YAYLA": {
+    "name": "YAYLA ENERJİ ÜRETİM TURİZM VE İNŞAAT TİCARET A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "YGGYO": {
+    "name": "YENİ GİMAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "YEOTK": {
+    "name": "YEO TEKNOLOJİ ENERJİ VE ENDÜSTRİ A.Ş.",
+    "sector": "Mimarlık ve Mühendislik Faaliyetleri",
+    "industry": "Mimarlık ve Mühendislik Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "YGYO": {
+    "name": "YEŞİL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "YYAPI": {
+    "name": "YEŞİL YAPI ENDÜSTRİSİ A.Ş.",
+    "sector": "İnşaat ve Bayındırlık İşleri",
+    "industry": "İnşaat ve Bayındırlık İşleri",
+    "kaynak": "pusula"
+  },
+  "YESIL": {
+    "name": "YEŞİL YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "YONGA": {
+    "name": "YONGA MOBİLYA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Orman Ürünleri ve Mobilya",
+    "industry": "Orman Ürünleri ve Mobilya",
+    "kaynak": "pusula"
+  },
+  "YIGIT": {
+    "name": "Yiğit Akü Malzemeleri Nakliyat Turizm İnşaat San. ve Tic. A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "YKSLN": {
+    "name": "YÜKSELEN ÇELİK A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "YUNSA": {
+    "name": "YÜNSA YÜNLÜ SANAYİ VE TİCARET A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "YBTAS": {
+    "name": "YİBİTAŞ YOZGAT İŞÇİ BİRLİĞİ İNŞAAT MALZEMELERİ TİCARET VE SANAYİ A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "ZGYO": {
+    "name": "Z GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ZEDUR": {
+    "name": "ZEDUR ENERJİ ELEKTRİK ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ZERGY": {
+    "name": "ZERAY GAYRIMENKUL YATIRIM ORTAKLIGI A.S.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ZOREN": {
+    "name": "ZORLU ENERJİ ELEKTRİK ÜRETİM A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "ZRGYO": {
+    "name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "CANTE": {
+    "name": "ÇAN2 TERMİK A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "CLEBI": {
+    "name": "ÇELEBİ HAVA SERVİSİ A.Ş.",
+    "sector": "Ulaştırma ve Depolama",
+    "industry": "Ulaştırma ve Depolama",
+    "kaynak": "pusula"
+  },
+  "CELHA": {
+    "name": "ÇELİK HALAT VE TEL SANAYİİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "CEMAS": {
+    "name": "ÇEMAŞ DÖKÜM SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "CEMTS": {
+    "name": "ÇEMTAŞ ÇELİK MAKİNA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "CUSAN": {
+    "name": "ÇUHADAROĞLU METAL SANAYİ VE PAZARLAMA A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "CATES": {
+    "name": "Çates Elektrik Üretim A.Ş.",
+    "sector": "Elektrik, Gaz ve Buhar",
+    "industry": "Elektrik, Gaz ve Buhar",
+    "kaynak": "pusula"
+  },
+  "CGCAM": {
+    "name": "Çağdaş Cam San. ve Tic. A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "CMBTN": {
+    "name": "ÇİMBETON HAZIRBETON VE PREFABRİK YAPI ELEMANLARI SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "CMENT": {
+    "name": "ÇİMENTAŞ İZMİR ÇİMENTO FABRİKASI T.A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "CIMSA": {
+    "name": "ÇİMSA ÇİMENTO SANAYİ VE TİCARET A.Ş.",
+    "sector": "Taş ve Toprağa Dayalı",
+    "industry": "Taş ve Toprağa Dayalı",
+    "kaynak": "pusula"
+  },
+  "OZKGY": {
+    "name": "ÖZAK GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "OZGYO": {
+    "name": "ÖZDERİCİ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "OZRDN": {
+    "name": "ÖZERDEN PLASTİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "OZSUB": {
+    "name": "ÖZSU BALIK ÜRETİM A.Ş.",
+    "sector": "Balıkçılık ve Su Ürünleri",
+    "industry": "Balıkçılık ve Su Ürünleri",
+    "kaynak": "pusula"
+  },
+  "OZATD": {
+    "name": "Özata Denizcilik San. ve Tic. A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "OZYSR": {
+    "name": "Özyaşar Tel ve Galvanizleme San. A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "ULKER": {
+    "name": "ÜLKER BİSKÜVİ SANAYİ A.Ş.",
+    "sector": "Gıda, İçecek ve Tütün",
+    "industry": "Gıda, İçecek ve Tütün",
+    "kaynak": "pusula"
+  },
+  "UNLU": {
+    "name": "ÜNLÜ YATIRIM HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "IDGYO": {
+    "name": "İDEALİST GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "IHEVA": {
+    "name": "İHLAS EV ALETLERİ İMALAT SANAYİ VE TİCARET A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "IHLGM": {
+    "name": "İHLAS GAYRİMENKUL PROJE GELİŞTİRME VE TİCARET A.Ş.",
+    "sector": "Gayrimenkul Faaliyetleri",
+    "industry": "Gayrimenkul Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "IHGZT": {
+    "name": "İHLAS GAZETECİLİK A.Ş.",
+    "sector": "Yayıncılık",
+    "industry": "Yayıncılık",
+    "kaynak": "pusula"
+  },
+  "IHAAS": {
+    "name": "İHLAS HABER AJANSI A.Ş.",
+    "sector": "Bilgi Hizmet Faaliyetleri",
+    "industry": "Bilgi Hizmet Faaliyetleri",
+    "kaynak": "pusula"
+  },
+  "IHLAS": {
+    "name": "İHLAS HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "IHYAY": {
+    "name": "İHLAS YAYIN HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "IMASM": {
+    "name": "İMAŞ MAKİNA SANAYİ A.Ş.",
+    "sector": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "industry": "Metal Eşya Makine Elektrikli Cihaz Ulaşım Araçları",
+    "kaynak": "pusula"
+  },
+  "INDES": {
+    "name": "İNDEKS BİLGİSAYAR SİSTEMLERİ MÜHENDİSLİK SANAYİ VE TİCARET A.Ş.",
+    "sector": "Bilişim",
+    "industry": "Bilişim",
+    "kaynak": "pusula"
+  },
+  "INFO": {
+    "name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "INTEM": {
+    "name": "İNTEMA İNŞAAT VE TESİSAT MALZEMELERİ YATIRIM VE PAZARLAMA A.Ş.",
+    "sector": "Toptan Ticaret",
+    "industry": "Toptan Ticaret",
+    "kaynak": "pusula"
+  },
+  "ISDMR": {
+    "name": "İSKENDERUN DEMİR VE ÇELİK A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "IZINV": {
+    "name": "İZ YATIRIM HOLDİNG A.Ş.",
+    "sector": "Tarım ve Hayvancılık, Avcılık",
+    "industry": "Tarım ve Hayvancılık, Avcılık",
+    "kaynak": "pusula"
+  },
+  "IZMDC": {
+    "name": "İZMİR DEMİR ÇELİK SANAYİ A.Ş.",
+    "sector": "Ana Metal Sanayi",
+    "industry": "Ana Metal Sanayi",
+    "kaynak": "pusula"
+  },
+  "IZFAS": {
+    "name": "İZMİR FIRÇA SANAYİ VE TİCARET A.Ş.",
+    "sector": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "industry": "Kimya, İlaç, Petrol, Lastik ve Plastik",
+    "kaynak": "pusula"
+  },
+  "ISFIN": {
+    "name": "İŞ FİNANSAL KİRALAMA A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ISGYO": {
+    "name": "İŞ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ISGSY": {
+    "name": "İŞ GİRİŞİM SERMAYESİ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "industry": "Girişim Sermayesi Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ISMEN": {
+    "name": "İŞ YATIRIM MENKUL DEĞERLER A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  },
+  "ISYAT": {
+    "name": "İŞ YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Menkul Kıymet Yatırım Ortaklıkları",
+    "industry": "Menkul Kıymet Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "ISBIR": {
+    "name": "İŞBİR HOLDİNG A.Ş.",
+    "sector": "Holdingler ve Yatırım Şirketleri",
+    "industry": "Holdingler ve Yatırım Şirketleri",
+    "kaynak": "pusula"
+  },
+  "ISSEN": {
+    "name": "İŞBİR SENTETİK DOKUMA SANAYİ A.Ş.",
+    "sector": "Tekstil, Giyim Eşyası ve Deri",
+    "industry": "Tekstil, Giyim Eşyası ve Deri",
+    "kaynak": "pusula"
+  },
+  "SEKFK": {
+    "name": "ŞEKER FİNANSAL KİRALAMA A.Ş.",
+    "sector": "Finansal Kiralama ve Faktoring Şirketleri",
+    "industry": "Finansal Kiralama ve Faktoring Şirketleri",
+    "kaynak": "pusula"
+  },
+  "SEGYO": {
+    "name": "ŞEKER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+    "sector": "Gayrimenkul Yatırım Ortaklıkları",
+    "industry": "Gayrimenkul Yatırım Ortaklıkları",
+    "kaynak": "pusula"
+  },
+  "SKBNK": {
+    "name": "ŞEKERBANK T.A.Ş.",
+    "sector": "Bankalar",
+    "industry": "Bankalar",
+    "kaynak": "pusula"
+  },
+  "SOKM": {
+    "name": "ŞOK MARKETLER TİCARET A.Ş.",
+    "sector": "Perakende Ticaret",
+    "industry": "Perakende Ticaret",
+    "kaynak": "pusula"
+  },
+  "SKYMD": {
+    "name": "Şeker Yatırım Menkul Değerler A.Ş.",
+    "sector": "Aracı Kurumlar",
+    "industry": "Aracı Kurumlar",
+    "kaynak": "pusula"
+  }
+}

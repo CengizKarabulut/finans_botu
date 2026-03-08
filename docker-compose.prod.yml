@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  finans_botu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finans_botu
+    restart: unless-stopped
+    # Google Cloud Free Tier (e2-micro) has limited CPU/RAM
+    # We limit resources to prevent VM from freezing
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 768M
+        reservations:
+          cpus: '0.10'
+          memory: 256M
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - COINGECKO_API_KEY=${COINGECKO_API_KEY}
+      - FMP_API_KEY=${FMP_API_KEY}
+      - ALPHAVANTAGE_API_KEY=${ALPHAVANTAGE_API_KEY}
+      - OPENFIGI_API_KEY=${OPENFIGI_API_KEY}
+      - LOG_LEVEL=INFO
+      - HEALTH_PORT=8080
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    # Playwright needs shared memory for Chromium
+    shm_size: '1gb'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Redis for better performance if needed later
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: finans_botu_redis
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #   volumes:
+  #     - redis_data:/data
+
+# volumes:
+#   redis_data:
