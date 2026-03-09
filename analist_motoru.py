@@ -34,19 +34,24 @@ def _guvenli_json(veriler: dict) -> str:
 
 async def ai_analiz_uret(sistem_prompt: str, kullanici_prompt: str, max_tokens: int = 1024) -> str:
     """Çoklu AI desteği ile analiz üretir (Anthropic -> Groq -> Gemini)."""
-    
+
+    loop = asyncio.get_running_loop()
+
     # 1. Anthropic (Claude)
     claude_key = os.environ.get("ANTHROPIC_API_KEY")
     if claude_key:
         try:
             client = Anthropic(api_key=claude_key)
-            loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(None, lambda: client.messages.create(
-                model="claude-3-haiku-20240307",
-                max_tokens=max_tokens,
-                system=sistem_prompt,
-                messages=[{"role": "user", "content": kullanici_prompt}]
-            ))
+            # Lambda closure: değerleri varsayılan argümanla yakala
+            response = await loop.run_in_executor(
+                None,
+                lambda sp=sistem_prompt, up=kullanici_prompt, mt=max_tokens: client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=mt,
+                    system=sp,
+                    messages=[{"role": "user", "content": up}]
+                )
+            )
             return response.content[0].text
         except Exception as e:
             log.warning(f"Anthropic hatası: {e}, Groq denenecek...")
@@ -54,38 +59,55 @@ async def ai_analiz_uret(sistem_prompt: str, kullanici_prompt: str, max_tokens: 
     # 2. Groq (Llama 3)
     groq_key = os.environ.get("GROQ_API_KEY")
     if groq_key:
-        # Mevcut Groq modelleri sırayla denenir
         groq_models = ["llama-3.3-70b-versatile", "llama3-70b-8192", "llama3-8b-8192"]
         for groq_model in groq_models:
             try:
                 client = Groq(api_key=groq_key)
-                loop = asyncio.get_running_loop()
-                response = await loop.run_in_executor(None, lambda: client.chat.completions.create(
-                    model=groq_model,
-                    messages=[
-                        {"role": "system", "content": sistem_prompt},
-                        {"role": "user", "content": kullanici_prompt}
-                    ],
-                    max_tokens=max_tokens
-                ))
+                response = await loop.run_in_executor(
+                    None,
+                    lambda gm=groq_model, sp=sistem_prompt, up=kullanici_prompt, mt=max_tokens: (
+                        client.chat.completions.create(
+                            model=gm,
+                            messages=[
+                                {"role": "system", "content": sp},
+                                {"role": "user", "content": up},
+                            ],
+                            max_tokens=mt,
+                        )
+                    )
+                )
                 return response.choices[0].message.content
             except Exception as e:
                 log.warning(f"Groq ({groq_model}) hatası: {e}, sıradaki deneniyor...")
         log.warning("Tüm Groq modelleri başarısız, Gemini denenecek...")
 
-    # 3. Gemini
+    # 3. Gemini — en uyumlu model önce
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
-        # Mevcut Gemini modelleri sırayla denenir
-        gemini_models = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-flash-latest"]
+        genai.configure(api_key=gemini_key)
+        full_prompt = f"{sistem_prompt}\n\n{kullanici_prompt}"
+        gemini_models = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-2.0-flash",
+            "gemini-2.0-flash-exp",
+            "gemini-1.5-pro",
+        ]
         for gemini_model in gemini_models:
             try:
-                genai.configure(api_key=gemini_key)
-                model = genai.GenerativeModel(gemini_model)
-                full_prompt = f"{sistem_prompt}\n\n{kullanici_prompt}"
-                loop = asyncio.get_running_loop()
-                response = await loop.run_in_executor(None, lambda: model.generate_content(full_prompt))
-                return response.text
+                gmodel = genai.GenerativeModel(gemini_model)
+                response = await loop.run_in_executor(
+                    None,
+                    lambda m=gmodel, fp=full_prompt: m.generate_content(fp)
+                )
+                # response.text güvenli erişim (safety filter engeli olabilir)
+                try:
+                    text = response.text
+                except Exception:
+                    # candidates üzerinden fallback
+                    text = response.candidates[0].content.parts[0].text
+                log.info(f"✅ Gemini ({gemini_model}) yanıt verdi.")
+                return text
             except Exception as e:
                 log.warning(f"Gemini ({gemini_model}) hatası: {e}, sıradaki deneniyor...")
         log.error("Tüm Gemini modelleri başarısız.")
