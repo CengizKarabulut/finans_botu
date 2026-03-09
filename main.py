@@ -62,6 +62,11 @@ logging.basicConfig(
 )
 log = logging.getLogger("finans_botu")
 
+# Gürültülü üçüncü taraf loglarını sustur
+# borsapy'nin TradingView WebSocket 429 hatalarını gizle (zaten try/except ile yakalanıyor)
+logging.getLogger("websocket").setLevel(logging.CRITICAL)
+logging.getLogger("websocket._exceptions").setLevel(logging.CRITICAL)
+
 # ═══════════════════════════════════════════════════════════════
 # BOT & DISPATCHER (Global)
 # ═══════════════════════════════════════════════════════════════

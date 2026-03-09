@@ -241,11 +241,30 @@ def _borsapy_verileri(ticker_symbol: str, yf_info: Optional[Dict] = None) -> Dic
     if not ticker_symbol.upper().endswith(".IS"):
         log.debug(f"borsapy sadece BIST için: {ticker_symbol}")
         return {}
-    
+
     try:
         import borsapy as bp
+        import time as _time
         t = ticker_symbol.upper().replace(".IS", "")
-        h = bp.Ticker(t)
+
+        # TradingView 429 rate-limit için retry
+        _bp_attempts = 0
+        h = None
+        while _bp_attempts < 3:
+            try:
+                h = bp.Ticker(t)
+                break
+            except Exception as _e:
+                if "429" in str(_e):
+                    _bp_attempts += 1
+                    log.debug(f"borsapy rate-limit (429), {_bp_attempts}. deneme, 5s bekleniyor...")
+                    _time.sleep(5 * _bp_attempts)
+                else:
+                    raise
+        if h is None:
+            log.warning(f"borsapy bağlantısı kurulamadı ({t}), borsapy verileri atlanıyor.")
+            return {}
+
         sonuc: Dict[str, Any] = {}
 
         # ── fast_info ──────────────────────────────────────────────────────────
