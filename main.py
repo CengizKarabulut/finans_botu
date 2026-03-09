@@ -193,13 +193,16 @@ async def komut_analiz(message: Message):
             _async(teknik_analiz_yap, sembol)
         )
 
-        if ("Hata" in temel_v or not temel_v) and ("Hata" in teknik_v or not teknik_v):
+        temel_hata = not temel_v or "Hata" in temel_v
+        teknik_hata = not teknik_v or "Hata" in teknik_v
+
+        if temel_hata and teknik_hata:
             await bekle_msg.edit_text(f"❌ Veri bulunamadı: <b>{sembol}</b>")
             return
 
-        fiyat = temel_v.get("Fiyat", teknik_v.get("Güncel Fiyat", "—"))
-        degisim = temel_v.get("Günlük Değişim (%)", "—")
-        rsi = teknik_v.get("RSI (14)", "—")
+        fiyat = (temel_v or {}).get("Fiyat") or (teknik_v or {}).get("Güncel Fiyat", "—")
+        degisim = (temel_v or {}).get("Günlük Değişim (%)", (teknik_v or {}).get("Günlük Değişim (%)", "—"))
+        rsi = (teknik_v or {}).get("RSI (14)", "—")
 
         rapor = (
             f"📊 <b>{sembol} Analiz Özeti</b>\n"
