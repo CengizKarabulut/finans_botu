@@ -54,33 +54,41 @@ async def ai_analiz_uret(sistem_prompt: str, kullanici_prompt: str, max_tokens: 
     # 2. Groq (Llama 3)
     groq_key = os.environ.get("GROQ_API_KEY")
     if groq_key:
-        try:
-            client = Groq(api_key=groq_key)
-            loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(None, lambda: client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=[
-                    {"role": "system", "content": sistem_prompt},
-                    {"role": "user", "content": kullanici_prompt}
-                ],
-                max_tokens=max_tokens
-            ))
-            return response.choices[0].message.content
-        except Exception as e:
-            log.warning(f"Groq hatası: {e}, Gemini denenecek...")
+        # Mevcut Groq modelleri sırayla denenir
+        groq_models = ["llama-3.3-70b-versatile", "llama3-70b-8192", "llama3-8b-8192"]
+        for groq_model in groq_models:
+            try:
+                client = Groq(api_key=groq_key)
+                loop = asyncio.get_running_loop()
+                response = await loop.run_in_executor(None, lambda: client.chat.completions.create(
+                    model=groq_model,
+                    messages=[
+                        {"role": "system", "content": sistem_prompt},
+                        {"role": "user", "content": kullanici_prompt}
+                    ],
+                    max_tokens=max_tokens
+                ))
+                return response.choices[0].message.content
+            except Exception as e:
+                log.warning(f"Groq ({groq_model}) hatası: {e}, sıradaki deneniyor...")
+        log.warning("Tüm Groq modelleri başarısız, Gemini denenecek...")
 
     # 3. Gemini
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
-        try:
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            full_prompt = f"{sistem_prompt}\n\n{kullanici_prompt}"
-            loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(None, lambda: model.generate_content(full_prompt))
-            return response.text
-        except Exception as e:
-            log.error(f"Gemini hatası: {e}")
+        # Mevcut Gemini modelleri sırayla denenir
+        gemini_models = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-flash-latest"]
+        for gemini_model in gemini_models:
+            try:
+                genai.configure(api_key=gemini_key)
+                model = genai.GenerativeModel(gemini_model)
+                full_prompt = f"{sistem_prompt}\n\n{kullanici_prompt}"
+                loop = asyncio.get_running_loop()
+                response = await loop.run_in_executor(None, lambda: model.generate_content(full_prompt))
+                return response.text
+            except Exception as e:
+                log.warning(f"Gemini ({gemini_model}) hatası: {e}, sıradaki deneniyor...")
+        log.error("Tüm Gemini modelleri başarısız.")
 
     return "Üzgünüm, şu an hiçbir AI motoruna ulaşılamıyor. Lütfen API anahtarlarınızı kontrol edin."
 
