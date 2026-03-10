@@ -307,18 +307,116 @@ async def _grafik_mplfinance(sembol: str, output_path: str) -> bool:
 # ANA FONKSİYON — Önce TV, başarısız olursa mplfinance
 # ═══════════════════════════════════════════════════════════════
 
+async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
+    """
+    Giriş yapmadan TRADINGVIEW_CHART_URL üzerinden screenshot alır.
+    Kaydedilmiş public/shared layout URL'si yeterliyse bu yöntem kullanılır.
+    """
+    base_url = os.environ.get("TRADINGVIEW_CHART_URL", "").strip().rstrip("/") + "/"
+    if not base_url or base_url == "/":
+        return False
+
+    tv_symbol = _tv_sembol_formatla(sembol)
+    chart_url = f"{base_url}?symbol={tv_symbol}"
+    log.info(f"📊 TradingView (giriş yok) grafiği çekiliyor: {sembol} → {chart_url}")
+
+    try:
+        from playwright.async_api import async_playwright
+
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-blink-features=AutomationControlled",
+                ],
+            )
+            context = await browser.new_context(
+                viewport={"width": 1920, "height": 1080},
+                user_agent=(
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                ),
+            )
+
+            # Kaydedilmiş çerezler varsa yükle (önceki oturumdan)
+            if os.path.exists(_TV_COOKIE_PATH):
+                with open(_TV_COOKIE_PATH) as f:
+                    await context.add_cookies(json.load(f))
+                log.info("🍪 TradingView oturum çerezleri yüklendi.")
+
+            page = await context.new_page()
+            await page.goto(chart_url, wait_until="load", timeout=60_000)
+
+            # Grafiğin yüklenmesini bekle
+            await page.wait_for_timeout(5000)
+            try:
+                await page.wait_for_selector(
+                    "canvas, .chart-container",
+                    timeout=20_000,
+                )
+            except Exception:
+                pass
+            await page.wait_for_timeout(5000)  # Render tamamlanması
+
+            # UI elementlerini gizle
+            await page.evaluate("""
+                const els = [
+                    '.tv-header',
+                    '[data-name="drawing-toolbar"]',
+                    '.tv-floating-toolbar',
+                    '.tv-side-toolbar',
+                ];
+                els.forEach(sel => {
+                    const el = document.querySelector(sel);
+                    if (el) el.style.display = 'none';
+                });
+            """)
+            await page.wait_for_timeout(500)
+
+            os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+            await page.screenshot(path=output_path, full_page=False)
+            await browser.close()
+
+            # Boş ekran kontrolü
+            file_size = os.path.getsize(output_path)
+            if file_size < 50_000:  # 50 KB'tan küçükse muhtemelen boş/hata sayfası
+                log.warning(f"⚠️ Grafik dosyası çok küçük ({file_size} bytes), muhtemelen boş.")
+                return False
+
+            log.info(f"✅ TradingView grafiği (giriş yok) kaydedildi: {output_path} ({file_size} bytes)")
+            return True
+
+    except ImportError:
+        log.error("❌ Playwright yüklü değil. 'pip install playwright && playwright install chromium'")
+        return False
+    except Exception as e:
+        log.error(f"❌ TradingView noauth Playwright hatası ({sembol}): {e}")
+        return False
+
+
 async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
     """
     Grafik alma akışı:
-      1. TradingView hesabıyla Playwright (kimlik bilgileri varsa)
-      2. mplfinance yerel grafik (yedek)
+      1. TradingView Playwright — kimlik bilgileriyle (varsa)
+      2. TradingView Playwright — girişsiz, TRADINGVIEW_CHART_URL ile (varsa)
+      3. mplfinance yerel grafik (yedek)
     """
-    # Birincil: TradingView Playwright
+    # Birincil: TradingView Playwright (kimlik bilgileriyle)
     if os.environ.get("TRADINGVIEW_USERNAME") and os.environ.get("TRADINGVIEW_PASSWORD"):
         success = await _grafik_tradingview(sembol, output_path)
         if success:
             return True
-        log.warning("⚠️ TradingView başarısız, mplfinance yedek deneniyor...")
+        log.warning("⚠️ TradingView (giriş) başarısız, URL yöntemi deneniyor...")
+
+    # İkincil: TRADINGVIEW_CHART_URL varsa girişsiz Playwright
+    if os.environ.get("TRADINGVIEW_CHART_URL"):
+        success = await _grafik_playwright_noauth(sembol, output_path)
+        if success:
+            return True
+        log.warning("⚠️ TradingView URL yöntemi başarısız, mplfinance yedek deneniyor...")
 
     # Yedek: mplfinance
     return await _grafik_mplfinance(sembol, output_path)
