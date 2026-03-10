@@ -64,62 +64,82 @@ def _yf_sembol_formatla(sembol: str) -> str:
 # TRADİNGVİEW GİRİŞ AKIŞI
 # ═══════════════════════════════════════════════════════════════
 
-async def _tv_giris_yap(page, username: str, password: str) -> bool:
+async def _tv_api_giris(username: str, password: str) -> list:
     """
-    TradingView giriş akışını gerçekleştirir.
-    Oturum başarıyla açılırsa True döner.
+    TradingView'e HTTP API üzerinden giriş yapar (headless tarayıcı tespiti yok).
+    Playwright'a enjekte edilebilir cookie listesi döner.
     """
+    import aiohttp
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Referer": "https://www.tradingview.com/",
+        "Origin": "https://www.tradingview.com",
+    }
     try:
-        log.info("🔐 TradingView girişi başlatılıyor...")
+        async with aiohttp.ClientSession(headers=headers) as session:
+            # Ana sayfayı ziyaret et (temel cookie'leri al)
+            async with session.get("https://www.tradingview.com/") as resp:
+                await resp.read()
 
-        # Giriş sayfasına git
-        await page.goto(
-            "https://www.tradingview.com/accounts/signin/",
-            wait_until="load",
-            timeout=30_000,
-        )
-        await page.wait_for_timeout(2000)
+            # Login isteği — form-encoded POST
+            async with session.post(
+                "https://www.tradingview.com/accounts/signin/",
+                data={"username": username, "password": password, "remember": "on"},
+            ) as resp:
+                try:
+                    body = await resp.json(content_type=None)
+                except Exception:
+                    body = {}
 
-        # "E-posta ile devam et" butonu
-        try:
-            email_btn = page.locator('button[name="Email"]').or_(
-                page.locator('span:text("Email")').locator("..")
-            )
-            if await email_btn.count() > 0:
-                await email_btn.first.click()
-                await page.wait_for_timeout(1500)
-        except Exception:
-            pass  # Butona gerek olmayabilir
+                if resp.status != 200:
+                    log.error(f"❌ TV API giriş başarısız: HTTP {resp.status}")
+                    return []
+                if body.get("error"):
+                    log.error(f"❌ TV API giriş hatası: {body.get('error')}")
+                    return []
 
-        # Kullanıcı adı
-        await page.fill('input[name="username"]', username)
-        await page.wait_for_timeout(500)
+            # Cookie'leri Playwright formatına çevir
+            pw_cookies = []
+            jar_cookies = session.cookie_jar.filter_cookies("https://www.tradingview.com")
+            for name, morsel in jar_cookies.items():
+                pw_cookies.append({
+                    "name": name,
+                    "value": morsel.value,
+                    "domain": ".tradingview.com",
+                    "path": "/",
+                })
 
-        # Şifre
-        await page.fill('input[name="password"]', password)
-        await page.wait_for_timeout(500)
-
-        # Giriş butonunu tıkla
-        submit = page.locator('button[type="submit"]').or_(
-            page.locator('[data-overflow-tooltip-text="Sign in"]')
-        )
-        await submit.first.click()
-
-        # Giriş sonucunu bekle (maks 15 sn)
-        try:
-            await page.wait_for_url(
-                lambda url: "tradingview.com" in url and "signin" not in url,
-                timeout=15_000,
-            )
-        except Exception:
-            pass  # URL değişmeyebilir; cookie kontrolüyle devam ederiz
-
-        await page.wait_for_timeout(3000)
-        log.info("✅ TradingView girişi tamamlandı.")
-        return True
+            if pw_cookies:
+                log.info(f"✅ TV API girişi başarılı. {len(pw_cookies)} cookie alındı.")
+            else:
+                log.warning("⚠️ TV API: Login yanıtı OK ama cookie gelmedi.")
+            return pw_cookies
 
     except Exception as e:
-        log.error(f"❌ TradingView giriş hatası: {e}")
+        log.error(f"❌ TV API giriş exception: {e}")
+        return []
+
+
+async def _tv_giris_yap(page, username: str, password: str) -> bool:
+    """
+    TradingView'e HTTP API ile giriş yapar; cookie'yi Playwright context'ine enjekte eder.
+    Tarayıcı formu kullanmadığı için headless tespiti / CAPTCHA engeli yoktur.
+    """
+    log.info("🔐 TradingView girişi başlatılıyor (HTTP API)...")
+    cookies = await _tv_api_giris(username, password)
+    if not cookies:
+        log.error("❌ TradingView giriş hatası: Cookie alınamadı.")
+        return False
+    try:
+        await page.context.add_cookies(cookies)
+        log.info("✅ TradingView girişi tamamlandı.")
+        return True
+    except Exception as e:
+        log.error(f"❌ Cookie enjekte hatası: {e}")
         return False
 
 
