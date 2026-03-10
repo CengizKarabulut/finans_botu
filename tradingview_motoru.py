@@ -64,114 +64,67 @@ def _yf_sembol_formatla(sembol: str) -> str:
 # TRADİNGVİEW GİRİŞ AKIŞI
 # ═══════════════════════════════════════════════════════════════
 
-async def _tv_api_giris(username: str, password: str) -> list:
-    """
-    TradingView'e HTTP API üzerinden giriş yapar (headless tarayıcı tespiti yok).
-    Playwright'a enjekte edilebilir cookie listesi döner.
-    Başarı kriteri: yanıt body'sinde 'user' verisi olmalı.
-    """
-    import aiohttp
-
-    base_headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "Referer": "https://www.tradingview.com/",
-        "Origin": "https://www.tradingview.com",
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "X-Requested-With": "XMLHttpRequest",
-    }
-    try:
-        async with aiohttp.ClientSession(headers=base_headers) as session:
-            # Ana sayfayı ziyaret et (temel cookie'leri al)
-            async with session.get("https://www.tradingview.com/") as resp:
-                await resp.read()
-
-            body = {}
-            # 1. Deneme: JSON body ile POST
-            async with session.post(
-                "https://www.tradingview.com/accounts/signin/",
-                json={"username": username, "password": password, "remember": True},
-            ) as resp:
-                try:
-                    body = await resp.json(content_type=None)
-                except Exception:
-                    body = {}
-                http_status = resp.status
-                content_type = resp.content_type
-
-            # JSON login başarısız → form-encoded ile tekrar dene
-            if not body.get("user"):
-                log.info("🔄 JSON login sonuç vermedi, form-encoded deneniyor...")
-                async with session.post(
-                    "https://www.tradingview.com/accounts/signin/",
-                    data={"username": username, "password": password, "remember": "on"},
-                    headers={"Content-Type": "application/x-www-form-urlencoded"},
-                ) as resp:
-                    try:
-                        body = await resp.json(content_type=None)
-                    except Exception:
-                        body = {}
-                    http_status = resp.status
-
-            # Yanıt doğrulama
-            if http_status != 200:
-                log.error(f"❌ TV API giriş başarısız: HTTP {http_status}")
-                return []
-            if body.get("error"):
-                log.error(f"❌ TV API giriş hatası: {body.get('error')}")
-                return []
-            if not body.get("user"):
-                log.error(
-                    f"❌ TV API: Kullanıcı verisi yok (giriş muhtemelen engellendi). "
-                    f"HTTP {http_status}, Content-Type: {content_type}, "
-                    f"Yanıt: {str(body)[:300]}"
-                )
-                return []
-
-            log.info(f"✅ TV API: '{body['user'].get('username', '?')}' olarak giriş yapıldı.")
-
-            # Cookie'leri Playwright formatına çevir
-            pw_cookies = []
-            jar_cookies = session.cookie_jar.filter_cookies("https://www.tradingview.com")
-            for name, morsel in jar_cookies.items():
-                pw_cookies.append({
-                    "name": name,
-                    "value": morsel.value,
-                    "domain": ".tradingview.com",
-                    "path": "/",
-                })
-
-            cookie_names = [c["name"] for c in pw_cookies]
-            log.info(f"📌 Alınan cookie'ler ({len(pw_cookies)}): {cookie_names}")
-
-            if "sessionid" not in cookie_names:
-                log.warning("⚠️ 'sessionid' cookie eksik — oturum çalışmayabilir.")
-
-            return pw_cookies
-
-    except Exception as e:
-        log.error(f"❌ TV API giriş exception: {e}")
-        return []
-
-
 async def _tv_giris_yap(page, username: str, password: str) -> bool:
     """
-    TradingView'e HTTP API ile giriş yapar; cookie'yi Playwright context'ine enjekte eder.
-    Tarayıcı formu kullanmadığı için headless tespiti / CAPTCHA engeli yoktur.
+    TradingView'e Playwright tarayıcısı içinden fetch() ile giriş yapar.
+    Login isteği tarayıcının kendi fingerprint/IP'sinden yapılır → oturum tutarlıdır.
+    Python HTTP client (aiohttp) ile oluşturulan session yetersizdi çünkü
+    TradingView, sunucu IP'sinden gelen sessionid'yi tarayıcı ortamında reddediyordu.
     """
-    log.info("🔐 TradingView girişi başlatılıyor (HTTP API)...")
-    cookies = await _tv_api_giris(username, password)
-    if not cookies:
-        log.error("❌ TradingView giriş hatası: Cookie alınamadı.")
-        return False
+    log.info("🔐 TradingView girişi başlatılıyor (browser fetch)...")
     try:
-        await page.context.add_cookies(cookies)
-        log.info("✅ TradingView girişi tamamlandı.")
+        # tradingview.com üzerinde değilsek önce ana sayfaya git
+        if "tradingview.com" not in page.url:
+            await page.goto("https://www.tradingview.com/", wait_until="load", timeout=30_000)
+            await page.wait_for_timeout(2000)
+
+        # Tarayıcı içinden fetch() ile login — credentials:'include' sayesinde
+        # sessionid cookie doğrudan tarayıcının cookie jar'ına yazılır.
+        result = await page.evaluate(
+            """async ([u, p]) => {
+                try {
+                    const r = await fetch('https://www.tradingview.com/accounts/signin/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Referer': 'https://www.tradingview.com/'
+                        },
+                        body: JSON.stringify({username: u, password: p, remember: true}),
+                        credentials: 'include'
+                    });
+                    const data = await r.json().catch(() => ({}));
+                    return {status: r.status, data};
+                } catch(e) {
+                    return {error: String(e)};
+                }
+            }""",
+            [username, password],
+        )
+
+        if result.get("error"):
+            log.error(f"❌ TradingView browser fetch hatası: {result['error']}")
+            return False
+
+        status = result.get("status", 0)
+        data = result.get("data", {})
+
+        if data.get("error"):
+            log.error(f"❌ TradingView giriş hatası: {data['error']}")
+            return False
+
+        if not data.get("user"):
+            log.error(
+                f"❌ TradingView: Kullanıcı verisi yok. "
+                f"HTTP {status}, Yanıt: {str(data)[:200]}"
+            )
+            return False
+
+        log.info(f"✅ TradingView girişi tamamlandı: {data['user'].get('username', '?')}")
         return True
+
     except Exception as e:
-        log.error(f"❌ Cookie enjekte hatası: {e}")
+        log.error(f"❌ TradingView giriş hatası: {e}")
         return False
 
 
