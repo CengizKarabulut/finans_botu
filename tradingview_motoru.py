@@ -80,17 +80,23 @@ async def _tv_giris_yap(page, username: str, password: str) -> bool:
 
         # Tarayıcı içinden fetch() ile login — credentials:'include' sayesinde
         # sessionid cookie doğrudan tarayıcının cookie jar'ına yazılır.
+        # Not: TradingView /accounts/signin/ endpoint'i form-encoded body ister;
+        #      application/json ile username/password alanları tanınmıyor (HTTP 400).
         result = await page.evaluate(
-            """async ([u, p]) => {
+            """async (creds) => {
                 try {
+                    const body = new URLSearchParams();
+                    body.append('username', creds.username);
+                    body.append('password', creds.password);
+                    body.append('remember', 'on');
                     const r = await fetch('https://www.tradingview.com/accounts/signin/', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
                             'X-Requested-With': 'XMLHttpRequest',
                             'Referer': 'https://www.tradingview.com/'
                         },
-                        body: JSON.stringify({username: u, password: p, remember: true}),
+                        body: body.toString(),
                         credentials: 'include'
                     });
                     const data = await r.json().catch(() => ({}));
@@ -99,7 +105,7 @@ async def _tv_giris_yap(page, username: str, password: str) -> bool:
                     return {error: String(e)};
                 }
             }""",
-            [username, password],
+            {"username": username, "password": password},
         )
 
         if result.get("error"):
