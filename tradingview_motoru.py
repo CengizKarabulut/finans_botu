@@ -127,10 +127,68 @@ async def _tv_giris_yap(page, username: str, password: str) -> bool:
 # BİRİNCİL: TRADINGVIEW PLAYWRIGHT YÖNTEMI
 # ═══════════════════════════════════════════════════════════════
 
+async def _sembol_degistir(page, tv_symbol: str) -> bool:
+    """
+    TradingView sayfasında açık grafik üzerinden sembolü değiştirir.
+    Layout teması ve indikatörler korunur.
+    Birden fazla yöntem sırayla denenir.
+    """
+    # Yöntem 1: Sembol adına tıkla → arama kutusu açılır
+    symbol_selectors = [
+        '[data-name="legend-series-item-title"]',
+        ".chart-header-widget-logo",
+        '[class*="symbolName"]',
+        '[class*="symbol-description"]',
+    ]
+    for sel in symbol_selectors:
+        try:
+            el = page.locator(sel).first
+            if await el.count() > 0:
+                await el.click()
+                await page.wait_for_timeout(1500)
+                break
+        except Exception:
+            continue
+
+    # Yöntem 2: Klavye kısayolu ile arama kutusunu aç (S veya /)
+    search_input = await page.query_selector(
+        'input[data-role="search"], input[class*="input"][class*="search"]'
+    )
+    if not search_input:
+        for key in ["s", "/"]:
+            await page.keyboard.press(key)
+            await page.wait_for_timeout(1000)
+            search_input = await page.query_selector(
+                'input[data-role="search"], input[class*="input"][class*="search"]'
+            )
+            if search_input:
+                break
+
+    if not search_input:
+        log.warning("⚠️ Sembol arama kutusu bulunamadı.")
+        return False
+
+    # Arama kutusunu temizle ve sembolü yaz
+    await page.evaluate("el => { el.value = ''; }", search_input)
+    await search_input.type(tv_symbol, delay=80)
+    await page.wait_for_timeout(2000)
+
+    # İlk sonucu seç (Enter)
+    await page.keyboard.press("Enter")
+    await page.wait_for_timeout(10_000)  # Grafik + indikatör verilerinin yüklenmesi
+    log.info(f"✅ Sembol değiştirildi: {tv_symbol}")
+    return True
+
+
 async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
     """
     TradingView hesabına giriş yaparak kayıtlı grafik ekran görüntüsü alır.
-    Cookie önbelleğiyle aynı oturumu yeniden kullanır.
+
+    ÖNEMLİ:
+    - Layout URL'si ?symbol= parametresiyle açılırsa TradingView, kaydedilmiş
+      layout'ı (siyah tema, MACD, SMI) yok sayıp sıfır/açık temalı yeni grafik açar.
+    - Düzeltme: Layout URL'si ÖNCE sembol olmadan açılır → tam yüklenince
+      TradingView içinden sembol değiştirilir → layout teması + indikatörler korunur.
     """
     tv_user = settings.TRADINGVIEW_USERNAME
     tv_pass = settings.TRADINGVIEW_PASSWORD
@@ -143,9 +201,9 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
         from playwright.async_api import async_playwright
 
         tv_symbol = _tv_sembol_formatla(sembol)
-        base_url = (settings.TRADINGVIEW_CHART_URL or "https://www.tradingview.com/chart/").rstrip("/") + "/"
-        chart_url = f"{base_url}?symbol={tv_symbol}"
-        log.info(f"📊 TradingView grafiği çekiliyor: {sembol} → {chart_url}")
+        # Layout URL'si: ?symbol= olmadan — kaydedilmiş tema ve indikatörler korunur
+        layout_url = (settings.TRADINGVIEW_CHART_URL or "https://www.tradingview.com/chart/").rstrip("/") + "/"
+        log.info(f"📊 TradingView grafiği çekiliyor: {sembol} ({tv_symbol})")
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(
@@ -165,7 +223,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 ),
             )
 
-            # Kaydedilmiş çerezleri yükle
+            # Kaydedilmiş çerezleri yükle (önceki oturumdan)
             if os.path.exists(_TV_COOKIE_PATH):
                 with open(_TV_COOKIE_PATH) as f:
                     await context.add_cookies(json.load(f))
@@ -173,24 +231,20 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
             page = await context.new_page()
 
-            # Doğrudan grafiğe git
-            await page.goto(chart_url, wait_until="load", timeout=60_000)
+            # Layout URL'sini ?symbol= olmadan aç → kaydedilmiş tema + indikatörler korunur
+            await page.goto(layout_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
             # Giriş gerekiyor mu?
-            login_selectors = [
-                'button[data-name="header-user-menu-sign-in"]',
-                'a[href*="signin"]',
-                'button:has-text("Sign in")',
-            ]
-            giris_gerekli = False
-            for sel in login_selectors:
-                if await page.query_selector(sel):
-                    giris_gerekli = True
-                    break
-
-            if "signin" in page.url:
-                giris_gerekli = True
+            giris_gerekli = "signin" in page.url
+            if not giris_gerekli:
+                for sel in [
+                    'button[data-name="header-user-menu-sign-in"]',
+                    'button:has-text("Sign in")',
+                ]:
+                    if await page.query_selector(sel):
+                        giris_gerekli = True
+                        break
 
             if giris_gerekli:
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
@@ -205,27 +259,39 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                     json.dump(cookies, f)
                 log.info("💾 TradingView oturum çerezleri kaydedildi.")
 
-                # Grafiğe tekrar git
-                await page.goto(chart_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(5000)
+                # Giriş sonrası layout'a yeniden git
+                await page.goto(layout_url, wait_until="load", timeout=60_000)
+                await page.wait_for_timeout(3000)
 
-            # Grafiğin render olmasını bekle
+            # Layout'un (siyah tema + indikatörler) tam yüklenmesini bekle
             try:
                 await page.wait_for_selector(
-                    ".chart-container, canvas.chart-gui-wrapper",
+                    "canvas, .chart-container",
                     timeout=20_000,
                 )
             except Exception:
-                log.warning("⚠️ chart-container selektörü bulunamadı, ek süre bekleniyor...")
+                log.warning("⚠️ Canvas bulunamadı, devam ediliyor...")
+            await page.wait_for_timeout(8000)
 
-            await page.wait_for_timeout(5000)  # Render tamamlanması
+            # Sembolü TradingView içinden değiştir (layout teması korunur)
+            await _sembol_degistir(page, tv_symbol)
 
-            # Başlık çubuğunu gizle (daha temiz görünüm)
+            # Tüm kenar çubuklarını ve araç çubuklarını gizle
             await page.evaluate("""
-                const header = document.querySelector('.tv-header');
-                if (header) header.style.display = 'none';
-                const toolbar = document.querySelector('[data-name="drawing-toolbar"]');
-                if (toolbar) toolbar.style.display = 'none';
+                [
+                    'header', '.tv-header',
+                    '[data-name="drawing-toolbar"]',
+                    '.tv-floating-toolbar',
+                    '.tv-side-toolbar',
+                    '.layout__area--left',
+                    '.layout__area--right',
+                    '[data-name="left-toolbar"]',
+                    '[data-name="right-toolbar"]',
+                ].forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => {
+                        el.style.display = 'none';
+                    });
+                });
             """)
             await page.wait_for_timeout(500)
 
@@ -424,28 +490,25 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
     """
     Grafik alma akışı:
-      1. TRADINGVIEW_CHART_URL varsa girişsiz Playwright (kaydedilmiş layout → doğru tema/indikatörler)
-      2. TradingView Playwright — kimlik bilgileriyle (varsa)
-      3. mplfinance yerel grafik (yedek)
-
-    NOT: Login yapılınca TradingView, hesap kişisel temasını uygular ve layout'ın siyah
-    temasını/indikatörlerini ezer. Bu yüzden shared layout URL'si varsa önce noauth denenir.
+      1. TradingView Playwright (kimlik bilgileriyle) — layout teması + indikatörler
+      2. TradingView Playwright girişsiz — CHART_URL varsa yedek
+      3. mplfinance yerel grafik — son yedek
     """
-    # Birincil: TRADINGVIEW_CHART_URL ile girişsiz (kaydedilmiş layout temasını korur)
-    if settings.TRADINGVIEW_CHART_URL:
-        success = await _grafik_playwright_noauth(sembol, output_path)
-        if success:
-            return True
-        log.warning("⚠️ TradingView noauth başarısız, giriş yöntemi deneniyor...")
-
-    # İkincil: TradingView Playwright (kimlik bilgileriyle)
+    # Birincil: Login ile TradingView (layout içinden sembol değiştirilir, tema korunur)
     if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
         success = await _grafik_tradingview(sembol, output_path)
         if success:
             return True
-        log.warning("⚠️ TradingView (giriş) başarısız, mplfinance yedek deneniyor...")
+        log.warning("⚠️ TradingView (giriş) başarısız, noauth deneniyor...")
 
-    # Yedek: mplfinance
+    # İkincil: Girişsiz CHART_URL
+    if settings.TRADINGVIEW_CHART_URL:
+        success = await _grafik_playwright_noauth(sembol, output_path)
+        if success:
+            return True
+        log.warning("⚠️ TradingView noauth başarısız, mplfinance yedek deneniyor...")
+
+    # Son yedek: mplfinance
     return await _grafik_mplfinance(sembol, output_path)
 
 
