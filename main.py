@@ -11,9 +11,9 @@ import sys
 from functools import partial
 from logging.handlers import RotatingFileHandler
 
-# .env → os.environ'a yükle (pydantic-settings os.environ'ı doldurmaz)
+# .env → os.environ'a yükle (override=True: .env değerleri mevcut env'i ezer)
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
