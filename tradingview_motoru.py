@@ -138,7 +138,9 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
         from playwright.async_api import async_playwright
 
         tv_symbol = _tv_sembol_formatla(sembol)
-        chart_url = f"https://www.tradingview.com/chart/?symbol={tv_symbol}"
+        base_url = os.environ.get("TRADINGVIEW_CHART_URL", "https://www.tradingview.com/chart/")
+        base_url = base_url.rstrip("/") + "/"
+        chart_url = f"{base_url}?symbol={tv_symbol}"
         log.info(f"📊 TradingView grafiği çekiliyor: {sembol} → {chart_url}")
 
         async with async_playwright() as p:

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     # TradingView Giriş Bilgileri
     TRADINGVIEW_USERNAME: Optional[str] = None
     TRADINGVIEW_PASSWORD: Optional[str] = None
+    TRADINGVIEW_CHART_URL: Optional[str] = None  # Kayıtlı layout URL (örn: https://www.tradingview.com/chart/AbCdEfGh/)
     
     # Zamanlama ve Limitler (Magic Numbers -> Constants)
     ALERT_CHECK_INTERVAL: int = Field(300, description="Uyarı kontrol döngüsü süresi (saniye)")
