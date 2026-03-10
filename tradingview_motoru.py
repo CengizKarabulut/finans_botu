@@ -11,6 +11,9 @@ import os
 import json
 import asyncio
 import logging
+from dotenv import load_dotenv
+
+load_dotenv(override=True)  # os.environ'u .env değerleriyle güncelle
 
 log = logging.getLogger("finans_botu")
 
