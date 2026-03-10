@@ -200,12 +200,21 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
       layout'ı (siyah tema, MACD, SMI) yok sayıp sıfır/açık temalı yeni grafik açar.
     - Düzeltme: Layout URL'si ÖNCE sembol olmadan açılır → tam yüklenince
       TradingView içinden sembol değiştirilir → layout teması + indikatörler korunur.
+
+    Cookie önceliği:
+    - TV_SESSIONID .env'de tanımlıysa login API'ye hiç dokunulmaz.
+      Cookie doğrudan browser context'e enjekte edilir (CAPTCHA riski sıfır).
+    - TV_SESSIONID yoksa önce kaydedilmiş cookie dosyasına, sonra
+      kullanıcı adı/şifre ile login'e bakılır.
     """
     tv_user = settings.TRADINGVIEW_USERNAME
     tv_pass = settings.TRADINGVIEW_PASSWORD
+    tv_sessionid = settings.TV_SESSIONID
+    tv_sessionid_sign = settings.TV_SESSIONID_SIGN
 
-    if not tv_user or not tv_pass:
-        log.warning("⚠️ TRADINGVIEW_USERNAME / TRADINGVIEW_PASSWORD .env'de tanımlı değil.")
+    # TV_SESSIONID yoksa ve kullanıcı adı/şifre de yoksa devam etme
+    if not tv_sessionid and (not tv_user or not tv_pass):
+        log.warning("⚠️ TV_SESSIONID veya TRADINGVIEW_USERNAME/PASSWORD .env'de tanımlı değil.")
         return False
 
     try:
@@ -234,11 +243,38 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 ),
             )
 
-            # Kaydedilmiş çerezleri yükle (önceki oturumdan)
-            if os.path.exists(_TV_COOKIE_PATH):
-                with open(_TV_COOKIE_PATH) as f:
-                    await context.add_cookies(json.load(f))
-                log.info("🍪 TradingView oturum çerezleri yüklendi.")
+            # .env'de TV_SESSIONID varsa → direkt enjekte et, login atla
+            if tv_sessionid:
+                log.info("🍪 TV_SESSIONID .env'den yükleniyor (login atlanıyor)...")
+                cookies_to_inject = [
+                    {
+                        "name": "sessionid",
+                        "value": tv_sessionid,
+                        "domain": ".tradingview.com",
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                        "sameSite": "None",
+                    }
+                ]
+                if tv_sessionid_sign:
+                    cookies_to_inject.append({
+                        "name": "sessionid_sign",
+                        "value": tv_sessionid_sign,
+                        "domain": ".tradingview.com",
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                        "sameSite": "None",
+                    })
+                await context.add_cookies(cookies_to_inject)
+                log.info("✅ TV_SESSIONID cookie enjekte edildi.")
+            else:
+                # Kaydedilmiş çerezleri yükle (önceki oturumdan)
+                if os.path.exists(_TV_COOKIE_PATH):
+                    with open(_TV_COOKIE_PATH) as f:
+                        await context.add_cookies(json.load(f))
+                    log.info("🍪 TradingView oturum çerezleri yüklendi.")
 
             page = await context.new_page()
 
@@ -253,6 +289,15 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
             if oturum_acik:
                 log.info("🍪 sessionid cookie mevcut, yeniden giriş atlandı.")
             else:
+                if tv_sessionid:
+                    # Cookie enjekte edildi ama geçersiz çıktı
+                    log.error(
+                        "❌ TV_SESSIONID geçersiz veya süresi dolmuş. "
+                        "Lütfen tarayıcınızdan yeni sessionid alıp .env'i güncelleyin."
+                    )
+                    await browser.close()
+                    return False
+
                 log.info("🔐 sessionid yok, giriş yapılıyor...")
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
                 if not basarili:

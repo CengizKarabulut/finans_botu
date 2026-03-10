@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     TRADINGVIEW_USERNAME: Optional[str] = None
     TRADINGVIEW_PASSWORD: Optional[str] = None
     TRADINGVIEW_CHART_URL: Optional[str] = None  # Kayıtlı layout URL (örn: https://www.tradingview.com/chart/AbCdEfGh/)
+    TV_SESSIONID: Optional[str] = None        # Manuel cookie: tarayıcıdan kopyalanır, login'i atlar
+    TV_SESSIONID_SIGN: Optional[str] = None   # Manuel cookie: sessionid ile birlikte gerekli
     
     # Zamanlama ve Limitler (Magic Numbers -> Constants)
     ALERT_CHECK_INTERVAL: int = Field(300, description="Uyarı kontrol döngüsü süresi (saniye)")
