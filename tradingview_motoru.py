@@ -285,14 +285,47 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 await page.goto(layout_url, wait_until="load", timeout=60_000)
                 await page.wait_for_timeout(3000)
 
-            # Layout'un (siyah tema + indikatörler) tam yüklenmesini bekle
+            # Canvas var mı kontrol et — yoksa erişim engeli demektir, yeniden login dene
+            canvas_var = False
             try:
-                await page.wait_for_selector(
-                    "canvas, .chart-container",
-                    timeout=20_000,
-                )
+                await page.wait_for_selector("canvas, .chart-container", timeout=15_000)
+                canvas_var = True
             except Exception:
-                log.warning("⚠️ Canvas bulunamadı, devam ediliyor...")
+                pass
+
+            if not canvas_var:
+                try:
+                    sayfa_ozet = (await page.inner_text("body"))[:300].replace("\n", " ")
+                    log.warning(f"⚠️ Canvas yok. Sayfa: {sayfa_ozet}")
+                except Exception:
+                    pass
+
+                log.info("🔐 Layout erişimi yok, cookie silip yeniden giriş yapılıyor...")
+                if os.path.exists(_TV_COOKIE_PATH):
+                    os.remove(_TV_COOKIE_PATH)
+
+                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
+                if not basarili:
+                    await browser.close()
+                    return False
+
+                os.makedirs("data", exist_ok=True)
+                cookies = await context.cookies()
+                with open(_TV_COOKIE_PATH, "w") as f:
+                    json.dump(cookies, f)
+
+                await page.goto(layout_url, wait_until="load", timeout=60_000)
+                await page.wait_for_timeout(3000)
+
+                try:
+                    await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
+                    canvas_var = True
+                except Exception:
+                    log.error("❌ Giriş sonrası da canvas yok, yetki sorunu olabilir.")
+                    await browser.close()
+                    return False
+
+            # Canvas yüklendi — indikatörlerin render olması için bekle
             await page.wait_for_timeout(8000)
 
             # Sembolü TradingView içinden değiştir (layout teması korunur)
