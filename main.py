@@ -865,7 +865,16 @@ async def main():
     log.info("🚀 Finans Botu başlatıldı!")
     log.info(settings.startup_log())
 
-    await dp.start_polling(bot, skip_updates=True)
+    while True:
+        try:
+            await dp.start_polling(bot, skip_updates=True)
+        except Exception as e:
+            if "Conflict" in str(e):
+                log.warning("⚠️ Telegram Conflict hatası! Diğer bot örneği bekleniyor (10s)...")
+                await asyncio.sleep(10)
+            else:
+                log.error(f"❌ Polling hatası: {e}")
+                await asyncio.sleep(5)
 
 
 if __name__ == "__main__":

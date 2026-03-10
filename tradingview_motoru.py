@@ -219,6 +219,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
+from playwright_stealth import stealth_async
 
         tv_symbol = _tv_sembol_formatla(sembol)
         # Layout URL'si: ?symbol= olmadan — kaydedilmiş tema ve indikatörler korunur
@@ -250,6 +251,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 log.info("🍪 TradingView oturum çerezleri yüklendi.")
 
             page = await context.new_page()
+            await stealth_async(page)
 
             # Önce giriş yap — layout private olduğu için login olmadan açılmıyor
             await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
@@ -467,6 +469,7 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
+from playwright_stealth import stealth_async
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(
@@ -489,6 +492,7 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
             )
 
             page = await context.new_page()
+            await stealth_async(page)
             await page.goto(chart_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
