@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)  # os.environ'u .env değerleriyle güncelle
 
+from config import settings  # pydantic_settings .env'i doğrudan okur
+
 log = logging.getLogger("finans_botu")
 
 # Kaydedilmiş TradingView oturum çerezi
@@ -130,8 +132,8 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
     TradingView hesabına giriş yaparak kayıtlı grafik ekran görüntüsü alır.
     Cookie önbelleğiyle aynı oturumu yeniden kullanır.
     """
-    tv_user = os.environ.get("TRADINGVIEW_USERNAME")
-    tv_pass = os.environ.get("TRADINGVIEW_PASSWORD")
+    tv_user = settings.TRADINGVIEW_USERNAME
+    tv_pass = settings.TRADINGVIEW_PASSWORD
 
     if not tv_user or not tv_pass:
         log.warning("⚠️ TRADINGVIEW_USERNAME / TRADINGVIEW_PASSWORD .env'de tanımlı değil.")
@@ -141,8 +143,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
         from playwright.async_api import async_playwright
 
         tv_symbol = _tv_sembol_formatla(sembol)
-        base_url = os.environ.get("TRADINGVIEW_CHART_URL", "https://www.tradingview.com/chart/")
-        base_url = base_url.rstrip("/") + "/"
+        base_url = (settings.TRADINGVIEW_CHART_URL or "https://www.tradingview.com/chart/").rstrip("/") + "/"
         chart_url = f"{base_url}?symbol={tv_symbol}"
         log.info(f"📊 TradingView grafiği çekiliyor: {sembol} → {chart_url}")
 
@@ -315,7 +316,7 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
     Giriş yapmadan TRADINGVIEW_CHART_URL üzerinden screenshot alır.
     Kaydedilmiş public/shared layout URL'si yeterliyse bu yöntem kullanılır.
     """
-    base_url = os.environ.get("TRADINGVIEW_CHART_URL", "").strip().rstrip("/") + "/"
+    base_url = (settings.TRADINGVIEW_CHART_URL or "").strip().rstrip("/") + "/"
     if not base_url or base_url == "/":
         return False
 
@@ -408,14 +409,14 @@ async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
       3. mplfinance yerel grafik (yedek)
     """
     # Birincil: TradingView Playwright (kimlik bilgileriyle)
-    if os.environ.get("TRADINGVIEW_USERNAME") and os.environ.get("TRADINGVIEW_PASSWORD"):
+    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
         success = await _grafik_tradingview(sembol, output_path)
         if success:
             return True
         log.warning("⚠️ TradingView (giriş) başarısız, URL yöntemi deneniyor...")
 
     # İkincil: TRADINGVIEW_CHART_URL varsa girişsiz Playwright
-    if os.environ.get("TRADINGVIEW_CHART_URL"):
+    if settings.TRADINGVIEW_CHART_URL:
         success = await _grafik_playwright_noauth(sembol, output_path)
         if success:
             return True
