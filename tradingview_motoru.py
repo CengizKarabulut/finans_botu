@@ -242,31 +242,28 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
             page = await context.new_page()
 
-            # Önce giriş yap — layout private olduğu için login olmadan açılmıyor
+            # Ana sayfaya git (gerekli başlangıç cookie'leri için)
             await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
             await page.wait_for_timeout(2000)
 
-            # Oturum açık mı kontrol et (kullanıcı adı/avatar görünüyor mu)
-            oturum_acik = False
-            try:
-                kullanici_el = await page.query_selector(
-                    '[data-name="header-user-menu-button"], '
-                    '[class*="userMenuButton"], '
-                    'button[aria-label*="User menu"]'
-                )
-                if kullanici_el:
-                    oturum_acik = True
-                    log.info("🍪 Mevcut oturum geçerli, yeniden giriş yapılmıyor.")
-            except Exception:
-                pass
+            # Oturum açık mı? → Cookie jar'a bak (DOM selector'lar güvenilmez)
+            mevcut_cookies = await context.cookies(["https://www.tradingview.com"])
+            oturum_acik = any(c["name"] == "sessionid" for c in mevcut_cookies)
 
-            if not oturum_acik:
-                log.info("🔐 Oturum yok veya geçersiz, giriş yapılıyor...")
+            if oturum_acik:
+                log.info("🍪 sessionid cookie mevcut, yeniden giriş atlandı.")
+            else:
+                log.info("🔐 sessionid yok, giriş yapılıyor...")
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
                 if not basarili:
                     await browser.close()
                     return False
-                # Oturumu kaydet
+
+                # Giriş sonrası sayfayı yenile — JS oturumu aktif etsin
+                await page.goto("https://www.tradingview.com/", wait_until="load", timeout=30_000)
+                await page.wait_for_timeout(2000)
+
+                # Cookie'leri kaydet
                 os.makedirs("data", exist_ok=True)
                 cookies = await context.cookies()
                 with open(_TV_COOKIE_PATH, "w") as f:
@@ -277,64 +274,25 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
             await page.goto(layout_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
-            # Hâlâ "açamıyoruz" sayfası mı? (private layout, login başarısız)
+            # Sayfa durumunu logla
             page_body = await page.inner_text("body")
-            if "açamıyoruz" in page_body or "can't open" in page_body.lower() or "signin" in page.url:
-                log.warning("⚠️ Layout açılamadı, cookie siliniyor ve yeniden giriş deneniyor...")
-                # Eski cookie'yi sil ve tekrar login yap
-                if os.path.exists(_TV_COOKIE_PATH):
-                    os.remove(_TV_COOKIE_PATH)
-                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
-                if not basarili:
-                    await browser.close()
-                    return False
-                os.makedirs("data", exist_ok=True)
-                cookies = await context.cookies()
-                with open(_TV_COOKIE_PATH, "w") as f:
-                    json.dump(cookies, f)
-                # Layout'a tekrar git
-                await page.goto(layout_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(3000)
+            sayfa_ozet = page_body[:200].replace("\n", " ")
+            log.info(f"📄 Layout sayfası: {sayfa_ozet}")
 
-            # Canvas var mı kontrol et — yoksa erişim engeli demektir, yeniden login dene
+            # Canvas kontrol — yoksa oturum geçersiz olmuş, cookie'yi sil
             canvas_var = False
             try:
-                await page.wait_for_selector("canvas, .chart-container", timeout=15_000)
+                await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
                 canvas_var = True
             except Exception:
                 pass
 
             if not canvas_var:
-                try:
-                    sayfa_ozet = (await page.inner_text("body"))[:300].replace("\n", " ")
-                    log.warning(f"⚠️ Canvas yok. Sayfa: {sayfa_ozet}")
-                except Exception:
-                    pass
-
-                log.info("🔐 Layout erişimi yok, cookie silip yeniden giriş yapılıyor...")
+                log.error("❌ Canvas yüklenemedi. Kaydedilmiş cookie geçersiz olabilir.")
                 if os.path.exists(_TV_COOKIE_PATH):
                     os.remove(_TV_COOKIE_PATH)
-
-                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
-                if not basarili:
-                    await browser.close()
-                    return False
-
-                os.makedirs("data", exist_ok=True)
-                cookies = await context.cookies()
-                with open(_TV_COOKIE_PATH, "w") as f:
-                    json.dump(cookies, f)
-
-                await page.goto(layout_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(3000)
-
-                try:
-                    await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
-                    canvas_var = True
-                except Exception:
-                    log.error("❌ Giriş sonrası da canvas yok, yetki sorunu olabilir.")
-                    await browser.close()
-                    return False
+                await browser.close()
+                return False
 
             # Canvas yüklendi — indikatörlerin render olması için bekle
             await page.wait_for_timeout(8000)
