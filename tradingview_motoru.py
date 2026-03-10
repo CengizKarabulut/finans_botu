@@ -68,39 +68,69 @@ async def _tv_api_giris(username: str, password: str) -> list:
     """
     TradingView'e HTTP API üzerinden giriş yapar (headless tarayıcı tespiti yok).
     Playwright'a enjekte edilebilir cookie listesi döner.
+    Başarı kriteri: yanıt body'sinde 'user' verisi olmalı.
     """
     import aiohttp
 
-    headers = {
+    base_headers = {
         "User-Agent": (
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         ),
         "Referer": "https://www.tradingview.com/",
         "Origin": "https://www.tradingview.com",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "X-Requested-With": "XMLHttpRequest",
     }
     try:
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=base_headers) as session:
             # Ana sayfayı ziyaret et (temel cookie'leri al)
             async with session.get("https://www.tradingview.com/") as resp:
                 await resp.read()
 
-            # Login isteği — form-encoded POST
+            body = {}
+            # 1. Deneme: JSON body ile POST
             async with session.post(
                 "https://www.tradingview.com/accounts/signin/",
-                data={"username": username, "password": password, "remember": "on"},
+                json={"username": username, "password": password, "remember": True},
             ) as resp:
                 try:
                     body = await resp.json(content_type=None)
                 except Exception:
                     body = {}
+                http_status = resp.status
+                content_type = resp.content_type
 
-                if resp.status != 200:
-                    log.error(f"❌ TV API giriş başarısız: HTTP {resp.status}")
-                    return []
-                if body.get("error"):
-                    log.error(f"❌ TV API giriş hatası: {body.get('error')}")
-                    return []
+            # JSON login başarısız → form-encoded ile tekrar dene
+            if not body.get("user"):
+                log.info("🔄 JSON login sonuç vermedi, form-encoded deneniyor...")
+                async with session.post(
+                    "https://www.tradingview.com/accounts/signin/",
+                    data={"username": username, "password": password, "remember": "on"},
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                ) as resp:
+                    try:
+                        body = await resp.json(content_type=None)
+                    except Exception:
+                        body = {}
+                    http_status = resp.status
+
+            # Yanıt doğrulama
+            if http_status != 200:
+                log.error(f"❌ TV API giriş başarısız: HTTP {http_status}")
+                return []
+            if body.get("error"):
+                log.error(f"❌ TV API giriş hatası: {body.get('error')}")
+                return []
+            if not body.get("user"):
+                log.error(
+                    f"❌ TV API: Kullanıcı verisi yok (giriş muhtemelen engellendi). "
+                    f"HTTP {http_status}, Content-Type: {content_type}, "
+                    f"Yanıt: {str(body)[:300]}"
+                )
+                return []
+
+            log.info(f"✅ TV API: '{body['user'].get('username', '?')}' olarak giriş yapıldı.")
 
             # Cookie'leri Playwright formatına çevir
             pw_cookies = []
@@ -113,10 +143,12 @@ async def _tv_api_giris(username: str, password: str) -> list:
                     "path": "/",
                 })
 
-            if pw_cookies:
-                log.info(f"✅ TV API girişi başarılı. {len(pw_cookies)} cookie alındı.")
-            else:
-                log.warning("⚠️ TV API: Login yanıtı OK ama cookie gelmedi.")
+            cookie_names = [c["name"] for c in pw_cookies]
+            log.info(f"📌 Alınan cookie'ler ({len(pw_cookies)}): {cookie_names}")
+
+            if "sessionid" not in cookie_names:
+                log.warning("⚠️ 'sessionid' cookie eksik — oturum çalışmayabilir.")
+
             return pw_cookies
 
     except Exception as e:
