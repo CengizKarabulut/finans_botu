@@ -231,27 +231,30 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
             page = await context.new_page()
 
-            # Layout URL'sini ?symbol= olmadan aç → kaydedilmiş tema + indikatörler korunur
-            await page.goto(layout_url, wait_until="load", timeout=60_000)
-            await page.wait_for_timeout(3000)
+            # Önce giriş yap — layout private olduğu için login olmadan açılmıyor
+            await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
+            await page.wait_for_timeout(2000)
 
-            # Giriş gerekiyor mu?
-            giris_gerekli = "signin" in page.url
-            if not giris_gerekli:
-                for sel in [
-                    'button[data-name="header-user-menu-sign-in"]',
-                    'button:has-text("Sign in")',
-                ]:
-                    if await page.query_selector(sel):
-                        giris_gerekli = True
-                        break
+            # Oturum açık mı kontrol et (kullanıcı adı/avatar görünüyor mu)
+            oturum_acik = False
+            try:
+                kullanici_el = await page.query_selector(
+                    '[data-name="header-user-menu-button"], '
+                    '[class*="userMenuButton"], '
+                    'button[aria-label*="User menu"]'
+                )
+                if kullanici_el:
+                    oturum_acik = True
+                    log.info("🍪 Mevcut oturum geçerli, yeniden giriş yapılmıyor.")
+            except Exception:
+                pass
 
-            if giris_gerekli:
+            if not oturum_acik:
+                log.info("🔐 Oturum yok veya geçersiz, giriş yapılıyor...")
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
                 if not basarili:
                     await browser.close()
                     return False
-
                 # Oturumu kaydet
                 os.makedirs("data", exist_ok=True)
                 cookies = await context.cookies()
@@ -259,7 +262,26 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                     json.dump(cookies, f)
                 log.info("💾 TradingView oturum çerezleri kaydedildi.")
 
-                # Giriş sonrası layout'a yeniden git
+            # Layout URL'sini ?symbol= olmadan aç → kaydedilmiş tema + indikatörler korunur
+            await page.goto(layout_url, wait_until="load", timeout=60_000)
+            await page.wait_for_timeout(3000)
+
+            # Hâlâ "açamıyoruz" sayfası mı? (private layout, login başarısız)
+            page_body = await page.inner_text("body")
+            if "açamıyoruz" in page_body or "can't open" in page_body.lower() or "signin" in page.url:
+                log.warning("⚠️ Layout açılamadı, cookie siliniyor ve yeniden giriş deneniyor...")
+                # Eski cookie'yi sil ve tekrar login yap
+                if os.path.exists(_TV_COOKIE_PATH):
+                    os.remove(_TV_COOKIE_PATH)
+                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
+                if not basarili:
+                    await browser.close()
+                    return False
+                os.makedirs("data", exist_ok=True)
+                cookies = await context.cookies()
+                with open(_TV_COOKIE_PATH, "w") as f:
+                    json.dump(cookies, f)
+                # Layout'a tekrar git
                 await page.goto(layout_url, wait_until="load", timeout=60_000)
                 await page.wait_for_timeout(3000)
 
