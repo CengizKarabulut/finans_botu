@@ -11,6 +11,10 @@ import sys
 from functools import partial
 from logging.handlers import RotatingFileHandler
 
+# .env → os.environ'a yükle (pydantic-settings os.environ'ı doldurmaz)
+from dotenv import load_dotenv
+load_dotenv()
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
@@ -61,6 +65,15 @@ logging.basicConfig(
     ]
 )
 log = logging.getLogger("finans_botu")
+
+# Gürültülü üçüncü taraf loglarını tamamen sustur
+# borsapy TradingView WebSocket 429 hatalarını gizle (propagate=False + NullHandler ile tam susturma)
+for _noisy in ("websocket", "websocket._exceptions", "websocket.client"):
+    _l = logging.getLogger(_noisy)
+    _l.setLevel(logging.CRITICAL)
+    _l.propagate = False
+    if not _l.handlers:
+        _l.addHandler(logging.NullHandler())
 
 # ═══════════════════════════════════════════════════════════════
 # BOT & DISPATCHER (Global)

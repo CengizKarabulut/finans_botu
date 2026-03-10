@@ -57,11 +57,12 @@ class Settings(BaseSettings):
     def startup_log(self) -> str:
         """Başlangıçta loglanacak özet."""
         lines = ["🔧 Ayarlar yüklendi:"]
-        lines.append(f"   Bot Token: {'✅' if self.BOT_TOKEN else '❌'}")
-        lines.append(f"   Finnhub:   {'✅' if self.FINNHUB_API_KEY else '⚠️'}")
-        lines.append(f"   Gemini:    {'✅' if self.GEMINI_API_KEY else '⚠️'}")
-        lines.append(f"   Log Level: {self.LOG_LEVEL}")
-        lines.append(f"   Health:    http://{self.HEALTH_HOST}:{self.HEALTH_PORT}")
+        lines.append(f"   Bot Token:    {'✅' if self.BOT_TOKEN else '❌'}")
+        lines.append(f"   Finnhub:      {'✅' if self.FINNHUB_API_KEY else '⚠️'}")
+        lines.append(f"   Gemini:       {'✅' if self.GEMINI_API_KEY else '⚠️'}")
+        lines.append(f"   TradingView:  {'✅ ' + self.TRADINGVIEW_USERNAME if self.TRADINGVIEW_USERNAME else '⚠️ (grafik: mplfinance fallback)'}")
+        lines.append(f"   Log Level:    {self.LOG_LEVEL}")
+        lines.append(f"   Health:       http://{self.HEALTH_HOST}:{self.HEALTH_PORT}")
         return "\n".join(lines)
 
 # Global settings örneği
