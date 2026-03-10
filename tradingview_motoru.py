@@ -219,7 +219,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
-from playwright_stealth import stealth_async
+        from playwright_stealth import stealth_async
 
         tv_symbol = _tv_sembol_formatla(sembol)
         # Layout URL'si: ?symbol= olmadan — kaydedilmiş tema ve indikatörler korunur
@@ -469,7 +469,7 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
-from playwright_stealth import stealth_async
+        from playwright_stealth import stealth_async
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(
