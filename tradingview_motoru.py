@@ -337,6 +337,8 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
                     "--disable-blink-features=AutomationControlled",
                 ],
             )
+            # NOT: Cookie yüklenmez — login olunca hesap teması layout temasını ezer.
+            # Public/shared layout URL'si giriş yapmadan doğru tema+indikatörlerle açılır.
             context = await browser.new_context(
                 viewport={"width": 1920, "height": 1080},
                 user_agent=(
@@ -345,37 +347,55 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
                 ),
             )
 
-            # Kaydedilmiş çerezler varsa yükle (önceki oturumdan)
-            if os.path.exists(_TV_COOKIE_PATH):
-                with open(_TV_COOKIE_PATH) as f:
-                    await context.add_cookies(json.load(f))
-                log.info("🍪 TradingView oturum çerezleri yüklendi.")
-
             page = await context.new_page()
             await page.goto(chart_url, wait_until="load", timeout=60_000)
+            await page.wait_for_timeout(3000)
 
-            # Grafiğin yüklenmesini bekle
-            await page.wait_for_timeout(5000)
+            # Cookie consent / "Sign up" popup'larını kapat
+            dismiss_js = """
+                // Cookie consent
+                const cookieBtn = document.querySelector(
+                    'button[id*="cookie"], button[class*="acceptAll"], ' +
+                    'button[class*="accept-all"], .js-accept-all-cookies'
+                );
+                if (cookieBtn) cookieBtn.click();
+
+                // "Sign in" veya "Get started" overlay'lerini kapat
+                const closeBtn = document.querySelector(
+                    'button[data-name="close"], ' +
+                    '.tv-dialog__close, ' +
+                    'button.close-B02UUUN3'
+                );
+                if (closeBtn) closeBtn.click();
+            """
+            await page.evaluate(dismiss_js)
+            await page.wait_for_timeout(1000)
+
+            # Canvas/grafik alanının render olmasını bekle
             try:
-                await page.wait_for_selector(
-                    "canvas, .chart-container",
-                    timeout=20_000,
-                )
+                await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
             except Exception:
                 pass
-            await page.wait_for_timeout(5000)  # Render tamamlanması
 
-            # UI elementlerini gizle
+            # İndikatörlerin (MACD, SMI vb.) yüklenmesi için ek süre
+            await page.wait_for_timeout(8000)
+
+            # Tüm UI elementlerini gizle — temiz grafik görünümü için
             await page.evaluate("""
-                const els = [
+                [
                     '.tv-header',
+                    'header',
                     '[data-name="drawing-toolbar"]',
                     '.tv-floating-toolbar',
                     '.tv-side-toolbar',
-                ];
-                els.forEach(sel => {
-                    const el = document.querySelector(sel);
-                    if (el) el.style.display = 'none';
+                    '.layout__area--left',
+                    '.layout__area--right',
+                    '.chart-controls-bar',
+                    '[data-name="legend"]',
+                ].forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => {
+                        el.style.display = 'none';
+                    });
                 });
             """)
             await page.wait_for_timeout(500)
@@ -404,23 +424,26 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
     """
     Grafik alma akışı:
-      1. TradingView Playwright — kimlik bilgileriyle (varsa)
-      2. TradingView Playwright — girişsiz, TRADINGVIEW_CHART_URL ile (varsa)
+      1. TRADINGVIEW_CHART_URL varsa girişsiz Playwright (kaydedilmiş layout → doğru tema/indikatörler)
+      2. TradingView Playwright — kimlik bilgileriyle (varsa)
       3. mplfinance yerel grafik (yedek)
-    """
-    # Birincil: TradingView Playwright (kimlik bilgileriyle)
-    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
-        success = await _grafik_tradingview(sembol, output_path)
-        if success:
-            return True
-        log.warning("⚠️ TradingView (giriş) başarısız, URL yöntemi deneniyor...")
 
-    # İkincil: TRADINGVIEW_CHART_URL varsa girişsiz Playwright
+    NOT: Login yapılınca TradingView, hesap kişisel temasını uygular ve layout'ın siyah
+    temasını/indikatörlerini ezer. Bu yüzden shared layout URL'si varsa önce noauth denenir.
+    """
+    # Birincil: TRADINGVIEW_CHART_URL ile girişsiz (kaydedilmiş layout temasını korur)
     if settings.TRADINGVIEW_CHART_URL:
         success = await _grafik_playwright_noauth(sembol, output_path)
         if success:
             return True
-        log.warning("⚠️ TradingView URL yöntemi başarısız, mplfinance yedek deneniyor...")
+        log.warning("⚠️ TradingView noauth başarısız, giriş yöntemi deneniyor...")
+
+    # İkincil: TradingView Playwright (kimlik bilgileriyle)
+    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
+        success = await _grafik_tradingview(sembol, output_path)
+        if success:
+            return True
+        log.warning("⚠️ TradingView (giriş) başarısız, mplfinance yedek deneniyor...")
 
     # Yedek: mplfinance
     return await _grafik_mplfinance(sembol, output_path)
