@@ -116,8 +116,9 @@ def _rsi_divergence(rsi: pd.Series, price: pd.Series,
                     if rsi.iloc[i] < rsi.iloc[prev_idx] and price.iloc[i] > price.iloc[prev_idx]:
                         bear_divs.append(i)
         
-        son_bull = (n - 1 - bull_divs[-1] - lookback_right) if bull_divs else None
-        son_bear = (n - 1 - bear_divs[-1] - lookback_right) if bear_divs else None
+        # bull_divs[-1] zaten pivot bar indeksi — lookback_right çıkarılmamalı
+        son_bull = (n - 1 - bull_divs[-1]) if bull_divs else None
+        son_bear = (n - 1 - bear_divs[-1]) if bear_divs else None
         
         return {"bullish_bars_ago": son_bull, "bearish_bars_ago": son_bear}
     except Exception as e:

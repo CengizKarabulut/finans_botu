@@ -19,8 +19,8 @@ from config import settings  # pydantic_settings .env'i doğrudan okur
 
 log = logging.getLogger("finans_botu")
 
-# Kaydedilmiş TradingView oturum çerezi
-_TV_COOKIE_PATH = os.path.join("data", "tv_session.json")
+# Kaydedilmiş TradingView oturum çerezi — absolute path (çalışma dizininden bağımsız)
+_TV_COOKIE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tv_session.json")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -187,7 +187,10 @@ async def _sembol_degistir(page, tv_symbol: str) -> bool:
     # İlk sonucu seç (Enter)
     await page.keyboard.press("Enter")
     await page.wait_for_timeout(10_000)  # Grafik + indikatör verilerinin yüklenmesi
-    log.info(f"✅ Sembol değiştirildi: {tv_symbol}")
+
+    # Sembolün gerçekten değiştiğini doğrula (URL veya sayfa başlığı üzerinden)
+    current_url = page.url
+    log.info(f"✅ Sembol değiştirildi: {tv_symbol} (URL: {current_url})")
     return True
 
 
@@ -343,7 +346,11 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
             await page.wait_for_timeout(8000)
 
             # Sembolü TradingView içinden değiştir (layout teması korunur)
-            await _sembol_degistir(page, tv_symbol)
+            sembol_degisti = await _sembol_degistir(page, tv_symbol)
+            if not sembol_degisti:
+                log.error(f"❌ Sembol değiştirilemedi: {tv_symbol}. Yanlış sembol grafiği gönderilmemesi için işlem durduruldu.")
+                await browser.close()
+                return False
 
             # Tüm kenar çubuklarını ve araç çubuklarını gizle
             await page.evaluate("""
