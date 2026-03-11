@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     TRADINGVIEW_USERNAME: Optional[str] = None
     TRADINGVIEW_PASSWORD: Optional[str] = None
     TRADINGVIEW_CHART_URL: Optional[str] = None  # Kayıtlı layout URL (örn: https://www.tradingview.com/chart/AbCdEfGh/)
+    TV_SESSIONID: Optional[str] = None        # Manuel cookie: tarayıcıdan kopyalanır, login'i atlar
+    TV_SESSIONID_SIGN: Optional[str] = None   # Manuel cookie: sessionid ile birlikte gerekli
     
     # Zamanlama ve Limitler (Magic Numbers -> Constants)
     ALERT_CHECK_INTERVAL: int = Field(300, description="Uyarı kontrol döngüsü süresi (saniye)")
@@ -61,7 +63,12 @@ class Settings(BaseSettings):
         lines.append(f"   Bot Token:    {'✅' if self.BOT_TOKEN else '❌'}")
         lines.append(f"   Finnhub:      {'✅' if self.FINNHUB_API_KEY else '⚠️'}")
         lines.append(f"   Gemini:       {'✅' if self.GEMINI_API_KEY else '⚠️'}")
-        lines.append(f"   TradingView:  {'✅ ' + self.TRADINGVIEW_USERNAME if self.TRADINGVIEW_USERNAME else '⚠️ (grafik: mplfinance fallback)'}")
+        if self.TV_SESSIONID:
+            lines.append(f"   TradingView:  ✅ Session cookie (TV_SESSIONID) — login atlanıyor")
+        elif self.TRADINGVIEW_USERNAME:
+            lines.append(f"   TradingView:  ⚠️ {self.TRADINGVIEW_USERNAME} — kullanıcı/şifre ile giriş (CAPTCHA riski var)")
+        else:
+            lines.append(f"   TradingView:  ❌ Kimlik bilgisi yok — mplfinance fallback")
         lines.append(f"   Log Level:    {self.LOG_LEVEL}")
         lines.append(f"   Health:       http://{self.HEALTH_HOST}:{self.HEALTH_PORT}")
         return "\n".join(lines)

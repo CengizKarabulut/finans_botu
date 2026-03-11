@@ -24,10 +24,12 @@ class CircuitBreaker:
         self.failures = 0
         self.last_failure_time = 0
         self.state = 'CLOSED'
-        self._lock = asyncio.Lock()
+        self._lock: Optional[asyncio.Lock] = None  # Lazy init — event loop başlamadan oluşturma
 
     async def call(self, func, *args, **kwargs):
         """Fonksiyonu Circuit Breaker denetiminde çağırır."""
+        if self._lock is None:
+            self._lock = asyncio.Lock()
         async with self._lock:
             now = time.time()
             

@@ -19,8 +19,8 @@ from config import settings  # pydantic_settings .env'i doğrudan okur
 
 log = logging.getLogger("finans_botu")
 
-# Kaydedilmiş TradingView oturum çerezi
-_TV_COOKIE_PATH = os.path.join("data", "tv_session.json")
+# Kaydedilmiş TradingView oturum çerezi — absolute path (çalışma dizininden bağımsız)
+_TV_COOKIE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tv_session.json")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -64,82 +64,73 @@ def _yf_sembol_formatla(sembol: str) -> str:
 # TRADİNGVİEW GİRİŞ AKIŞI
 # ═══════════════════════════════════════════════════════════════
 
-async def _tv_api_giris(username: str, password: str) -> list:
-    """
-    TradingView'e HTTP API üzerinden giriş yapar (headless tarayıcı tespiti yok).
-    Playwright'a enjekte edilebilir cookie listesi döner.
-    """
-    import aiohttp
-
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "Referer": "https://www.tradingview.com/",
-        "Origin": "https://www.tradingview.com",
-    }
-    try:
-        async with aiohttp.ClientSession(headers=headers) as session:
-            # Ana sayfayı ziyaret et (temel cookie'leri al)
-            async with session.get("https://www.tradingview.com/") as resp:
-                await resp.read()
-
-            # Login isteği — form-encoded POST
-            async with session.post(
-                "https://www.tradingview.com/accounts/signin/",
-                data={"username": username, "password": password, "remember": "on"},
-            ) as resp:
-                try:
-                    body = await resp.json(content_type=None)
-                except Exception:
-                    body = {}
-
-                if resp.status != 200:
-                    log.error(f"❌ TV API giriş başarısız: HTTP {resp.status}")
-                    return []
-                if body.get("error"):
-                    log.error(f"❌ TV API giriş hatası: {body.get('error')}")
-                    return []
-
-            # Cookie'leri Playwright formatına çevir
-            pw_cookies = []
-            jar_cookies = session.cookie_jar.filter_cookies("https://www.tradingview.com")
-            for name, morsel in jar_cookies.items():
-                pw_cookies.append({
-                    "name": name,
-                    "value": morsel.value,
-                    "domain": ".tradingview.com",
-                    "path": "/",
-                })
-
-            if pw_cookies:
-                log.info(f"✅ TV API girişi başarılı. {len(pw_cookies)} cookie alındı.")
-            else:
-                log.warning("⚠️ TV API: Login yanıtı OK ama cookie gelmedi.")
-            return pw_cookies
-
-    except Exception as e:
-        log.error(f"❌ TV API giriş exception: {e}")
-        return []
-
-
 async def _tv_giris_yap(page, username: str, password: str) -> bool:
     """
-    TradingView'e HTTP API ile giriş yapar; cookie'yi Playwright context'ine enjekte eder.
-    Tarayıcı formu kullanmadığı için headless tespiti / CAPTCHA engeli yoktur.
+    TradingView'e Playwright tarayıcısı içinden fetch() ile giriş yapar.
+    Login isteği tarayıcının kendi fingerprint/IP'sinden yapılır → oturum tutarlıdır.
+    Python HTTP client (aiohttp) ile oluşturulan session yetersizdi çünkü
+    TradingView, sunucu IP'sinden gelen sessionid'yi tarayıcı ortamında reddediyordu.
     """
-    log.info("🔐 TradingView girişi başlatılıyor (HTTP API)...")
-    cookies = await _tv_api_giris(username, password)
-    if not cookies:
-        log.error("❌ TradingView giriş hatası: Cookie alınamadı.")
-        return False
+    log.info("🔐 TradingView girişi başlatılıyor (browser fetch)...")
     try:
-        await page.context.add_cookies(cookies)
-        log.info("✅ TradingView girişi tamamlandı.")
+        # tradingview.com üzerinde değilsek önce ana sayfaya git
+        if "tradingview.com" not in page.url:
+            await page.goto("https://www.tradingview.com/", wait_until="load", timeout=30_000)
+            await page.wait_for_timeout(2000)
+
+        # Tarayıcı içinden fetch() ile login — credentials:'include' sayesinde
+        # sessionid cookie doğrudan tarayıcının cookie jar'ına yazılır.
+        # Not: TradingView /accounts/signin/ endpoint'i form-encoded body ister;
+        #      application/json ile username/password alanları tanınmıyor (HTTP 400).
+        result = await page.evaluate(
+            """async (creds) => {
+                try {
+                    const body = new URLSearchParams();
+                    body.append('username', creds.username);
+                    body.append('password', creds.password);
+                    body.append('remember', 'on');
+                    const r = await fetch('https://www.tradingview.com/accounts/signin/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Referer': 'https://www.tradingview.com/'
+                        },
+                        body: body.toString(),
+                        credentials: 'include'
+                    });
+                    const data = await r.json().catch(() => ({}));
+                    return {status: r.status, data};
+                } catch(e) {
+                    return {error: String(e)};
+                }
+            }""",
+            {"username": username, "password": password},
+        )
+
+        if result.get("error"):
+            log.error(f"❌ TradingView browser fetch hatası: {result['error']}")
+            return False
+
+        status = result.get("status", 0)
+        data = result.get("data", {})
+
+        if data.get("error"):
+            log.error(f"❌ TradingView giriş hatası: {data['error']}")
+            return False
+
+        if not data.get("user"):
+            log.error(
+                f"❌ TradingView: Kullanıcı verisi yok. "
+                f"HTTP {status}, Yanıt: {str(data)[:200]}"
+            )
+            return False
+
+        log.info(f"✅ TradingView girişi tamamlandı: {data['user'].get('username', '?')}")
         return True
+
     except Exception as e:
-        log.error(f"❌ Cookie enjekte hatası: {e}")
+        log.error(f"❌ TradingView giriş hatası: {e}")
         return False
 
 
@@ -196,7 +187,10 @@ async def _sembol_degistir(page, tv_symbol: str) -> bool:
     # İlk sonucu seç (Enter)
     await page.keyboard.press("Enter")
     await page.wait_for_timeout(10_000)  # Grafik + indikatör verilerinin yüklenmesi
-    log.info(f"✅ Sembol değiştirildi: {tv_symbol}")
+
+    # Sembolün gerçekten değiştiğini doğrula (URL veya sayfa başlığı üzerinden)
+    current_url = page.url
+    log.info(f"✅ Sembol değiştirildi: {tv_symbol} (URL: {current_url})")
     return True
 
 
@@ -209,12 +203,21 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
       layout'ı (siyah tema, MACD, SMI) yok sayıp sıfır/açık temalı yeni grafik açar.
     - Düzeltme: Layout URL'si ÖNCE sembol olmadan açılır → tam yüklenince
       TradingView içinden sembol değiştirilir → layout teması + indikatörler korunur.
+
+    Cookie önceliği:
+    - TV_SESSIONID .env'de tanımlıysa login API'ye hiç dokunulmaz.
+      Cookie doğrudan browser context'e enjekte edilir (CAPTCHA riski sıfır).
+    - TV_SESSIONID yoksa önce kaydedilmiş cookie dosyasına, sonra
+      kullanıcı adı/şifre ile login'e bakılır.
     """
     tv_user = settings.TRADINGVIEW_USERNAME
     tv_pass = settings.TRADINGVIEW_PASSWORD
+    tv_sessionid = settings.TV_SESSIONID
+    tv_sessionid_sign = settings.TV_SESSIONID_SIGN
 
-    if not tv_user or not tv_pass:
-        log.warning("⚠️ TRADINGVIEW_USERNAME / TRADINGVIEW_PASSWORD .env'de tanımlı değil.")
+    # TV_SESSIONID yoksa ve kullanıcı adı/şifre de yoksa devam etme
+    if not tv_sessionid and (not tv_user or not tv_pass):
+        log.warning("⚠️ TV_SESSIONID veya TRADINGVIEW_USERNAME/PASSWORD .env'de tanımlı değil.")
         return False
 
     try:
@@ -244,40 +247,73 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 ),
             )
 
-            # Kaydedilmiş çerezleri yükle (önceki oturumdan)
-            if os.path.exists(_TV_COOKIE_PATH):
-                with open(_TV_COOKIE_PATH) as f:
-                    await context.add_cookies(json.load(f))
-                log.info("🍪 TradingView oturum çerezleri yüklendi.")
+            # .env'de TV_SESSIONID varsa → direkt enjekte et, login atla
+            if tv_sessionid:
+                log.info("🍪 TV_SESSIONID .env'den yükleniyor (login atlanıyor)...")
+                cookies_to_inject = [
+                    {
+                        "name": "sessionid",
+                        "value": tv_sessionid,
+                        "domain": ".tradingview.com",
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                        "sameSite": "None",
+                    }
+                ]
+                if tv_sessionid_sign:
+                    cookies_to_inject.append({
+                        "name": "sessionid_sign",
+                        "value": tv_sessionid_sign,
+                        "domain": ".tradingview.com",
+                        "path": "/",
+                        "httpOnly": True,
+                        "secure": True,
+                        "sameSite": "None",
+                    })
+                await context.add_cookies(cookies_to_inject)
+                log.info("✅ TV_SESSIONID cookie enjekte edildi.")
+            else:
+                # Kaydedilmiş çerezleri yükle (önceki oturumdan)
+                if os.path.exists(_TV_COOKIE_PATH):
+                    with open(_TV_COOKIE_PATH) as f:
+                        await context.add_cookies(json.load(f))
+                    log.info("🍪 TradingView oturum çerezleri yüklendi.")
 
             page = await context.new_page()
             await stealth_async(page)
 
-            # Önce giriş yap — layout private olduğu için login olmadan açılmıyor
+            # Ana sayfaya git (gerekli başlangıç cookie'leri için)
             await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
             await page.wait_for_timeout(2000)
 
-            # Oturum açık mı kontrol et (kullanıcı adı/avatar görünüyor mu)
-            oturum_acik = False
-            try:
-                kullanici_el = await page.query_selector(
-                    '[data-name="header-user-menu-button"], '
-                    '[class*="userMenuButton"], '
-                    'button[aria-label*="User menu"]'
-                )
-                if kullanici_el:
-                    oturum_acik = True
-                    log.info("🍪 Mevcut oturum geçerli, yeniden giriş yapılmıyor.")
-            except Exception:
-                pass
+            # Oturum açık mı? → Cookie jar'a bak (DOM selector'lar güvenilmez)
+            mevcut_cookies = await context.cookies(["https://www.tradingview.com"])
+            oturum_acik = any(c["name"] == "sessionid" for c in mevcut_cookies)
 
-            if not oturum_acik:
-                log.info("🔐 Oturum yok veya geçersiz, giriş yapılıyor...")
+            if oturum_acik:
+                log.info("🍪 sessionid cookie mevcut, yeniden giriş atlandı.")
+            else:
+                if tv_sessionid:
+                    # Cookie enjekte edildi ama geçersiz çıktı
+                    log.error(
+                        "❌ TV_SESSIONID geçersiz veya süresi dolmuş. "
+                        "Lütfen tarayıcınızdan yeni sessionid alıp .env'i güncelleyin."
+                    )
+                    await browser.close()
+                    return False
+
+                log.info("🔐 sessionid yok, giriş yapılıyor...")
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
                 if not basarili:
                     await browser.close()
                     return False
-                # Oturumu kaydet
+
+                # Giriş sonrası sayfayı yenile — JS oturumu aktif etsin
+                await page.goto("https://www.tradingview.com/", wait_until="load", timeout=30_000)
+                await page.wait_for_timeout(2000)
+
+                # Cookie'leri kaydet
                 os.makedirs("data", exist_ok=True)
                 cookies = await context.cookies()
                 with open(_TV_COOKIE_PATH, "w") as f:
@@ -288,70 +324,35 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
             await page.goto(layout_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
-            # Hâlâ "açamıyoruz" sayfası mı? (private layout, login başarısız)
+            # Sayfa durumunu logla
             page_body = await page.inner_text("body")
-            if "açamıyoruz" in page_body or "can't open" in page_body.lower() or "signin" in page.url:
-                log.warning("⚠️ Layout açılamadı, cookie siliniyor ve yeniden giriş deneniyor...")
-                # Eski cookie'yi sil ve tekrar login yap
-                if os.path.exists(_TV_COOKIE_PATH):
-                    os.remove(_TV_COOKIE_PATH)
-                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
-                if not basarili:
-                    await browser.close()
-                    return False
-                os.makedirs("data", exist_ok=True)
-                cookies = await context.cookies()
-                with open(_TV_COOKIE_PATH, "w") as f:
-                    json.dump(cookies, f)
-                # Layout'a tekrar git
-                await page.goto(layout_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(3000)
+            sayfa_ozet = page_body[:200].replace("\n", " ")
+            log.info(f"📄 Layout sayfası: {sayfa_ozet}")
 
-            # Canvas var mı kontrol et — yoksa erişim engeli demektir, yeniden login dene
+            # Canvas kontrol — yoksa oturum geçersiz olmuş, cookie'yi sil
             canvas_var = False
             try:
-                await page.wait_for_selector("canvas, .chart-container", timeout=15_000)
+                await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
                 canvas_var = True
             except Exception:
                 pass
 
             if not canvas_var:
-                try:
-                    sayfa_ozet = (await page.inner_text("body"))[:300].replace("\n", " ")
-                    log.warning(f"⚠️ Canvas yok. Sayfa: {sayfa_ozet}")
-                except Exception:
-                    pass
-
-                log.info("🔐 Layout erişimi yok, cookie silip yeniden giriş yapılıyor...")
+                log.error("❌ Canvas yüklenemedi. Kaydedilmiş cookie geçersiz olabilir.")
                 if os.path.exists(_TV_COOKIE_PATH):
                     os.remove(_TV_COOKIE_PATH)
-
-                basarili = await _tv_giris_yap(page, tv_user, tv_pass)
-                if not basarili:
-                    await browser.close()
-                    return False
-
-                os.makedirs("data", exist_ok=True)
-                cookies = await context.cookies()
-                with open(_TV_COOKIE_PATH, "w") as f:
-                    json.dump(cookies, f)
-
-                await page.goto(layout_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(3000)
-
-                try:
-                    await page.wait_for_selector("canvas, .chart-container", timeout=20_000)
-                    canvas_var = True
-                except Exception:
-                    log.error("❌ Giriş sonrası da canvas yok, yetki sorunu olabilir.")
-                    await browser.close()
-                    return False
+                await browser.close()
+                return False
 
             # Canvas yüklendi — indikatörlerin render olması için bekle
             await page.wait_for_timeout(8000)
 
             # Sembolü TradingView içinden değiştir (layout teması korunur)
-            await _sembol_degistir(page, tv_symbol)
+            sembol_degisti = await _sembol_degistir(page, tv_symbol)
+            if not sembol_degisti:
+                log.error(f"❌ Sembol değiştirilemedi: {tv_symbol}. Yanlış sembol grafiği gönderilmemesi için işlem durduruldu.")
+                await browser.close()
+                return False
 
             # Tüm kenar çubuklarını ve araç çubuklarını gizle
             await page.evaluate("""
