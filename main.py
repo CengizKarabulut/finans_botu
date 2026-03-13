@@ -90,6 +90,8 @@ dp = Dispatcher()
 
 async def shutdown(loop, sig=None):
     """Botu ve aktif görevleri temiz bir şekilde kapatır."""
+    global _shutting_down
+    _shutting_down = True
     if sig:
         log.info(f"🛑 Kapatma sinyali alındı: {sig.name}")
 
@@ -823,6 +825,9 @@ async def genel_mesaj(message: Message):
 # ANA DÖNGÜ
 # ═══════════════════════════════════════════════════════════════
 
+_shutting_down = False
+
+
 async def main():
     """Bot ana döngüsü."""
     try:
@@ -897,9 +902,28 @@ async def main():
             log.critical(f"❌ Telegram bağlantı testi başarısız: {e}")
         return
 
+    # Başlamadan önce webhook'u temizle (önceki instance'ın session'ını kapat)
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        log.info("🧹 Webhook temizlendi, polling başlıyor...")
+    except Exception as e:
+        log.warning(f"Webhook temizlenemedi (devam ediliyor): {e}")
+
     while True:
+        if _shutting_down:
+            break
         try:
             await dp.start_polling(bot, skip_updates=True)
+            # start_polling normal döndüyse (exception yok) kısa bekle ve yeniden başlat
+            if not _shutting_down:
+                log.warning("⚠️ Polling beklenmedik şekilde durdu, yeniden başlatılıyor (3s)...")
+                await asyncio.sleep(3)
+        except asyncio.CancelledError:
+            if _shutting_down:
+                log.info("✅ Polling intentional shutdown nedeniyle durduruldu.")
+                raise
+            log.warning("⚠️ Polling iptal edildi, yeniden başlatılıyor (5s)...")
+            await asyncio.sleep(5)
         except Exception as e:
             err = str(e)
             if "Unauthorized" in err:
