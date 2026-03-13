@@ -61,7 +61,14 @@ class Settings(BaseSettings):
         lines.append(f"   Bot Token:    {'✅' if self.BOT_TOKEN else '❌'}")
         lines.append(f"   Finnhub:      {'✅' if self.FINNHUB_API_KEY else '⚠️'}")
         lines.append(f"   Gemini:       {'✅' if self.GEMINI_API_KEY else '⚠️'}")
-        lines.append(f"   TradingView:  {'✅ ' + self.TRADINGVIEW_USERNAME if self.TRADINGVIEW_USERNAME else '⚠️ (grafik: mplfinance fallback)'}")
+        _tv_cookie_exists = os.path.exists(os.path.join("data", "tv_session.json"))
+        if self.TRADINGVIEW_USERNAME:
+            _tv_status = f"✅ {self.TRADINGVIEW_USERNAME}"
+        elif _tv_cookie_exists:
+            _tv_status = "✅ Cookie dosyası mevcut (tv_session.json)"
+        else:
+            _tv_status = "⚠️  (grafik: mplfinance fallback — tv_cookie_al.py çalıştırın)"
+        lines.append(f"   TradingView:  {_tv_status}")
         lines.append(f"   Log Level:    {self.LOG_LEVEL}")
         lines.append(f"   Health:       http://{self.HEALTH_HOST}:{self.HEALTH_PORT}")
         return "\n".join(lines)
