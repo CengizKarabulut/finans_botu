@@ -98,8 +98,13 @@ async def _tv_api_giris(username: str, password: str) -> list:
                 if resp.status != 200:
                     log.error(f"❌ TV API giriş başarısız: HTTP {resp.status}")
                     return []
+                
                 if body.get("error"):
-                    log.error(f"❌ TV API giriş hatası: {body.get('error')}")
+                    error_msg = body.get("error")
+                    if "captcha" in error_msg.lower():
+                        log.error("❌ TradingView CAPTCHA engeline takıldı. Lütfen .env dosyasındaki TRADINGVIEW_CHART_URL'nin 'Paylaşılabilir' (Shared) olduğundan emin olun.")
+                    else:
+                        log.error(f"❌ TV API giriş hatası: {error_msg}")
                     return []
 
             # Cookie'leri Playwright formatına çevir
@@ -291,21 +296,37 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
             # Hâlâ "açamıyoruz" sayfası mı? (private layout, login başarısız)
             page_body = await page.inner_text("body")
             if "açamıyoruz" in page_body or "can't open" in page_body.lower() or "signin" in page.url:
-                log.warning("⚠️ Layout açılamadı, cookie siliniyor ve yeniden giriş deneniyor...")
+                log.warning("⚠️ Layout açılamadı (Giriş Yapılmamış Görünüyor). Cookie siliniyor ve yeniden giriş deneniyor...")
                 # Eski cookie'yi sil ve tekrar login yap
                 if os.path.exists(_TV_COOKIE_PATH):
                     os.remove(_TV_COOKIE_PATH)
+                
+                # Önce ana sayfaya git (temiz başlangıç)
+                await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
+                await page.wait_for_timeout(2000)
+                
                 basarili = await _tv_giris_yap(page, tv_user, tv_pass)
                 if not basarili:
+                    log.error("❌ Yeniden giriş denemesi başarısız. Lütfen TradingView kullanıcı adı ve şifrenizi kontrol edin.")
                     await browser.close()
                     return False
+                
                 os.makedirs("data", exist_ok=True)
                 cookies = await context.cookies()
                 with open(_TV_COOKIE_PATH, "w") as f:
                     json.dump(cookies, f)
+                
                 # Layout'a tekrar git
+                log.info(f"🔄 Yeniden giriş sonrası layout açılıyor: {layout_url}")
                 await page.goto(layout_url, wait_until="load", timeout=60_000)
-                await page.wait_for_timeout(3000)
+                await page.wait_for_timeout(5000) # Daha uzun bekleme süresi
+                
+                # Hâlâ hata varsa, public layout URL'si gerekebilir
+                page_body_after = await page.inner_text("body")
+                if "açamıyoruz" in page_body_after or "can't open" in page_body_after.lower():
+                    log.error("❌ Giriş yapılmasına rağmen grafik yerleşimi açılamadı. Lütfen TradingView'de grafiğinizi 'Paylaşılabilir' (Shared) yapın.")
+                    await browser.close()
+                    return False
 
             # Canvas var mı kontrol et — yoksa erişim engeli demektir, yeniden login dene
             canvas_var = False
