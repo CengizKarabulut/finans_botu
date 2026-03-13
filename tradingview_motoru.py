@@ -23,6 +23,19 @@ log = logging.getLogger("finans_botu")
 _TV_COOKIE_PATH = os.path.join("data", "tv_session.json")
 
 
+async def _apply_stealth(page) -> None:
+    """playwright_stealth 1.x ve 2.x API'lerini destekler."""
+    try:
+        from playwright_stealth import stealth_async  # 1.x
+        await stealth_async(page)
+    except ImportError:
+        try:
+            from playwright_stealth import Stealth  # 2.x
+            await Stealth().apply_stealth_async(page)
+        except Exception:
+            pass  # Stealth yoksa devam et
+
+
 # ═══════════════════════════════════════════════════════════════
 # SEMBOL FORMAT DÖNÜŞTÜRÜCÜLER
 # ═══════════════════════════════════════════════════════════════
@@ -270,7 +283,6 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
-        from playwright_stealth import stealth_async
 
         tv_symbol = _tv_sembol_formatla(sembol)
         # Layout URL'si: ?symbol= olmadan — kaydedilmiş tema ve indikatörler korunur
@@ -302,7 +314,7 @@ async def _grafik_tradingview(sembol: str, output_path: str) -> bool:
                 log.info("🍪 TradingView oturum çerezleri yüklendi.")
 
             page = await context.new_page()
-            await stealth_async(page)
+            await _apply_stealth(page)
 
             # Önce giriş yap — layout private olduğu için login olmadan açılmıyor
             await page.goto("https://www.tradingview.com/", wait_until="load", timeout=60_000)
@@ -536,7 +548,6 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 
     try:
         from playwright.async_api import async_playwright
-        from playwright_stealth import stealth_async
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(
@@ -559,7 +570,7 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
             )
 
             page = await context.new_page()
-            await stealth_async(page)
+            await _apply_stealth(page)
             await page.goto(chart_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
