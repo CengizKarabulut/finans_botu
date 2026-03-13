@@ -131,20 +131,66 @@ async def _tv_api_giris(username: str, password: str) -> list:
 
 async def _tv_giris_yap(page, username: str, password: str) -> bool:
     """
-    TradingView'e HTTP API ile giriş yapar; cookie'yi Playwright context'ine enjekte eder.
-    Tarayıcı formu kullanmadığı için headless tespiti / CAPTCHA engeli yoktur.
+    TradingView'e hem HTTP API hem de Tarayıcı Formu üzerinden giriş yapmayı dener.
+    Daha dayanıklı bir giriş akışı sağlar.
     """
-    log.info("🔐 TradingView girişi başlatılıyor (HTTP API)...")
+    log.info("🔐 TradingView girişi başlatılıyor (Hibrit Yöntem)...")
+    
+    # 1. Yöntem: HTTP API ile hızlı giriş (Cookie enjeksiyonu)
     cookies = await _tv_api_giris(username, password)
-    if not cookies:
-        log.error("❌ TradingView giriş hatası: Cookie alınamadı.")
-        return False
+    if cookies:
+        try:
+            await page.context.add_cookies(cookies)
+            log.info("✅ TV API girişi başarılı, çerezler enjekte edildi.")
+            # Girişin gerçekten başarılı olup olmadığını kontrol etmek için ana sayfaya git
+            await page.goto("https://www.tradingview.com/", wait_until="networkidle", timeout=60_000)
+            if await page.query_selector('[data-name="header-user-menu-button"]'):
+                log.info("✅ Oturum doğrulandı.")
+                return True
+        except Exception as e:
+            log.warning(f"⚠️ API çerez enjeksiyonu başarısız: {e}")
+
+    # 2. Yöntem: Tarayıcı Formu üzerinden manuel giriş (Fallback)
+    log.info("🔄 API girişi yetersiz, tarayıcı formu üzerinden giriş deneniyor...")
     try:
-        await page.context.add_cookies(cookies)
-        log.info("✅ TradingView girişi tamamlandı.")
-        return True
+        await page.goto("https://www.tradingview.com/#signin", wait_until="networkidle", timeout=60_000)
+        await page.wait_for_timeout(2000)
+        
+        # Giriş butonunu veya formunu bul
+        email_input = await page.query_selector('input[name="username"], input[id*="username"]')
+        pass_input = await page.query_selector('input[name="password"], input[id*="password"]')
+        
+        if not email_input:
+            # Eğer direkt form gelmediyse "Email" butonuna tıkla
+            email_btn = await page.query_selector('button[name="Email"], span:has-text("Email"), .tv-signin-dialog__social--email')
+            if email_btn:
+                await email_btn.click()
+                await page.wait_for_timeout(1000)
+                email_input = await page.query_selector('input[name="username"]')
+                pass_input = await page.query_selector('input[name="password"]')
+
+        if email_input and pass_input:
+            await email_input.fill(username)
+            await page.wait_for_timeout(500)
+            await pass_input.fill(password)
+            await page.wait_for_timeout(500)
+            
+            # Giriş yap butonuna tıkla
+            submit_btn = await page.query_selector('button[type="submit"], .tv-button--kind-primary')
+            if submit_btn:
+                await submit_btn.click()
+                log.info("🚀 Giriş formu gönderildi, bekleniyor...")
+                await page.wait_for_timeout(5000)
+                
+                # Başarı kontrolü
+                if await page.query_selector('[data-name="header-user-menu-button"]'):
+                    log.info("✅ Tarayıcı formu ile giriş başarılı!")
+                    return True
+        
+        log.error("❌ Tarayıcı formu ile giriş başarısız (Form elemanları bulunamadı veya CAPTCHA çıktı).")
+        return False
     except Exception as e:
-        log.error(f"❌ Cookie enjekte hatası: {e}")
+        log.error(f"❌ Tarayıcı girişi sırasında hata: {e}")
         return False
 
 
