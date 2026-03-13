@@ -717,27 +717,24 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
     """
     Grafik alma akışı:
-      1. TradingView Playwright girişsiz — CHART_URL varsa (paylaşılabilir link) önce bu denenir
-      2. TradingView Playwright (kimlik bilgileriyle) — noauth başarısızsa ve credentials varsa
+      1. TradingView Playwright (kimlik bilgileriyle) — credentials varsa önce bu denenir
+      2. TradingView Playwright girişsiz — CHART_URL varsa ve login başarısızsa
       3. mplfinance yerel grafik — son yedek
-
-    NOT: TRADINGVIEW_CHART_URL'nin "Share chart link" ile alınan paylaşılabilir URL olması
-    gerekir. Böylece login yapılmaz, TradingView güvenlik maili gelmez.
     """
-    # Birincil: Girişsiz CHART_URL (paylaşılabilir link — login tetiklemez)
+    # Birincil: Login ile TradingView — indikatörler düzgün yüklenir
+    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
+        log.info("🔐 Login yöntemi deneniyor...")
+        success = await _grafik_tradingview(sembol, output_path)
+        if success:
+            return True
+        log.warning("⚠️ TradingView (giriş) başarısız, girişsiz yöntem deneniyor...")
+
+    # İkincil: Girişsiz CHART_URL (paylaşılabilir link)
     if settings.TRADINGVIEW_CHART_URL:
         success = await _grafik_playwright_noauth(sembol, output_path)
         if success:
             return True
-        log.warning("⚠️ TradingView noauth başarısız. CHART_URL'nin 'Share chart link' ile alınan paylaşılabilir bir URL olduğundan emin olun.")
-
-    # İkincil: Login ile TradingView (yalnızca CHART_URL yoksa veya başarısız olduysa)
-    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
-        log.info("🔐 Login yöntemi deneniyor (bu TradingView güvenlik maili tetikleyebilir)...")
-        success = await _grafik_tradingview(sembol, output_path)
-        if success:
-            return True
-        log.warning("⚠️ TradingView (giriş) başarısız, mplfinance yedek deneniyor...")
+        log.warning("⚠️ TradingView noauth başarısız.")
 
     # Son yedek: mplfinance
     return await _grafik_mplfinance(sembol, output_path)
