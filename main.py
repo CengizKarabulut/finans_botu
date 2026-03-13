@@ -41,7 +41,7 @@ from db import (
     kullanici_dil_getir
 )
 from alert_motoru import uyari_kontrol_dongusu
-from tradingview_motoru import tv_grafik_cek, TVBrowser
+from tradingview_motoru import tv_grafik_cek, TVBrowser, manuel_giris_yap
 from portfoy_motoru import portfoy_ozeti_hazirla, portfoy_varlik_ekle, portfoy_varlik_sil
 from cache_yonetici import baslangic_temizligi
 
@@ -861,6 +861,12 @@ async def main():
         loop.add_signal_handler(
             sig, lambda s=sig: asyncio.create_task(shutdown(loop, s))
         )
+
+    # Manuel Giriş Modu Kontrolü (Komut satırı argümanı ile)
+    if "--login" in sys.argv:
+        log.info("🔑 Manuel giriş modu başlatılıyor...")
+        manuel_giris_yap()
+        return
 
     log.info("🚀 Finans Botu başlatıldı!")
     log.info(settings.startup_log())

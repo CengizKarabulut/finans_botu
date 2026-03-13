@@ -48,4 +48,6 @@ cryptography>=41.0.0
 # ==============================
 # BROWSER STEALTH & CAPTCHA
 # ==============================
-playwright-stealth>=2.0.2
+selenium>=4.0.0
+webdriver-manager>=4.0.0
+undetected-chromedriver>=3.5.0
