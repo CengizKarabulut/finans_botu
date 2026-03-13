@@ -145,65 +145,131 @@ async def _tv_api_giris(username: str, password: str) -> list:
 async def _tv_giris_yap(page, username: str, password: str) -> bool:
     """
     TradingView'e hem HTTP API hem de Tarayıcı Formu üzerinden giriş yapmayı dener.
-    Daha dayanıklı bir giriş akışı sağlar.
     """
     log.info("🔐 TradingView girişi başlatılıyor (Hibrit Yöntem)...")
-    
+
     # 1. Yöntem: HTTP API ile hızlı giriş (Cookie enjeksiyonu)
     cookies = await _tv_api_giris(username, password)
     if cookies:
-        try:
-            await page.context.add_cookies(cookies)
-            log.info("✅ TV API girişi başarılı, çerezler enjekte edildi.")
-            # Girişin gerçekten başarılı olup olmadığını kontrol etmek için ana sayfaya git
-            await page.goto("https://www.tradingview.com/", wait_until="networkidle", timeout=60_000)
-            if await page.query_selector('[data-name="header-user-menu-button"]'):
-                log.info("✅ Oturum doğrulandı.")
-                return True
-        except Exception as e:
-            log.warning(f"⚠️ API çerez enjeksiyonu başarısız: {e}")
-
-    # 2. Yöntem: Tarayıcı Formu üzerinden manuel giriş (Fallback)
-    log.info("🔄 API girişi yetersiz, tarayıcı formu üzerinden giriş deneniyor...")
-    try:
-        await page.goto("https://www.tradingview.com/#signin", wait_until="networkidle", timeout=60_000)
-        await page.wait_for_timeout(2000)
-        
-        # Giriş butonunu veya formunu bul
-        email_input = await page.query_selector('input[name="username"], input[id*="username"]')
-        pass_input = await page.query_selector('input[name="password"], input[id*="password"]')
-        
-        if not email_input:
-            # Eğer direkt form gelmediyse "Email" butonuna tıkla
-            email_btn = await page.query_selector('button[name="Email"], span:has-text("Email"), .tv-signin-dialog__social--email')
-            if email_btn:
-                await email_btn.click()
-                await page.wait_for_timeout(1000)
-                email_input = await page.query_selector('input[name="username"]')
-                pass_input = await page.query_selector('input[name="password"]')
-
-        if email_input and pass_input:
-            await email_input.fill(username)
-            await page.wait_for_timeout(500)
-            await pass_input.fill(password)
-            await page.wait_for_timeout(500)
-            
-            # Giriş yap butonuna tıkla
-            submit_btn = await page.query_selector('button[type="submit"], .tv-button--kind-primary')
-            if submit_btn:
-                await submit_btn.click()
-                log.info("🚀 Giriş formu gönderildi, bekleniyor...")
-                await page.wait_for_timeout(5000)
-                
-                # Başarı kontrolü
+        # sessionid var mı kontrol et — bu kritik oturum çerezidir
+        has_session = any(c["name"] in ("sessionid", "tv_ecuid") for c in cookies)
+        if has_session:
+            try:
+                await page.context.add_cookies(cookies)
+                await page.goto("https://www.tradingview.com/", wait_until="domcontentloaded", timeout=60_000)
+                await page.wait_for_timeout(3000)
                 if await page.query_selector('[data-name="header-user-menu-button"]'):
-                    log.info("✅ Tarayıcı formu ile giriş başarılı!")
+                    log.info("✅ API cookie ile oturum doğrulandı.")
                     return True
-        
-        log.error("❌ Tarayıcı formu ile giriş başarısız (Form elemanları bulunamadı veya CAPTCHA çıktı).")
+                log.warning("⚠️ API cookies eklendi ama header user-menu butonu görünmüyor.")
+            except Exception as e:
+                log.warning(f"⚠️ API çerez enjeksiyonu başarısız: {e}")
+
+    # 2. Yöntem: Tarayıcı Formu üzerinden giriş — güncel TradingView UI (2024-2026)
+    log.info("🔄 Tarayıcı formu üzerinden giriş deneniyor...")
+    try:
+        # Doğrudan /signin/ sayfasına git
+        await page.goto("https://www.tradingview.com/signin/", wait_until="domcontentloaded", timeout=60_000)
+        await page.wait_for_timeout(3000)
+
+        # Debug: nerede olduğumuzu logla
+        log.info(f"📍 Login sayfası: {page.url}")
+
+        # ── Adım 1: "Email" sekmesini bul ve tıkla ──
+        email_tab_clicked = False
+        for sel in [
+            'button[name="Email"]',
+            '[data-name="email"]',
+            'button:has-text("Email")',
+            'span:has-text("Email ile devam et")',
+            '.tv-signin-dialog__social--email',
+            'a:has-text("Email")',
+        ]:
+            try:
+                el = await page.query_selector(sel)
+                if el:
+                    await el.click()
+                    await page.wait_for_timeout(1500)
+                    email_tab_clicked = True
+                    log.info(f"✅ Email sekmesi tıklandı ({sel})")
+                    break
+            except Exception:
+                pass
+
+        if not email_tab_clicked:
+            log.warning("⚠️ Email sekmesi bulunamadı, direkt form aranıyor...")
+
+        # ── Adım 2: Kullanıcı adı ve şifre alanlarını doldur ──
+        email_input = None
+        for sel in ['input[name="username"]', 'input[autocomplete="username"]', 'input[id*="username"]', 'input[type="text"]']:
+            el = await page.query_selector(sel)
+            if el:
+                email_input = el
+                break
+
+        pass_input = None
+        for sel in ['input[name="password"]', 'input[autocomplete="current-password"]', 'input[type="password"]']:
+            el = await page.query_selector(sel)
+            if el:
+                pass_input = el
+                break
+
+        if not email_input or not pass_input:
+            # Debug screenshot al
+            os.makedirs("data", exist_ok=True)
+            await page.screenshot(path="data/tv_login_debug.png", full_page=True)
+            log.error("❌ Giriş formu bulunamadı. Debug ekran görüntüsü: data/tv_login_debug.png")
+            log.error(f"❌ Sayfa URL: {page.url}")
+            return False
+
+        await email_input.click()
+        await email_input.fill(username)
+        await page.wait_for_timeout(500)
+        await pass_input.click()
+        await pass_input.fill(password)
+        await page.wait_for_timeout(500)
+
+        # ── Adım 3: Submit ──
+        submit_btn = None
+        for sel in ['button[type="submit"]', 'button:has-text("Sign in")', 'button:has-text("Giriş yap")', '.tv-button--size_large[type="submit"]']:
+            el = await page.query_selector(sel)
+            if el:
+                submit_btn = el
+                break
+
+        if not submit_btn:
+            await page.screenshot(path="data/tv_login_debug.png", full_page=True)
+            log.error("❌ Submit butonu bulunamadı. data/tv_login_debug.png'e bak.")
+            return False
+
+        await submit_btn.click()
+        log.info("🚀 Giriş formu gönderildi, yanıt bekleniyor...")
+        await page.wait_for_timeout(6000)
+
+        # ── Adım 4: Başarı kontrolü ──
+        current_url = page.url
+        user_menu = await page.query_selector('[data-name="header-user-menu-button"]')
+        if user_menu:
+            log.info(f"✅ Tarayıcı formu ile giriş başarılı! ({current_url})")
+            return True
+
+        # Başarısız — debug screenshot
+        os.makedirs("data", exist_ok=True)
+        await page.screenshot(path="data/tv_login_debug.png", full_page=True)
+        page_text = (await page.inner_text("body"))[:500]
+        log.error(f"❌ Giriş sonrası kullanıcı menüsü yok. URL: {current_url}")
+        log.error(f"❌ Sayfa içeriği (ilk 500 karakter): {page_text}")
+        log.error("❌ Debug ekran görüntüsü: data/tv_login_debug.png")
         return False
+
     except Exception as e:
         log.error(f"❌ Tarayıcı girişi sırasında hata: {e}")
+        try:
+            os.makedirs("data", exist_ok=True)
+            await page.screenshot(path="data/tv_login_debug.png", full_page=True)
+            log.error("❌ Debug ekran görüntüsü: data/tv_login_debug.png")
+        except Exception:
+            pass
         return False
 
 
@@ -647,23 +713,27 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 async def tv_grafik_cek(sembol: str, output_path: str) -> bool:
     """
     Grafik alma akışı:
-      1. TradingView Playwright (kimlik bilgileriyle) — layout teması + indikatörler
-      2. TradingView Playwright girişsiz — CHART_URL varsa yedek
+      1. TradingView Playwright girişsiz — CHART_URL varsa (paylaşılabilir link) önce bu denenir
+      2. TradingView Playwright (kimlik bilgileriyle) — noauth başarısızsa ve credentials varsa
       3. mplfinance yerel grafik — son yedek
-    """
-    # Birincil: Login ile TradingView (layout içinden sembol değiştirilir, tema korunur)
-    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
-        success = await _grafik_tradingview(sembol, output_path)
-        if success:
-            return True
-        log.warning("⚠️ TradingView (giriş) başarısız, noauth deneniyor...")
 
-    # İkincil: Girişsiz CHART_URL
+    NOT: TRADINGVIEW_CHART_URL'nin "Share chart link" ile alınan paylaşılabilir URL olması
+    gerekir. Böylece login yapılmaz, TradingView güvenlik maili gelmez.
+    """
+    # Birincil: Girişsiz CHART_URL (paylaşılabilir link — login tetiklemez)
     if settings.TRADINGVIEW_CHART_URL:
         success = await _grafik_playwright_noauth(sembol, output_path)
         if success:
             return True
-        log.warning("⚠️ TradingView noauth başarısız, mplfinance yedek deneniyor...")
+        log.warning("⚠️ TradingView noauth başarısız. CHART_URL'nin 'Share chart link' ile alınan paylaşılabilir bir URL olduğundan emin olun.")
+
+    # İkincil: Login ile TradingView (yalnızca CHART_URL yoksa veya başarısız olduysa)
+    if settings.TRADINGVIEW_USERNAME and settings.TRADINGVIEW_PASSWORD:
+        log.info("🔐 Login yöntemi deneniyor (bu TradingView güvenlik maili tetikleyebilir)...")
+        success = await _grafik_tradingview(sembol, output_path)
+        if success:
+            return True
+        log.warning("⚠️ TradingView (giriş) başarısız, mplfinance yedek deneniyor...")
 
     # Son yedek: mplfinance
     return await _grafik_mplfinance(sembol, output_path)
