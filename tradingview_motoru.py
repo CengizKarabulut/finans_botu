@@ -609,8 +609,9 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
         return False
 
     tv_symbol = _tv_sembol_formatla(sembol)
-    chart_url = f"{base_url}?symbol={tv_symbol}"
-    log.info(f"📊 TradingView (giriş yok) grafiği çekiliyor: {sembol} → {chart_url}")
+    # NOT: ?symbol= parametresi KULLANILMAZ — layout teması ve indikatörleri sıfırlar.
+    # Layout önce sembolsüz açılır, sonra TradingView içinden sembol değiştirilir.
+    log.info(f"📊 TradingView (giriş yok) grafiği çekiliyor: {sembol} → {base_url}")
 
     try:
         from playwright.async_api import async_playwright
@@ -625,8 +626,6 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
                     "--disable-blink-features=AutomationControlled",
                 ],
             )
-            # NOT: Cookie yüklenmez — login olunca hesap teması layout temasını ezer.
-            # Public/shared layout URL'si giriş yapmadan doğru tema+indikatörlerle açılır.
             context = await browser.new_context(
                 viewport={"width": 1920, "height": 1080},
                 user_agent=(
@@ -637,19 +636,18 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
 
             page = await context.new_page()
             await _apply_stealth(page)
-            await page.goto(chart_url, wait_until="load", timeout=60_000)
+            # Layout URL'sini ?symbol= olmadan aç — kaydedilmiş tema + indikatörler korunur
+            await page.goto(base_url, wait_until="load", timeout=60_000)
             await page.wait_for_timeout(3000)
 
             # Cookie consent / "Sign up" popup'larını kapat
             dismiss_js = """
-                // Cookie consent
                 const cookieBtn = document.querySelector(
                     'button[id*="cookie"], button[class*="acceptAll"], ' +
                     'button[class*="accept-all"], .js-accept-all-cookies'
                 );
                 if (cookieBtn) cookieBtn.click();
 
-                // "Sign in" veya "Get started" overlay'lerini kapat
                 const closeBtn = document.querySelector(
                     'button[data-name="close"], ' +
                     '.tv-dialog__close, ' +
@@ -666,8 +664,14 @@ async def _grafik_playwright_noauth(sembol: str, output_path: str) -> bool:
             except Exception:
                 pass
 
-            # İndikatörlerin (MACD, SMI vb.) yüklenmesi için ek süre
+            # İndikatörlerin yüklenmesi için ek süre
             await page.wait_for_timeout(8000)
+
+            # Sembolü TradingView içinden değiştir — layout teması + indikatörler korunur
+            await _sembol_degistir(page, tv_symbol)
+
+            # Sembol değişimi sonrası indikatör verilerinin yüklenmesi için bekle
+            await page.wait_for_timeout(5000)
 
             # Tüm UI elementlerini gizle — temiz grafik görünümü için
             await page.evaluate("""
