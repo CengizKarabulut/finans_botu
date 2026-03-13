@@ -865,6 +865,21 @@ async def main():
     log.info("🚀 Finans Botu başlatıldı!")
     log.info(settings.startup_log())
 
+    # Token format kontrolü
+    token = settings.BOT_TOKEN.strip()
+    import re
+    token_pattern = re.compile(r"^\d{8,12}:[A-Za-z0-9_-]{35,}$")
+    token_preview = f"{token[:10]}...{token[-4:]}" if len(token) > 14 else "???"
+    if not token_pattern.match(token):
+        log.critical(
+            f"❌ BOT_TOKEN FORMAT HATASI! Token geçerli Telegram formatında değil.\n"
+            f"   Mevcut token (gizlenmiş): {token_preview}\n"
+            f"   Beklenen format: 1234567890:ABCDEFabcdef... (rakam:35+karakter)\n"
+            f"   Token uzunluğu: {len(token)} karakter\n"
+            f"   Çözüm: @BotFather'dan /token komutuyla yeni token alın."
+        )
+        return
+
     # Token doğrulama: Başlamadan önce Telegram'a bağlantıyı test et
     try:
         me = await bot.get_me()
@@ -873,9 +888,10 @@ async def main():
         err = str(e)
         if "Unauthorized" in err:
             log.critical(
-                "❌ BOT_TOKEN GEÇERSİZ! Telegram 'Unauthorized' hatası verdi.\n"
-                "   Çözüm: @BotFather'dan yeni token alın ve .env dosyasındaki\n"
-                "   BOT_TOKEN değerini güncelleyin, ardından botu yeniden başlatın."
+                f"❌ BOT_TOKEN GEÇERSİZ! Telegram 'Unauthorized' hatası verdi.\n"
+                f"   Token (gizlenmiş): {token_preview}\n"
+                f"   Çözüm: @BotFather'dan yeni token alın ve .env dosyasındaki\n"
+                f"   BOT_TOKEN değerini güncelleyin, ardından botu yeniden başlatın."
             )
         else:
             log.critical(f"❌ Telegram bağlantı testi başarısız: {e}")
