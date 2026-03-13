@@ -865,11 +865,51 @@ async def main():
     log.info("🚀 Finans Botu başlatıldı!")
     log.info(settings.startup_log())
 
+    # Token format kontrolü
+    token = settings.BOT_TOKEN.strip()
+    import re
+    token_pattern = re.compile(r"^\d{8,12}:[A-Za-z0-9_-]{35,}$")
+    token_preview = f"{token[:10]}...{token[-4:]}" if len(token) > 14 else "???"
+    if not token_pattern.match(token):
+        log.critical(
+            f"❌ BOT_TOKEN FORMAT HATASI! Token geçerli Telegram formatında değil.\n"
+            f"   Mevcut token (gizlenmiş): {token_preview}\n"
+            f"   Beklenen format: 1234567890:ABCDEFabcdef... (rakam:35+karakter)\n"
+            f"   Token uzunluğu: {len(token)} karakter\n"
+            f"   Çözüm: @BotFather'dan /token komutuyla yeni token alın."
+        )
+        return
+
+    # Token doğrulama: Başlamadan önce Telegram'a bağlantıyı test et
+    try:
+        me = await bot.get_me()
+        log.info(f"✅ Telegram bağlantısı doğrulandı: @{me.username} (ID: {me.id})")
+    except Exception as e:
+        err = str(e)
+        if "Unauthorized" in err:
+            log.critical(
+                f"❌ BOT_TOKEN GEÇERSİZ! Telegram 'Unauthorized' hatası verdi.\n"
+                f"   Token (gizlenmiş): {token_preview}\n"
+                f"   Çözüm: @BotFather'dan yeni token alın ve .env dosyasındaki\n"
+                f"   BOT_TOKEN değerini güncelleyin, ardından botu yeniden başlatın."
+            )
+        else:
+            log.critical(f"❌ Telegram bağlantı testi başarısız: {e}")
+        return
+
     while True:
         try:
             await dp.start_polling(bot, skip_updates=True)
         except Exception as e:
-            if "Conflict" in str(e):
+            err = str(e)
+            if "Unauthorized" in err:
+                log.critical(
+                    "❌ BOT_TOKEN GEÇERSİZ! Telegram 'Unauthorized' hatası verdi.\n"
+                    "   Çözüm: @BotFather'dan yeni token alın ve .env dosyasındaki\n"
+                    "   BOT_TOKEN değerini güncelleyin, ardından botu yeniden başlatın."
+                )
+                return  # Geçersiz token ile yeniden denemenin anlamı yok, çık
+            elif "Conflict" in err:
                 log.warning("⚠️ Telegram Conflict hatası! Diğer bot örneği bekleniyor (10s)...")
                 await asyncio.sleep(10)
             else:
